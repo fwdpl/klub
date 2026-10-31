@@ -103,8 +103,9 @@ function deniedHelp(recheck: () => void): HTMLElement {
     ];
   } else if (isAndroid()) {
     steps = [
-      'Stuknij ikonę po lewej stronie adresu strony (na górze ekranu).',
-      'Wybierz Uprawnienia, potem Powiadomienia, i ustaw Zezwalaj.',
+      'W Chrome stuknij ⋮ (prawy górny róg) → Ustawienia → Ustawienia witryn → Powiadomienia.',
+      'Jeśli przełącznik „Powiadomienia” na górze jest wyłączony – włącz go.',
+      `Jeśli ${location.hostname} jest na liście „Zablokowane” – stuknij go i wybierz Zezwalaj.`,
       'Jeśli to nie pomoże: Ustawienia telefonu → Aplikacje → Chrome → Powiadomienia → włącz.',
     ];
   } else {
@@ -134,8 +135,14 @@ export async function showHome(user: User): Promise<void> {
   const recheck = async () => {
     if (push !== 'denied') return;
     const now = await pushState();
+    if (now === 'default') {
+      // blokada zdjęta, ale zgody jeszcze nie ma – pokazujemy przycisk z okienkiem systemowym
+      push = now;
+      refreshPush();
+      return;
+    }
     if (now !== 'granted') {
-      if (now === 'denied') toast('Nadal zablokowane – sprawdź oba miejsca z instrukcji');
+      toast('Nadal zablokowane – sprawdź kroki z instrukcji');
       return;
     }
     push = now;
@@ -158,7 +165,7 @@ export async function showHome(user: User): Promise<void> {
 
   // Powrót z ustawień telefonu (aplikacja znika z ekranu) albo zmiana w okienku Chrome (strona cały czas widoczna)
   const silentRecheck = async () => {
-    if (push === 'denied' && (await pushState()) === 'granted') await recheck();
+    if (push === 'denied' && (await pushState()) !== 'denied') await recheck();
   };
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void silentRecheck();
