@@ -1,0 +1,303 @@
+# Aplikacja wyjazdowa dla grupy — specyfikacja (PWA)
+
+Wersja specyfikacji: 1.2 (28.10.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory).
+
+---
+
+## 1. Cel i założenia
+
+Własna aplikacja dla grupy wyjazdowej: lista wyjazdów, plan dni, informacje, checklisty i wspólne wydatki w jednym miejscu, dostępne offline na telefonach.
+
+- Grupa: do 10 osób, ok. 50% Android / 50% iPhone.
+- Główne treści (wyjazdy, plan, informacje) wprowadza Jacek (organizator). Uczestnicy dodają miejsca do listy życzeń i wydatki (v2).
+- Bilety na atrakcje i PDF-y NIE są w aplikacji (wysyłane innym kanałem).
+- Koszt utrzymania: docelowo zero.
+- Plan wyjazdu układa Claude poza aplikacją (z eksportu listy życzeń); aplikacja go importuje (JSON).
+
+---
+
+## 2. Technologia
+
+### Wybrane
+- **PWA**: HTML/CSS/JS, manifest (nazwa, ikona), service worker (offline, aktualizacje). Bez App Store i Google Play. Jeden kod: Android, iPhone, tablet, laptop.
+- **Firebase na planie Blaze** (karta + alert budżetowy; przy 10 osobach koszt ~0 zł): Auth (logowanie), Firestore z trwałym cache offline, FCM (powiadomienia), Hosting, Cloud Functions (wysyłka pushy, jednorazowe kody logowania). Region funkcji: `europe-central2` (Warszawa) — propozycja.
+- **Pogoda**: Open-Meteo (bez klucza) — v2.
+- **Słońce/Księżyc**: lokalnie biblioteką SunCalc (wschód/zachód, złota i niebieska godzina, faza Księżyca, noc astronomiczna) — offline, dowolna data.
+- **Kursy walut**: API NBP (tabela A) — v2.
+
+### Propozycja stosu (do potwierdzenia na starcie)
+- Vite + TypeScript, bez ciężkiego frameworka (ewentualnie Preact/Lit, jeśli UI urośnie).
+- `vite-plugin-pwa` (Workbox), `registerType: 'prompt'` → komunikat „Jest nowa wersja, odśwież”.
+- Firebase modular SDK v10+; Firestore `persistentLocalCache` + `persistentMultipleTabManager`.
+- Testy: Firebase Emulator Suite + `@firebase/rules-unit-testing` (reguły), Vitest (logika: strefy czasowe, kolizje, salda).
+
+### Odrzucone (nie wracać bez nowego powodu)
+Aplikacja natywna (99 USD/rok Apple, recenzje), gotowe aplikacje typu Wanderlog (nie pokrywają całości), no-code na arkuszu (brak prywatności per osoba, słaby offline), Supabase (usypia darmowe projekty), iframe z PWA wewnątrz innej aplikacji, GitHub Actions jako serwer pushy (opóźnienia, brak wyzwalania z aplikacji), logowanie mailem i hasłem (zastąpione jednorazowym kodem), wspólny format planu z FrameTrails J01 (inny cel i model czasu — patrz §9).
+
+### Środowiska
+- **Dwa projekty Firebase**, oba na planie Blaze (Functions są potrzebne w obu): testowy (dane testowe; dostęp Claude przez GitHub Actions) i produkcyjny (Claude nie ma dostępu).
+- **Adres produkcyjny: `klub.bakutis.pl`** (ustalone 28.10.2026). To stały adres aplikacji, nie tylko adres instalacji — logowanie, dane offline i zgoda na powiadomienia są przypisane do niego.
+- **Stały adres testowy: `klub2.bakutis.pl`** (ustalone 28.10.2026) zamiast kanałów podglądu — kanały mają zmienne adresy i wygasają, nie nadają się do instalacji na ekranie.
+- **Nazwa aplikacji: „Klub”** (pełna i krótka). Wersja testowa: „Klub TEST” (propozycja) + wyraźnie inna ikona (np. pasek „TEST”), żeby Jacek odróżniał dwie instalacje.
+- **GitHub**: jedno publiczne repozytorium `fwdpl/klub` (kod jawny, dane chronią reguły Firestore), aplikacja Claude GitHub App tylko do niego, ruleset na `main`: wymagany PR, blokada force push i usunięcia (merge wyłącznie przez Jacka), klucze Firebase w GitHub Secrets.
+- **Deploy**: PR → automatyczny deploy na projekt testowy; merge do `main` → deploy produkcyjny. Cofnięcie wersji: revert w Git / poprzednia wersja w Firebase Hosting.
+
+### Raz na stałe, przed pierwszą instalacją u grupy
+Adres (`klub.bakutis.pl` — ustalony), nazwa, ikona (512 px + wersja maskable), kolor tła ekranu startowego. Zmiana adresu wymaga ponownej instalacji u wszystkich; iOS nie odświeża nazwy, ikony ani ekranu startowego.
+
+---
+
+## 3. Dostęp, statusy i bezpieczeństwo
+
+### Zasady
+- Dostęp wyłącznie dla maili z listy prowadzonej przez Jacka. Brak samodzielnej rejestracji.
+- Indywidualne konta. Logowanie dopiero po instalacji, w aplikacji (na iOS pamięć Safari i aplikacji są rozdzielne).
+- Bez magic linków; ostrożnie z logowaniem Google (na iOS otwiera Safari).
+- Ukryty link ani wspólne hasło nie są zabezpieczeniem. Kod może być publiczny — dane chronią reguły Firestore sprawdzające użytkownika i jego status przy każdym odczycie.
+- Każda osoba ma status osobno dla każdego wyjazdu; status decyduje, co widzi.
+- Rezygnację osoby zatwierdzonej zmienia tylko Jacek; jej wydatki zostają w historii rozliczeń.
+- Widoczność uczestników (ustalone 28.10.2026, wariant C): zainteresowani i zatwierdzeni danego wyjazdu widzą imiona osób zainteresowanych i zatwierdzonych przy tym wyjeździe. Członkowie, którzy nie kliknęli „też tam chcę”, nie widzą listy.
+- Kto nie kliknął „też tam chcę”, nie dostaje powiadomień o danym wyjeździe. Dodatkowo globalny przełącznik „wycisz”.
+- Dane offline po odebraniu dostępu zostają na telefonie do następnej synchronizacji (ograniczenie, nie błąd).
+
+### Statusy
+
+| Status | Kto nadaje | Co widzi i może |
+|---|---|---|
+| Członek grupy | Jacek (mail na liście) | Lista wyjazdów: kierunek, orientacyjne daty, opis. Przycisk „też tam chcę”. |
+| Zainteresowany | Uczestnik sam (może wycofać) | Ogólny plan wyjazdu i koszty. Tylko ważne powiadomienia (koszty, termin decyzji). |
+| Zatwierdzony | Tylko Jacek, po potwierdzeniu poza aplikacją | Loty, hotele, plan dni, lista życzeń, wydatki, checklisty, potwierdzenia zmian. Wszystkie powiadomienia wyjazdu. |
+| Organizator | — | Wszystko + panel zarządzania. |
+
+### Wymóg projektowy: trzy warstwy danych
+Reguły Firestore działają na poziomie dokumentów, nie pól. Dane wyjazdu muszą być fizycznie rozdzielone:
+1. opis dla grupy (członkowie),
+2. ogólny plan i koszty (zainteresowani + zatwierdzeni),
+3. szczegóły (tylko zatwierdzeni).
+
+### Konta użytkowników
+- **Logowanie jednorazowym kodem** (ustalone 28.10.2026). Przepływ:
+  1. Jacek w panelu organizatora generuje kod dla osoby z listy i przekazuje go osobiście lub SMS-em.
+  2. Osoba w zainstalowanej aplikacji wpisuje mail i kod.
+  3. Cloud Function sprawdza kod i zwraca własny token Firebase (custom token); aplikacja loguje się nim i sesja zostaje na stałe.
+- Kod: jednorazowy, ważny ograniczony czas (propozycja 48 h), limit nieudanych prób, przechowywany wyłącznie jako skrót (hash) w kolekcji niedostępnej dla klienta. Nowy telefon lub wyczyszczone dane → Jacek generuje nowy kod.
+- Bez haseł i resetu hasła przez Safari. Konto Firebase Auth tworzy funkcja przy pierwszym użyciu kodu (lub Jacek z panelu).
+
+---
+
+## 4. Model danych (projekt — do dopracowania w pierwszej sesji)
+
+Wszystkie dokumenty planu mają pole `schemaVersion`. Schemat planu jest wspólny z FrameTrails (patrz §9) i trzymany w jednym module (`src/model/`).
+
+```
+users/{uid}                       # tylko organizator tworzy; użytkownik czyta swój, organizator wszystkie
+  email, displayName, role: 'organizer'|'member', active: bool
+  prefs: { theme: 'auto'|'light'|'dark', accent?: string, muted: bool }
+  fcmTokens: string[]             # każda instalacja ma własny token
+
+trips/{tripId}                    # WARSTWA 1 — każdy aktywny użytkownik
+  title, destination, approxDates, description, status: 'draft'|'open'|'closed'|'archived'
+  timezone (IANA), accentColor?, schemaVersion
+
+trips/{tripId}/members/{uid}      # status uczestnika
+  status: 'interested'|'approved'|'withdrawn', displayName, updatedAt
+  # odczyt: organizator + zainteresowani i zatwierdzeni tego wyjazdu (wariant C)
+  # użytkownik: create/delete własnego wpisu tylko jako 'interested'
+  # 'approved' / 'withdrawn' (po zatwierdzeniu): tylko organizator
+
+trips/{tripId}/overview/main      # WARSTWA 2 — interested + approved + organizer
+  planSummary, costEstimate, decisionDeadline?
+
+trips/{tripId}/info/main          # WARSTWA 3 — approved + organizer
+  flights[], hotels[], emergencyContacts[], insurance, countryCard{}
+trips/{tripId}/days/{date}        # WARSTWA 3 — approved + organizer (wszyscy zatwierdzeni widzą wszystkie plany: „gdzie jest reszta”)
+  date, baseLocation, weatherDependent?: 'beach'|'viewpoint'|'night-sky'
+  items: PlanItem[]
+trips/{tripId}/checklists/{uid}   # właściciel + organizator
+  items: { id, text, done }[]
+
+loginCodes/{codeId}               # tylko Cloud Functions (klient: brak dostępu)
+  email, codeHash, expiresAt, attempts, usedAt?
+
+# v2
+trips/{tripId}/wishlist/{placeId}
+trips/{tripId}/expenses/{expenseId}
+trips/{tripId}/changes/{changeId} + reads/{uid}
+```
+
+### PlanItem
+```
+id, type: 'activity'|'meal'|'transport'|'flight'|'checkin'|'meeting'|'free'
+title, start: 'YYYY-MM-DDTHH:mm', end?: 'YYYY-MM-DDTHH:mm', tz?: IANA   # brak tz = strefa wyjazdu
+endTz?: IANA                                                               # loty między strefami
+audience: 'all' | uid[]           # „dla kogo”
+pinnedToDate: bool                # loty, check-in, bilety na godzinę — nie przenoszą się przy zamianie dni
+place?: { name, address, lat, lng, placeId? }
+notes?
+```
+
+### Zasady modelu
+- Czas: zawsze czas lokalny miejsca + strefa IANA, nigdy UTC jako źródło prawdy. Telefon może być w innej strefie niż wyjazd.
+- Reguły nie są filtrami: każde zapytanie klienta musi być zgodne z regułami (np. nie odpytywać kolekcji, do której użytkownik ma dostęp tylko częściowo).
+- Kopia zapasowa: przycisk „eksport całego wyjazdu do JSON” w panelu organizatora (automatyczny eksport Firestore wymaga Blaze).
+
+---
+
+## 5. Funkcje
+
+### v1 (rdzeń)
+- **Logowanie**, lista dozwolonych maili, statusy per wyjazd, trzy warstwy danych.
+- **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka.
+- **Informacje o wyjeździe**: loty, hotele, kontakty awaryjne, ubezpieczenie. Offline.
+- **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem.
+- **Plan dni z planami indywidualnymi**: każdy punkt ma „dla kogo” (wszyscy / wybrane osoby / jedna osoba). Uczestnik widzi swoją oś czasu: punkty wspólne + swoje. Punkty wspólne wyróżnione, z adresem i nawigacją (link do Google Maps). Podgląd „gdzie jest reszta” (plany wszystkich obok siebie). Ostrzeżenie o kolizji punktu prywatnego ze wspólnym.
+- **Import planu z JSON** (schemat §4/§9) z walidacją i podglądem przed zapisem.
+- **Tryb offline**: przycisk „pobierz wszystko na wyjazd”, widoczna data ostatniej synchronizacji.
+- **Powiadomienia** (mechanizm wysyłki: patrz OTWARTE DECYZJE) + przycisk „Włącz powiadomienia”.
+- **Komunikat o nowej wersji** („Jest nowa wersja, odśwież”).
+- **Motyw jasny/ciemny**: Auto (za systemem) + ręczny wybór; zapis w `users/{uid}.prefs`; ustawiany przed renderem (bez błysku). Na iOS pasek statusu `black-translucent`.
+- **Układ telefonu** + **panel organizatora** (działający też na telefonie): wyjazdy, uczestnicy i statusy, konta, import planu, eksport kopii.
+- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza).
+
+### v2
+- **Wspólna lista życzeń**: miejsce istnieje raz (wyszukiwarka miejsc, unikalny identyfikator, bez duplikatów). Inni klikają „też chcę” z własnym priorytetem. Pola: link/miejsce, priorytet („muszę” / „fajnie by było”), preferowana pora, szacowany czas pobytu, ewentualna stała godzina. Eksport do JSON jednym przyciskiem.
+- **Wspólne wydatki**: kto płacił, kwota, waluta, podział (po równo / kwotami), kategorie. Salda i minimalna liczba przelewów. Przeliczenie na walutę bazową kursem NBP. Wpis offline wysyła się po odzyskaniu sieci. Oznaczanie przelewu jako wykonanego.
+- **Wpłaty na wyjazd**: zaliczki/raty za loty i hotele opłacone z góry przez Jacka.
+- **Potwierdzenia odczytu**: automatyczny zapis „zobaczył zmianę” przy każdej zmianie; przycisk „Przyjąłem” tylko przy zmianach „wymaga potwierdzenia”. Panel: kto zobaczył i kiedy, kto potwierdził, przypomnienie do brakujących. Grupa wie, że odczyty są widoczne. (Statystyki FCM są zbiorcze — odczyty logować w aplikacji.)
+- **Pogoda**: prognoza dla lokalizacji dnia (temperatura, opady, zachmurzenie godzinowe, wiatr) tylko 5–7 dni do przodu, z datą pobrania. Słońce/Księżyc z SunCalc bez ograniczenia dni.
+- **Zamiana dni**: podmiana treści dwóch dni razem z planami indywidualnymi. Punkty `pinnedToDate` zostają. Ostrzeżenie przy dniach w różnych bazach noclegowych. „Cofnij”. Po zamianie push z wymaganym potwierdzeniem.
+- **Dni zależne od pogody**: oznaczenie dnia; wieczorem alert tylko do Jacka, gdy prognoza na jutro jest zła, z propozycją zamiany.
+- **Układ tabletowy**: plan + mapa, plany uczestników w kolumnach, panel organizatora.
+- **Zestawy kolorów**: akcent per osoba lub kolor per wyjazd.
+- Wspólna lista „kto co bierze” + szablony checklist kopiowane z poprzedniego wyjazdu.
+- Przydział aut i pokoi (wykorzystuje „dla kogo”).
+- Głosowanie nad terminem na etapie „zainteresowany”.
+- Eksport listy życzeń i planu do KML/GPX.
+- Przycisk „dotarłem”.
+
+### Szybko po v1 (tanie, wysoka wartość)
+- Eksport osobistego planu do kalendarza (.ics) — kalendarz telefonu przypomina natywnie, w tle, z dźwiękiem.
+- Ekran „Dziś”: następny punkt, zbiórka z odliczaniem, adres hotelu, pogoda.
+- Karta kraju: waluta, napiwki, gniazdka, numer alarmowy, różnica czasu, wiza/ESTA.
+- Karta „pokaż kierowcy”: adres hotelu dużą czcionką, w lokalnym języku.
+
+### Później / opcjonalnie
+- Wysłanie lokalizacji: jednorazowy punkt GPS z pushem i linkiem do Google Maps; awaryjnie SMS z linkiem. Bez śledzenia na żywo.
+- Termin decyzji z przypomnieniem, limit miejsc z listą rezerwową.
+- Ostrzeżenia o godzinach otwarcia po zamianie dni.
+- Własne edycje planu przez uczestników.
+- Oceny miejsc po wizycie, podsumowanie wyjazdu + link do albumu Google Photos, archiwum i klonowanie wyjazdu.
+
+### Celowo NIE budować
+Czat (grupa ma komunikator; wystarczy tablica ogłoszeń organizatora), śledzenie na żywo, przechowywanie plików (biletów, zdjęć, paragonów), dane wrażliwe w profilach (numery paszportów, informacje zdrowotne).
+
+---
+
+## 6. Przepływ planowania wyjazdu
+1. Jacek dodaje wyjazd z kierunkiem i orientacyjnymi datami.
+2. Członkowie klikają „też tam chcę”; Jacek zatwierdza zdecydowanych.
+3. Zatwierdzeni dodają miejsca do listy życzeń lub dopisują się do istniejących (v2).
+4. Jacek eksportuje listy jednym przyciskiem do JSON.
+5. Claude (poza aplikacją) układa plan: grupuje punkty geograficznie, pilnuje godzin otwarcia i dni zamknięcia, wstawia punkty wspólne tam, gdzie wszyscy są blisko.
+6. Plan wraca do aplikacji importem; każdy widzi swój dzień.
+
+---
+
+## 7. Ograniczenia techniczne PWA (uwzględnić w projekcie i instrukcji dla grupy)
+- iOS wymaga dodania do ekranu głównego (Safari → Udostępnij → „Do ekranu początkowego”). Bez tego nie działają powiadomienia, a iOS może czyścić dane. Potrzebna instrukcja instalacji ze zrzutami ekranu.
+- Pushe na iOS: wymagany iOS 16.4+; zgoda tylko po geście użytkownika (przycisk „Włącz powiadomienia”).
+- Brak działania w tle: synchronizacja przy otwarciu; push zachęca do otwarcia aplikacji po zmianach.
+- Dźwięki: tylko systemowy dźwięk powiadomienia; brak przebicia trybu cichego; wzorzec wibracji tylko na Androidzie.
+- Firebase Storage może wymagać planu Blaze — dlatego brak plików w aplikacji.
+- Klucz Google Places (v2) będzie widoczny w kodzie: ograniczyć do domen aplikacji (produkcja, test, ewentualnie FrameTrails) i do Places API.
+- Ekran startowy jest systemowy i wspólny dla wszystkich: Android — ikona + `background_color` z manifestu (jeden kolor, bez wersji ciemnej); iOS — `apple-touch-startup-image` w wielu rozdzielczościach (możliwy wariant ciemny, generować narzędziem np. pwa-asset-generator). Spersonalizowane powitanie = własny ekran w aplikacji.
+- Cenniki i limity planów darmowych (Firebase, Google Places) zweryfikować przy starcie.
+
+---
+
+## 8. Powiadomienia — wymagają serwera
+FCM tylko dostarcza pushe; wysyłka wymaga klucza konta serwisowego, którego nie wolno trzymać w kliencie.
+
+**Decyzja (28.10.2026): Blaze z kartą + alert budżetowy.** Pushe wysyłają Cloud Functions wyzwalane zmianami w Firestore (natychmiast) oraz funkcje z harmonogramu (przypomnienia, alert pogodowy). Alert budżetowy tylko ostrzega, nie blokuje wydatków.
+Odrzucone: GitHub Actions jako serwer (aplikacja nie może go wyzwolić bez tokenu w kliencie; harmonogram co ≥5 min i niepunktualny).
+
+Typy pushy: zmiana planu (z/bez wymaganego potwierdzenia), nowe koszty/termin decyzji (zainteresowani), przypomnienia do niepotwierdzonych (v2), wieczorny alert pogodowy do Jacka (v2).
+
+---
+
+## 9. Integracja z FrameTrails (osobista aplikacja Jacka)
+- FrameTrails czyta dane grupy przez **drugie połączenie Firebase** (druga instancja aplikacji, konto organizatora). Własne dane FrameTrails zostają w jego osobnym projekcie.
+- Model danych planu definiowany w jednym miejscu (wspólny moduł), z numerem wersji schematu — zmiana tu nie może po cichu zepsuć FrameTrails.
+- **Format JSON planu: osobny** (ustalone 28.10.2026). J01 to szkielet trasy samochodowej (postoje ze współrzędnymi, odcinki, kontrole pogody, punkty decyzyjne, czas z offsetem), a plan grupowy to punkty programu z „dla kogo” i czasem lokalnym + strefą IANA. Wspólny format wiązałby oba kontrakty — kontrakt J01 zmienia się wyłącznie w projekcie FrameTrails.
+- Format grupowy dostaje te same zabezpieczenia co J01: plik schematu JSON (`schema.v1.json`), pole `format` i `version`, `revision` przy ponownym imporcie, walidację przed zapisem.
+- Jeśli FrameTrails ma czytać plan grupy: jednokierunkowy konwerter plan grupowy → J01, z testami.
+- Najpierw tylko odczyt w FrameTrails; zapis później. Ustalić, która aplikacja dostaje pushe grupowe (domyślnie jedna, bez duplikatów).
+- Moduł w FrameTrails: kandydat na v2. W v1 wystarczy wspólny, wersjonowany schemat.
+
+---
+
+## 10. Personalizacja wyglądu
+- v1: motyw Auto/Jasny/Ciemny, wszystkie kolory jako zmienne CSS, `theme-color` z `media` dla obu motywów.
+- **Motyw (ustalone 28.10.2026)**: domyślnie „Auto” (za ustawieniem telefonu), z ręcznym przełącznikiem Auto / Jasny / Ciemny.
+- **Kolory (ustalone 28.10.2026)** — wartości to propozycja do akceptacji na podglądzie w telefonie:
+  - **Ciemny**: szare tło jak w aplikacji Claude, białe litery, słoneczny żółty dla nagłówków. Tło `#262624`, karty `#30302E`, tekst `#FFFFFF`, tekst drugorzędny `#BFBDB6`, nagłówki/akcent `#FFC83D`.
+  - **Jasny**: białe tło, bez żółtego; nagłówki i akcent granatowe (navy). Tło `#FFFFFF`, karty `#F4F5F7`, tekst `#1A1A1A`, tekst drugorzędny `#5F6368`, nagłówki/akcent `#1F3A6B`.
+  - `theme-color` w manifeście i meta osobno dla obu motywów (`media="(prefers-color-scheme: …)"`).
+- Ikona i ekran startowy: Jacek dostarczy (ikona 512 px + wersja maskable).
+- v2: zestawy kolorów (akcent per osoba) i kolor per wyjazd; sprawdzić kontrast w obu motywach.
+
+---
+
+## 11. Zakres wersji i kolejność budowy
+1. **Bramka techniczna (pierwszy krok, zanim powstanie reszta)**: minimalna PWA — instalacja, logowanie, push — przetestowana na prawdziwym iPhonie i Androidzie. Jeśli coś nie działa: korekta założeń.
+2. **v1** według §5 (szacunek: 7–10 sesji po 2–3 h). Kolejność:
+   1. logowanie, `users`, statusy, warstwy, reguły + testy reguł,
+   2. lista wyjazdów, „też tam chcę”, zatwierdzanie, panel organizatora,
+   3. informacje o wyjeździe, checklisty,
+   4. plan dni, „dla kogo”, oś czasu, strefy czasowe, kolizje, import JSON,
+   5. offline, powiadomienia, komunikat o nowej wersji,
+   6. motyw, dopracowanie, instrukcja instalacji ze zrzutami.
+3. **v2** według §5 (szacunek: 6–8 sesji).
+
+### Harmonogram
+- Start pisania v1: **16.11.2026** (wcześniej, jeśli decyzje i tożsamość są gotowe).
+- Bramka techniczna: 9–13.11.
+- Jednorazowa konfiguracja (ok. 1 h): GitHub, dwa projekty Firebase (Blaze + alert budżetowy w obu), GitHub Actions, DNS (`klub.bakutis.pl`, `klub2.bakutis.pl`), token Claude Code, ochrona `main`.
+- Cel: v1 przetestowana przed **10.12.2026** (test offline w terenie).
+
+---
+
+## 12. Sposób pracy i uprawnienia
+1. Jacek opisuje zmianę.
+2. Claude pisze kod i wysyła go na gałąź w repozytorium GitHub (PR).
+3. GitHub Actions publikuje na stały adres testowy (projekt testowy Firebase).
+4. Jacek testuje na telefonie i tablecie.
+5. Jacek zatwierdza merge — dopiero wtedy wersja trafia do uczestników.
+
+Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; klucze Firebase w GitHub Secrets, używane tylko przez automat; ochrona `main`; dwa projekty Firebase (Claude bez dostępu do produkcji); Claude Code pyta o zgodę przed poleceniami w terminalu; pełna historia w Git, cofnięcie wersji jednym kliknięciem.
+
+---
+
+## 13. DECYZJE
+
+### Podjęte 28.10.2026
+- [x] Wysyłka pushy: **Blaze z kartą** + alert budżetowy (§8).
+- [x] Logowanie: **jednorazowy kod** przez Cloud Functions (§3).
+- [x] Widoczność: **wariant C** — zainteresowani i zatwierdzeni widzą imiona zainteresowanych i zatwierdzonych danego wyjazdu (§3).
+- [x] Format JSON planu: **osobny**, z własnym wersjonowanym schematem (§9).
+- [x] Adres produkcyjny: **`klub.bakutis.pl`** (§2).
+- [x] Adres testowy: **`klub2.bakutis.pl`** (§2).
+- [x] Nazwa: **„Klub”** (§2).
+- [x] Motyw: domyślnie za telefonem + przełącznik. Ciemny: szary/biały/żółty; jasny: biały/navy, bez żółtego (§10).
+
+### OTWARTE (Claude Code: pytaj, nie zakładaj)
+Blokujące v1:
+- [ ] Ikona (512 px + maskable) i ekran startowy — Jacek dostarczy.
+- [ ] Akceptacja wartości kolorów na podglądzie w telefonie (§10).
+- [ ] Nazwa wersji testowej: „Klub TEST” (propozycja).
+
+Do v2 (nie blokują):
+- [ ] Wyszukiwarka miejsc: Google Places (karta w Google Cloud) czy OpenStreetMap.
+- [ ] Waluta bazowa rozliczeń (domyślnie PLN).
+- [ ] Czy wprowadzać termin decyzji i limit miejsc.
+- [ ] Która aplikacja (PWA czy FrameTrails) dostaje pushe grupowe Jacka.
