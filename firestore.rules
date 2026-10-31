@@ -1,0 +1,49 @@
+rules_version = '2';
+
+// Bezpieczeństwo = te reguły. Każda zmiana modelu danych idzie razem ze zmianą reguł i testów (tests/rules).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isActive() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && me().active == true;
+    }
+
+    function isOrganizer() {
+      return isActive() && me().role == 'organizer';
+    }
+
+    // Konto tworzy wyłącznie funkcja serwerowa (logowanie kodem).
+    // Użytkownik czyta swój dokument i zmienia tylko tokeny powiadomień oraz preferencje.
+    match /users/{uid} {
+      allow read: if (isActive() && request.auth.uid == uid) || isOrganizer();
+      allow update: if isActive()
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmTokens', 'prefs'])
+        && request.resource.data.fcmTokens is list
+        && request.resource.data.fcmTokens.size() <= 20;
+      allow create, delete: if false;
+    }
+
+    // Kody logowania i licznik prób: tylko funkcje serwerowe (konto serwisowe omija reguły)
+    match /loginCodes/{id} {
+      allow read, write: if false;
+    }
+
+    match /loginAttempts/{id} {
+      allow read, write: if false;
+    }
+
+    // Wszystko inne zamknięte, dopóki nie powstanie model danych v1
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
