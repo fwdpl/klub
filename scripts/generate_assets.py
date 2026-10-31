@@ -32,25 +32,34 @@ def glyph_cropped() -> Image.Image:
     return mask.crop(mask.getbbox())
 
 
-def render_icon(size: int, glyph_ratio: float, test: bool) -> Image.Image:
-    """Pełny kwadrat (bez zaokrągleń – system przycina sam), znak wyśrodkowany."""
+def render_icon(size: int, glyph_ratio: float, test: bool, maskable: bool = False) -> Image.Image:
+    """Pełny kwadrat (bez zaokrągleń – system przycina sam), znak wyśrodkowany.
+
+    W wersji maskable Android przycina ikonę do własnego kształtu; bezpieczne jest koło o średnicy 80%,
+    więc pasek TEST leży wyżej, a pod nim zostaje tło.
+    """
     scale = 4
     big = size * scale
     img = Image.new("RGB", (big, big), ICON_BG)
     g = glyph_cropped()
-    band_h = int(big * 0.2) if test else 0
+    band_h = int(big * (0.15 if maskable else 0.2)) if test else 0
+    # dół paska: przy krawędzi w zwykłej ikonie, w strefie bezpiecznej w maskable
+    band_bottom = int(big * 0.80) if maskable else big
+    band_top = band_bottom - band_h
     # w wersji TEST znak mniejszy i nad paskiem
     target = int(big * glyph_ratio * (0.78 if test else 1))
     w, h = g.size
     k = target / max(w, h)
     g = g.resize((max(1, int(w * k)), max(1, int(h * k))), Image.LANCZOS)
     fg = Image.new("RGB", g.size, ICON_FG)
-    img.paste(fg, ((big - g.size[0]) // 2, (big - band_h - g.size[1]) // 2), g)
+    area_top = int(big * 0.18) if (test and maskable) else 0
+    area_bottom = band_top if test else big
+    img.paste(fg, ((big - g.size[0]) // 2, area_top + (area_bottom - area_top - g.size[1]) // 2), g)
     if test:
         draw = ImageDraw.Draw(img)
-        draw.rectangle((0, big - band_h, big, big), fill=TEST_BAND)
+        draw.rectangle((0, band_top, big, band_bottom), fill=TEST_BAND)
         font = ImageFont.truetype(FONT, int(band_h * 0.62))
-        draw.text((big // 2, big - band_h // 2), "TEST", fill=TEST_TEXT, font=font, anchor="mm")
+        draw.text((big // 2, band_top + band_h // 2), "TEST", fill=TEST_TEXT, font=font, anchor="mm")
     return img.resize((size, size), Image.LANCZOS)
 
 
@@ -63,8 +72,8 @@ def write_icons() -> None:
         render_icon(512, 0.80, test).save(d / "icon-512.png", optimize=True)
         render_icon(192, 0.80, test).save(d / "icon-192.png", optimize=True)
         # "maskable": znak w strefie bezpiecznej (koło 80% średnicy)
-        render_icon(512, 0.60, test).save(d / "maskable-512.png", optimize=True)
-        render_icon(192, 0.60, test).save(d / "maskable-192.png", optimize=True)
+        render_icon(512, 0.60, test, maskable=True).save(d / "maskable-512.png", optimize=True)
+        render_icon(192, 0.60, test, maskable=True).save(d / "maskable-192.png", optimize=True)
         # iOS: pełny kwadrat 180 px
         render_icon(180, 0.76, test).save(d / "apple-touch-icon.png", optimize=True)
         render_icon(48, 0.86, test).save(d / "favicon-48.png", optimize=True)

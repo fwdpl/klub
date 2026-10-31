@@ -130,7 +130,7 @@ export async function showHome(user: User): Promise<void> {
   const pushStatus = h('b', {}, PUSH_LABEL[push]);
   const pushError = h('p', { class: 'error', role: 'alert' });
   const enableBtn = h('button', { type: 'button', class: 'btn' }, 'Włącz powiadomienia');
-  const testBtn = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Wyślij testowe powiadomienie za 10 s');
+  const testBtn = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Wyślij testowe powiadomienie za 10\u00a0s');
 
   // Po zmianie zgody w ustawieniach rejestrujemy urządzenie bez dodatkowego klikania
   const recheck = async () => {

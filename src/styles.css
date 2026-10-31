@@ -144,8 +144,11 @@ button:disabled {
 .error {
   color: var(--danger);
   font-size: 15px;
-  min-height: 1.45em;
   margin: 4px 0 8px;
+}
+
+.error:empty {
+  display: none;
 }
 
 .status-list {

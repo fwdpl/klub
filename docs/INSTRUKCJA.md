@@ -47,14 +47,16 @@ Wpisz swój mail i kod od Jacka i stuknij **Zaloguj**.
 1. Stuknij **Włącz powiadomienia**.
 2. W okienku wybierz **Zezwalaj**.
 
-**Jeśli okienko się nie pojawiło albo powiadomienia są „zablokowane”**, sprawdź po kolei:
+**Jeśli wcześniej wybrałeś „Nie zezwalaj”:** przytrzymaj ikonę Klub → **Informacje o aplikacji** (ⓘ) → **Powiadomienia** → włącz. Po powrocie do aplikacji powiadomienia włączą się same albo stuknij **Sprawdź ponownie**.
+
+### Jeśli korzystasz z Klubu w Chrome, bez instalacji
+Instalacja jest zalecana, ale Klub działa też w karcie Chrome. Gdy powiadomienia są tam „zablokowane” albo okienko z pytaniem się nie pojawia, sprawdź po kolei:
 1. **Ustawienie strony w Chrome** (najczęstsza przyczyna): Chrome → **⋮** → **Ustawienia** → **Ustawienia witryn** → **Powiadomienia**:
    - przełącznik **Powiadomienia** na górze musi być włączony,
    - jeśli `klub.bakutis.pl` jest na liście **Zablokowane** – stuknij go i wybierz **Zezwalaj**.
 2. **Powiadomienia Chrome w telefonie:** Ustawienia telefonu → Aplikacje → Chrome → Powiadomienia → włączone.
-3. **Zainstalowana aplikacja:** przytrzymaj ikonę Klub → **Informacje o aplikacji** (ⓘ) → Powiadomienia → włączone.
 
-Po zmianie wróć do aplikacji – powiadomienia włączą się same albo stuknij **Sprawdź ponownie**.
+Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo stuknij **Sprawdź ponownie**.
 
 ---
 
