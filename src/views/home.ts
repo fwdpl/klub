@@ -90,7 +90,7 @@ function organizerCard(): HTMLElement {
  * Po odmowie przeglądarka nie pozwala zapytać ponownie, a strona nie może otworzyć ustawień telefonu.
  * Pokazujemy więc dokładną ścieżkę dla danego urządzenia.
  */
-function deniedHelp(): HTMLElement {
+function deniedHelp(recheck: () => void): HTMLElement {
   const app = isTestEnv ? 'Klub TEST' : 'Klub';
   let steps: string[];
   if (isIOS()) {
@@ -115,7 +115,8 @@ function deniedHelp(): HTMLElement {
     {},
     h('p', {}, 'Powiadomienia są zablokowane. Aplikacja nie może sama otworzyć ustawień, więc trzeba je włączyć ręcznie:'),
     h('ol', { class: 'steps' }, ...steps.map((s) => h('li', {}, s))),
-    h('p', { class: 'muted' }, 'Po powrocie do aplikacji powiadomienia włączą się same.'),
+    h('p', { class: 'muted' }, 'Po zmianie ustawień powiadomienia włączą się same. Jeśli nie – stuknij poniżej.'),
+    h('button', { type: 'button', class: 'btn btn--secondary', onclick: recheck }, 'Sprawdź ponownie'),
   );
 }
 
@@ -129,7 +130,24 @@ export async function showHome(user: User): Promise<void> {
   const enableBtn = h('button', { type: 'button', class: 'btn' }, 'Włącz powiadomienia');
   const testBtn = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Wyślij testowe powiadomienie za 10 s');
 
-  const help = deniedHelp();
+  // Po zmianie zgody w ustawieniach rejestrujemy urządzenie bez dodatkowego klikania
+  const recheck = async () => {
+    if (push !== 'denied') return;
+    const now = await pushState();
+    if (now !== 'granted') {
+      if (now === 'denied') toast('Nadal zablokowane – sprawdź oba miejsca z instrukcji');
+      return;
+    }
+    push = now;
+    refreshPush();
+    try {
+      await enablePush(user.uid);
+      toast('Powiadomienia włączone');
+    } catch (err) {
+      pushError.textContent = err instanceof Error ? err.message : 'Nie udało się włączyć powiadomień.';
+    }
+  };
+  const help = deniedHelp(() => void recheck());
 
   const refreshPush = () => {
     pushStatus.textContent = PUSH_LABEL[push];
@@ -138,20 +156,18 @@ export async function showHome(user: User): Promise<void> {
     help.hidden = push !== 'denied';
   };
 
-  // Powrót z ustawień telefonu: jeśli zgoda została włączona, rejestrujemy urządzenie bez dodatkowego klikania
-  document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState !== 'visible' || push !== 'denied') return;
-    const now = await pushState();
-    if (now !== 'granted') return;
-    try {
-      await enablePush(user.uid);
-      toast('Powiadomienia włączone');
-    } catch (err) {
-      pushError.textContent = err instanceof Error ? err.message : 'Nie udało się włączyć powiadomień.';
-    }
-    push = now;
-    refreshPush();
+  // Powrót z ustawień telefonu (aplikacja znika z ekranu) albo zmiana w okienku Chrome (strona cały czas widoczna)
+  const silentRecheck = async () => {
+    if (push === 'denied' && (await pushState()) === 'granted') await recheck();
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void silentRecheck();
   });
+  window.addEventListener('focus', () => void silentRecheck());
+  navigator.permissions
+    ?.query({ name: 'notifications' })
+    .then((status) => status.addEventListener('change', () => void silentRecheck()))
+    .catch(() => undefined);
 
   enableBtn.addEventListener('click', async () => {
     pushError.textContent = '';
