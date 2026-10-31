@@ -1,0 +1,154 @@
+import type { User } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, createLoginCode, db, sendTestPush } from '../firebase';
+import { appVersion, isTestEnv } from '../config';
+import { isStandalone } from '../platform';
+import { enablePush, pushState, type PushState } from '../push';
+import { getThemePref, setThemePref, type ThemePref } from '../theme';
+import { h, render, toast } from '../ui';
+
+const PUSH_LABEL: Record<PushState, string> = {
+  granted: 'włączone',
+  denied: 'zablokowane',
+  default: 'niewłączone',
+  unsupported: 'nieobsługiwane',
+};
+
+function themeSwitch(): HTMLElement {
+  const options: [ThemePref, string][] = [
+    ['auto', 'Auto'],
+    ['light', 'Jasny'],
+    ['dark', 'Ciemny'],
+  ];
+  const wrap = h('div', { class: 'segmented', role: 'group', 'aria-label': 'Motyw' });
+  const draw = () => {
+    const current = getThemePref();
+    wrap.replaceChildren(
+      ...options.map(([value, label]) =>
+        h(
+          'button',
+          {
+            type: 'button',
+            'aria-pressed': String(current === value),
+            onclick: () => {
+              setThemePref(value);
+              draw();
+            },
+          },
+          label,
+        ),
+      ),
+    );
+  };
+  draw();
+  return wrap;
+}
+
+function organizerCard(): HTMLElement {
+  const email = h('input', { type: 'email', autocomplete: 'off', inputmode: 'email' });
+  const result = h('div');
+  const error = h('p', { class: 'error', role: 'alert' });
+  const button = h('button', { type: 'submit', class: 'btn' }, 'Wygeneruj kod');
+  return h(
+    'form',
+    {
+      class: 'card',
+      onsubmit: async (e: Event) => {
+        e.preventDefault();
+        error.textContent = '';
+        result.replaceChildren();
+        button.disabled = true;
+        try {
+          const { data } = await createLoginCode({ email: email.value });
+          const until = new Date(data.expiresAt).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
+          result.replaceChildren(
+            h('p', { class: 'code' }, data.code),
+            h('p', { class: 'muted' }, `Kod działa raz, ważny do ${until}. Przekaż go osobiście lub SMS-em. Poprzednie niewykorzystane kody tej osoby przestały działać.`),
+            h(
+              'button',
+              { type: 'button', class: 'btn btn--secondary', onclick: () => navigator.clipboard?.writeText(data.code).then(() => toast('Skopiowano kod')) },
+              'Kopiuj kod',
+            ),
+          );
+        } catch {
+          error.textContent = navigator.onLine ? 'Nie udało się wygenerować kodu. Sprawdź mail.' : 'Brak połączenia z internetem.';
+        } finally {
+          button.disabled = false;
+        }
+      },
+    },
+    h('h2', {}, 'Kod logowania dla uczestnika'),
+    h('label', { class: 'field' }, h('span', {}, 'Mail uczestnika'), email),
+    error,
+    button,
+    result,
+  );
+}
+
+export async function showHome(user: User): Promise<void> {
+  const snap = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
+  const role = snap?.data()?.role === 'organizer' ? 'organizer' : 'member';
+  let push = await pushState();
+
+  const pushStatus = h('b', {}, PUSH_LABEL[push]);
+  const pushError = h('p', { class: 'error', role: 'alert' });
+  const enableBtn = h('button', { type: 'button', class: 'btn' }, 'Włącz powiadomienia');
+  const testBtn = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Wyślij testowe powiadomienie');
+
+  const refreshPush = () => {
+    pushStatus.textContent = PUSH_LABEL[push];
+    enableBtn.hidden = push === 'granted' || push === 'unsupported';
+    testBtn.hidden = push !== 'granted';
+  };
+
+  enableBtn.addEventListener('click', async () => {
+    pushError.textContent = '';
+    enableBtn.disabled = true;
+    try {
+      await enablePush(user.uid);
+      toast('Powiadomienia włączone');
+    } catch (err) {
+      pushError.textContent = err instanceof Error ? err.message : 'Nie udało się włączyć powiadomień.';
+    }
+    push = await pushState();
+    enableBtn.disabled = false;
+    refreshPush();
+  });
+
+  testBtn.addEventListener('click', async () => {
+    pushError.textContent = '';
+    testBtn.disabled = true;
+    try {
+      const { data } = await sendTestPush();
+      toast(data.sent > 0 ? 'Wysłano – zamknij aplikację, żeby zobaczyć powiadomienie systemowe' : 'Brak urządzeń do wysłania');
+    } catch {
+      pushError.textContent = 'Nie udało się wysłać powiadomienia.';
+    } finally {
+      testBtn.disabled = false;
+    }
+  });
+
+  refreshPush();
+
+  render(
+    h('h1', {}, isTestEnv ? 'Klub TEST' : 'Klub'),
+    h(
+      'div',
+      { class: 'card' },
+      h(
+        'ul',
+        { class: 'status-list' },
+        h('li', {}, 'Zalogowano', h('b', {}, user.email ?? '—')),
+        h('li', {}, 'Rola', h('b', {}, role === 'organizer' ? 'organizator' : 'uczestnik')),
+        h('li', {}, 'Tryb', h('b', {}, isStandalone() ? 'zainstalowana' : 'przeglądarka')),
+        h('li', {}, 'Powiadomienia', pushStatus),
+        h('li', {}, 'Wersja', h('b', {}, appVersion)),
+      ),
+    ),
+    h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, enableBtn, testBtn),
+    ...(role === 'organizer' ? [organizerCard()] : []),
+    h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch()),
+    h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => signOut(auth) }, 'Wyloguj'),
+  );
+}

@@ -1,6 +1,6 @@
 # Aplikacja wyjazdowa dla grupy — specyfikacja (PWA)
 
-Wersja specyfikacji: 1.2 (28.10.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory).
+Wersja specyfikacji: 1.3 (31.10.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy).
 
 ---
 
@@ -20,7 +20,7 @@ Własna aplikacja dla grupy wyjazdowej: lista wyjazdów, plan dni, informacje, c
 
 ### Wybrane
 - **PWA**: HTML/CSS/JS, manifest (nazwa, ikona), service worker (offline, aktualizacje). Bez App Store i Google Play. Jeden kod: Android, iPhone, tablet, laptop.
-- **Firebase na planie Blaze** (karta + alert budżetowy; przy 10 osobach koszt ~0 zł): Auth (logowanie), Firestore z trwałym cache offline, FCM (powiadomienia), Hosting, Cloud Functions (wysyłka pushy, jednorazowe kody logowania). Region funkcji: `europe-central2` (Warszawa) — propozycja.
+- **Firebase na planie Blaze** (karta + alert budżetowy; przy 10 osobach koszt ~0 zł): Auth (logowanie), Firestore z trwałym cache offline, FCM (powiadomienia), Hosting, Cloud Functions (wysyłka pushy, jednorazowe kody logowania). Region funkcji i bazy: `europe-central2` (Warszawa).
 - **Pogoda**: Open-Meteo (bez klucza) — v2.
 - **Słońce/Księżyc**: lokalnie biblioteką SunCalc (wschód/zachód, złota i niebieska godzina, faza Księżyca, noc astronomiczna) — offline, dowolna data.
 - **Kursy walut**: API NBP (tabela A) — v2.
@@ -35,12 +35,16 @@ Własna aplikacja dla grupy wyjazdowej: lista wyjazdów, plan dni, informacje, c
 Aplikacja natywna (99 USD/rok Apple, recenzje), gotowe aplikacje typu Wanderlog (nie pokrywają całości), no-code na arkuszu (brak prywatności per osoba, słaby offline), Supabase (usypia darmowe projekty), iframe z PWA wewnątrz innej aplikacji, GitHub Actions jako serwer pushy (opóźnienia, brak wyzwalania z aplikacji), logowanie mailem i hasłem (zastąpione jednorazowym kodem), wspólny format planu z FrameTrails J01 (inny cel i model czasu — patrz §9).
 
 ### Środowiska
-- **Dwa projekty Firebase**, oba na planie Blaze (Functions są potrzebne w obu): testowy (dane testowe; dostęp Claude przez GitHub Actions) i produkcyjny (Claude nie ma dostępu).
+- **Dwa projekty Firebase**, oba na planie Blaze (Functions są potrzebne w obu), wspólne konto rozliczeniowe, osobne alerty budżetowe:
+  - testowy `klub-test-bakutis` — dane testowe; dostęp Claude wyłącznie przez GitHub Actions (konto serwisowe `github-deploy`, klucz w sekrecie `FIREBASE_SERVICE_ACCOUNT_TEST`); Firestore bez kopii zapasowych,
+  - produkcyjny `klub-bakutis` — Claude nie ma dostępu; Firestore w `europe-central2` z codzienną kopią zapasową (Scheduled backups → Daily).
+- Okres próbny Google Cloud (300 USD / 90 dni): przed końcem stycznia 2027 aktywować pełne konto rozliczeniowe („Activate full account”), inaczej usługi mogą stanąć.
 - **Adres produkcyjny: `klub.bakutis.pl`** (ustalone 28.10.2026). To stały adres aplikacji, nie tylko adres instalacji — logowanie, dane offline i zgoda na powiadomienia są przypisane do niego.
 - **Stały adres testowy: `klub2.bakutis.pl`** (ustalone 28.10.2026) zamiast kanałów podglądu — kanały mają zmienne adresy i wygasają, nie nadają się do instalacji na ekranie.
-- **Nazwa aplikacji: „Klub”** (pełna i krótka). Wersja testowa: „Klub TEST” (propozycja) + wyraźnie inna ikona (np. pasek „TEST”), żeby Jacek odróżniał dwie instalacje.
+- **Nazwa aplikacji: „Klub”** (pełna i krótka). Wersja testowa: „Klub TEST” + ikona z żółtym paskiem „TEST”, żeby Jacek odróżniał dwie instalacje.
 - **GitHub**: jedno publiczne repozytorium `fwdpl/klub` (kod jawny, dane chronią reguły Firestore), aplikacja Claude GitHub App tylko do niego, ruleset na `main`: wymagany PR, blokada force push i usunięcia (merge wyłącznie przez Jacka), klucze Firebase w GitHub Secrets.
-- **Deploy**: PR → automatyczny deploy na projekt testowy; merge do `main` → deploy produkcyjny. Cofnięcie wersji: revert w Git / poprzednia wersja w Firebase Hosting.
+- **Deploy**: PR → testy (logika, reguły w emulatorze, logowanie kodem w emulatorach) i automatyczny deploy na projekt testowy (`.github/workflows/test-deploy.yml`); merge do `main` → deploy produkcyjny (workflow powstanie przed startem produkcji).
+- Repozytorium jest publiczne, więc logi GitHub Actions też: nigdy nie wypisywać sekretów, kodów logowania ani tokenów. Cofnięcie wersji: revert w Git / poprzednia wersja w Firebase Hosting.
 
 ### Raz na stałe, przed pierwszą instalacją u grupy
 Adres (`klub.bakutis.pl` — ustalony), nazwa, ikona (512 px + wersja maskable), kolor tła ekranu startowego. Zmiana adresu wymaga ponownej instalacji u wszystkich; iOS nie odświeża nazwy, ikony ani ekranu startowego.
@@ -81,7 +85,10 @@ Reguły Firestore działają na poziomie dokumentów, nie pól. Dane wyjazdu mus
   2. Osoba w zainstalowanej aplikacji wpisuje mail i kod.
   3. Cloud Function sprawdza kod i zwraca własny token Firebase (custom token); aplikacja loguje się nim i sesja zostaje na stałe.
 - Kod: jednorazowy, ważny ograniczony czas (propozycja 48 h), limit nieudanych prób, przechowywany wyłącznie jako skrót (hash) w kolekcji niedostępnej dla klienta. Nowy telefon lub wyczyszczone dane → Jacek generuje nowy kod.
-- Bez haseł i resetu hasła przez Safari. Konto Firebase Auth tworzy funkcja przy pierwszym użyciu kodu (lub Jacek z panelu).
+- Szczegóły (od 31.10.2026): kod 8 znaków bez mylących znaków (0/O, 1/I/L), pokazywany jako `XXXX-XXXX`; wielkość liter, spacje i myślniki nie mają znaczenia; ważny 48 h; wygenerowanie nowego kodu unieważnia poprzednie niewykorzystane kody tej osoby; 5 nieudanych prób dla maila → blokada na 15 min.
+- Bez haseł i resetu hasła przez Safari. Konto Firebase Auth i dokument `users/{uid}` tworzy funkcja przy pierwszym użyciu kodu.
+- **Mail organizatora** jest wyłącznie w sekrecie GitHub `ORGANIZER_EMAIL` (nie w repozytorium — repo jest publiczne). Automat zapisuje go przy wdrożeniu do `functions/.env.<projectId>` (plik ignorowany przez Git). Rolę `organizer` dostaje konto z tym mailem przy pierwszym logowaniu; pozostali `member`. Zmiana sekretu nie zmienia ról istniejących kont — przeniesienie roli trzeba zrobić osobno. Emulator i testy używają `organizator@example.com` (`functions/.env.demo-klub`).
+- **Pierwsze logowanie i awaryjne wejście organizatora**: Jacek w konsoli Firebase (Firestore → `loginCodes` → dodaj dokument) wpisuje pola `email` i `code` (dowolny wymyślony kod). Funkcja przyjmuje go raz i usuwa dokument. Do bazy przez konsolę pisze tylko właściciel projektu.
 
 ---
 
@@ -117,7 +124,11 @@ trips/{tripId}/checklists/{uid}   # właściciel + organizator
   items: { id, text, done }[]
 
 loginCodes/{codeId}               # tylko Cloud Functions (klient: brak dostępu)
-  email, codeHash, expiresAt, attempts, usedAt?
+  # wygenerowany w panelu:
+  email (znormalizowany), codeHash, salt, expiresAt, usedAt?, createdBy, createdAt
+  # wpisany ręcznie w konsoli (pierwsze logowanie / awaryjne): usuwany po użyciu
+  email, code
+loginAttempts/{sha256(email)}     # tylko Cloud Functions: failures, lockedUntilMs?
 
 # v2
 trips/{tripId}/wishlist/{placeId}
@@ -139,7 +150,7 @@ notes?
 ### Zasady modelu
 - Czas: zawsze czas lokalny miejsca + strefa IANA, nigdy UTC jako źródło prawdy. Telefon może być w innej strefie niż wyjazd.
 - Reguły nie są filtrami: każde zapytanie klienta musi być zgodne z regułami (np. nie odpytywać kolekcji, do której użytkownik ma dostęp tylko częściowo).
-- Kopia zapasowa: przycisk „eksport całego wyjazdu do JSON” w panelu organizatora (automatyczny eksport Firestore wymaga Blaze).
+- Kopia zapasowa: codzienne kopie Firestore w produkcji (Blaze, ustawiane przy tworzeniu bazy) + przycisk „eksport całego wyjazdu do JSON” w panelu organizatora jako kopia do trzymania u siebie.
 
 ---
 
@@ -243,7 +254,9 @@ Typy pushy: zmiana planu (z/bez wymaganego potwierdzenia), nowe koszty/termin de
   - **Ciemny**: szare tło jak w aplikacji Claude, białe litery, słoneczny żółty dla nagłówków. Tło `#262624`, karty `#30302E`, tekst `#FFFFFF`, tekst drugorzędny `#BFBDB6`, nagłówki/akcent `#FFC83D`.
   - **Jasny**: białe tło, bez żółtego; nagłówki i akcent granatowe (navy). Tło `#FFFFFF`, karty `#F4F5F7`, tekst `#1A1A1A`, tekst drugorzędny `#5F6368`, nagłówki/akcent `#1F3A6B`.
   - `theme-color` w manifeście i meta osobno dla obu motywów (`media="(prefers-color-scheme: …)"`).
-- Ikona i ekran startowy: Jacek dostarczy (ikona 512 px + wersja maskable).
+- **Ikona (31.10.2026)**: wariant 05 — kremowy glob ze strzałką (`#F4ECDA`) na morskim tle (`#063945`). Wersje generuje `scripts/generate_assets.py` z `assets-src/` (512/192, maskable, apple-touch-icon, favicon; wariant TEST z żółtym paskiem).
+- **Ekran startowy (31.10.2026)**: nocne niebo z Drogą Mleczną i terenówką. iOS: `apple-touch-startup-image` dla 11 rozdzielczości iPhone'ów; Android: ikona na tle `#0B0B14` (kolor nieba). W aplikacji ten sam obraz jako ekran powitalny z animowanym paskiem postępu (pasek wtopiony w oryginał został usunięty).
+- Obecne pliki pochodzą ze zrzutów o niskiej rozdzielczości (ikona ok. 300 px, ekran 863×1823) — do podmiany na oryginały w pełnej rozdzielczości.
 - v2: zestawy kolorów (akcent per osoba) i kolor per wyjazd; sprawdzić kontrast w obu motywach.
 
 ---
@@ -290,11 +303,18 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 - [x] Nazwa: **„Klub”** (§2).
 - [x] Motyw: domyślnie za telefonem + przełącznik. Ciemny: szary/biały/żółty; jasny: biały/navy, bez żółtego (§10).
 
+### Podjęte 31.10.2026
+- [x] Mail organizatora: w sekrecie GitHub `ORGANIZER_EMAIL`, poza repozytorium (§3).
+- [x] Pierwsze logowanie: kod wpisany ręcznie w konsoli Firebase, jednorazowy (§3).
+- [x] Repozytorium publiczne `fwdpl/klub` z rulesetem na `main` (§2).
+- [x] Projekty: `klub-test-bakutis`, `klub-bakutis` (§2).
+- [x] Ikona: wariant 05; ekran startowy: nocne niebo z terenówką (§10).
+- [x] Nazwa wersji testowej: „Klub TEST”.
+
 ### OTWARTE (Claude Code: pytaj, nie zakładaj)
 Blokujące v1:
-- [ ] Ikona (512 px + maskable) i ekran startowy — Jacek dostarczy.
+- [ ] Oryginały ikony i ekranu startowego w pełnej rozdzielczości (obecne wersje są tymczasowe, §10).
 - [ ] Akceptacja wartości kolorów na podglądzie w telefonie (§10).
-- [ ] Nazwa wersji testowej: „Klub TEST” (propozycja).
 
 Do v2 (nie blokują):
 - [ ] Wyszukiwarka miejsc: Google Places (karta w Google Cloud) czy OpenStreetMap.
