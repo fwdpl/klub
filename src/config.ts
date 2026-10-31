@@ -29,4 +29,5 @@ export const firebaseConfig: FirebaseOptions = isProd ? required<FirebaseOptions
 export const vapidKey: string = isProd ? required<string>(PROD_VAPID, 'vapidKey') : TEST_VAPID;
 export const functionsRegion = 'europe-central2';
 export const appVersion: string = __APP_VERSION__;
+export const buildId: string = __BUILD_ID__;
 export const isTestEnv = !isProd;

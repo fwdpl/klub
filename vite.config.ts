@@ -12,6 +12,8 @@ export default defineConfig(({ mode }) => {
   return {
     define: {
       __APP_VERSION__: JSON.stringify(pkg.version),
+      // Oznaczenie wdrożenia (skrót commita w GitHub Actions), żeby na telefonie było widać, która wersja jest wczytana
+      __BUILD_ID__: JSON.stringify((process.env.BUILD_ID ?? process.env.GITHUB_SHA)?.slice(0, 7) ?? 'lokalna'),
     },
     plugins: [
       VitePWA({

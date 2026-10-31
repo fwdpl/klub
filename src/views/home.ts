@@ -2,7 +2,7 @@ import type { User } from 'firebase/auth';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, createLoginCode, db, sendTestPush } from '../firebase';
-import { appVersion, isTestEnv } from '../config';
+import { appVersion, buildId, isTestEnv } from '../config';
 import { isAndroid, isIOS, isStandalone } from '../platform';
 import { enablePush, pushState, type PushState } from '../push';
 import { getThemePref, setThemePref, type ThemePref } from '../theme';
@@ -219,7 +219,7 @@ export async function showHome(user: User): Promise<void> {
         h('li', {}, 'Rola', h('b', {}, role === 'organizer' ? 'organizator' : 'uczestnik')),
         h('li', {}, 'Tryb', h('b', {}, isStandalone() ? 'zainstalowana' : 'przeglądarka')),
         h('li', {}, 'Powiadomienia', pushStatus),
-        h('li', {}, 'Wersja', h('b', {}, appVersion)),
+        h('li', {}, 'Wersja', h('b', {}, `${appVersion} (${buildId})`)),
       ),
     ),
     installCard(),
