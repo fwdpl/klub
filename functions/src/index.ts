@@ -55,7 +55,8 @@ async function requireOrganizer(request: CallableRequest): Promise<string> {
 export const redeemLoginCode = onCall(async (request) => {
   const email = normalizeEmail(request.data?.email);
   const code = normalizeCode(request.data?.code);
-  if (!email || !code) throw new HttpsError('invalid-argument', 'Brak maila lub kodu.');
+  if (!email) throw new HttpsError('invalid-argument', 'Nieprawidłowy mail.', { field: 'email' });
+  if (!code) throw new HttpsError('invalid-argument', 'Kod za krótki.', { field: 'code' });
 
   const now = Date.now();
   const attemptsRef = db.doc(`loginAttempts/${emailKey(email)}`);

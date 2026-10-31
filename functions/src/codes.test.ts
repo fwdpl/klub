@@ -25,8 +25,9 @@ describe('normalizacja', () => {
 
   it('kod: wielkie litery, bez myślników i spacji', () => {
     expect(normalizeCode('abcd-efgh')).toBe('ABCDEFGH');
-    expect(normalizeCode(' ab cd ')).toBe('ABCD');
-    expect(normalizeCode('ab')).toBeNull();
+    expect(normalizeCode(' ab cd ef ')).toBe('ABCDEF');
+    expect(normalizeCode('736')).toBeNull();
+    expect(normalizeCode('ab-cd')).toBeNull();
   });
 });
 
@@ -66,7 +67,7 @@ describe('dopasowanie kodu', () => {
   });
 
   it('odrzuca wpis bez kodu', () => {
-    expect(codeMatches({ email: 'a@b.pl' }, 'ABCD', NOW)).toBe(false);
+    expect(codeMatches({ email: 'a@b.pl' }, 'ABCDEF', NOW)).toBe(false);
   });
 });
 

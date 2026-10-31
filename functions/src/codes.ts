@@ -3,6 +3,8 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto
 // Bez znaków łatwych do pomylenia (0/O, 1/I/L)
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 export const CODE_LENGTH = 8;
+// Kody wpisywane ręcznie w konsoli też muszą mieć co najmniej tyle znaków (krótkie łatwo odgadnąć)
+export const MIN_CODE_LENGTH = 6;
 export const CODE_TTL_MS = 48 * 60 * 60 * 1000;
 export const MAX_FAILURES = 5;
 export const LOCK_MS = 15 * 60 * 1000;
@@ -17,7 +19,7 @@ export function normalizeEmail(email: unknown): string | null {
 export function normalizeCode(code: unknown): string | null {
   if (typeof code !== 'string') return null;
   const c = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  return c.length >= 4 && c.length <= 64 ? c : null;
+  return c.length >= MIN_CODE_LENGTH && c.length <= 64 ? c : null;
 }
 
 export function generateCode(): string {

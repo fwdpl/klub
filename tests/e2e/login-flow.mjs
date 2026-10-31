@@ -34,7 +34,10 @@ await fetch(`${FS}/loginCodes?documentId=boot`, {
   body: JSON.stringify({ fields: { email: { stringValue: 'Organizator@Example.com' }, code: { stringValue: 'start-2026' } } }),
 });
 
-let r = await call('redeemLoginCode', { email: 'organizator@example.com', code: 'START 2026' });
+let r = await call('redeemLoginCode', { email: 'organizator@example.com', code: '736' });
+ok(r.error?.status === 'INVALID_ARGUMENT' && r.error?.details?.field === 'code', 'za krótki kod: czytelny błąd zamiast „zły kod”');
+
+r = await call('redeemLoginCode', { email: 'organizator@example.com', code: 'START 2026' });
 ok(r.result?.token, 'organizator loguje się kodem startowym (inna wielkość liter i spacje) ' + (r.error ? JSON.stringify(r.error) : ''));
 const orgId = await signIn(r.result?.token);
 r = await call('redeemLoginCode', { email: 'organizator@example.com', code: 'start-2026' });

@@ -8,7 +8,10 @@ function messageFor(error: unknown): string {
   const code = (error as { code?: string }).code ?? '';
   if (code.endsWith('resource-exhausted')) return 'Za dużo prób. Spróbuj ponownie za 15 minut.';
   if (code.endsWith('permission-denied') || code.endsWith('not-found')) return 'Nieprawidłowy mail lub kod.';
-  if (code.endsWith('invalid-argument')) return 'Wpisz mail i kod.';
+  if (code.endsWith('invalid-argument')) {
+    const field = (error as { details?: { field?: string } }).details?.field;
+    return field === 'code' ? 'Kod musi mieć co najmniej 6 znaków.' : 'Sprawdź adres mailowy.';
+  }
   if (!navigator.onLine || code.endsWith('unavailable')) return 'Brak połączenia z internetem.';
   return 'Nie udało się zalogować. Spróbuj ponownie.';
 }
