@@ -6,6 +6,7 @@ import { appVersion, isTestEnv } from '../config';
 import { isAndroid, isIOS, isStandalone } from '../platform';
 import { enablePush, pushState, type PushState } from '../push';
 import { getThemePref, setThemePref, type ThemePref } from '../theme';
+import { installCard } from '../install';
 import { h, render, toast } from '../ui';
 
 const PUSH_LABEL: Record<PushState, string> = {
@@ -221,6 +222,7 @@ export async function showHome(user: User): Promise<void> {
         h('li', {}, 'Wersja', h('b', {}, appVersion)),
       ),
     ),
+    installCard(),
     h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn),
     ...(role === 'organizer' ? [organizerCard()] : []),
     h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch()),

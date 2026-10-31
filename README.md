@@ -1,6 +1,6 @@
 # Klub
 
-Aplikacja wyjazdowa dla grupy (PWA). Specyfikacja: [`docs/SPEC.md`](docs/SPEC.md). Zasady pracy: [`CLAUDE.md`](CLAUDE.md).
+Aplikacja wyjazdowa dla grupy (PWA). Specyfikacja: [`docs/SPEC.md`](docs/SPEC.md). Zasady pracy: [`CLAUDE.md`](CLAUDE.md). Instrukcja dla uczestników: [`docs/INSTRUKCJA.md`](docs/INSTRUKCJA.md).
 
 ## Polecenia
 

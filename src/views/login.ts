@@ -1,8 +1,7 @@
 import { signInWithCustomToken } from 'firebase/auth';
 import { auth, redeemLoginCode } from '../firebase';
+import { installCard } from '../install';
 import { h, render } from '../ui';
-
-type InstallPrompt = Event & { prompt: () => Promise<void> };
 
 function messageFor(error: unknown): string {
   const code = (error as { code?: string }).code ?? '';
@@ -16,7 +15,7 @@ function messageFor(error: unknown): string {
   return 'Nie udało się zalogować. Spróbuj ponownie.';
 }
 
-export function showLogin(installPrompt: InstallPrompt | null): void {
+export function showLogin(): void {
   const email = h('input', { type: 'email', name: 'email', autocomplete: 'email', inputmode: 'email', required: true });
   const code = h('input', {
     type: 'text',
@@ -57,14 +56,5 @@ export function showLogin(installPrompt: InstallPrompt | null): void {
     submit,
   );
 
-  const install =
-    installPrompt &&
-    h(
-      'div',
-      { class: 'card' },
-      h('p', {}, 'Zainstaluj Klub na ekranie głównym – będzie działać jak zwykła aplikacja, także bez internetu.'),
-      h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => installPrompt.prompt() }, 'Zainstaluj aplikację'),
-    );
-
-  render(h('h1', {}, 'Klub'), form, ...(install ? [install] : []));
+  render(h('h1', {}, 'Klub'), form, installCard());
 }
