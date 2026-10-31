@@ -66,5 +66,5 @@ for (let i = 0; i < 5; i++) await call('redeemLoginCode', { email: 'ola@example.
 r = await call('redeemLoginCode', { email: 'ola@example.com', code: 'ZLYKOD9' });
 ok(r.error?.status === 'RESOURCE_EXHAUSTED', 'blokada po 5 nieudanych próbach');
 
-r = await call('sendTestPush', null, aniaId);
+r = await call('sendTestPush', { delaySec: 10 }, aniaId);
 ok(r.result?.sent === 0, 'testowy push bez urządzeń zwraca 0 ' + (r.error ? JSON.stringify(r.error) : ''));

@@ -94,7 +94,7 @@ export async function showHome(user: User): Promise<void> {
   const pushStatus = h('b', {}, PUSH_LABEL[push]);
   const pushError = h('p', { class: 'error', role: 'alert' });
   const enableBtn = h('button', { type: 'button', class: 'btn' }, 'Włącz powiadomienia');
-  const testBtn = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Wyślij testowe powiadomienie');
+  const testBtn = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Wyślij testowe powiadomienie za 10 s');
 
   const refreshPush = () => {
     pushStatus.textContent = PUSH_LABEL[push];
@@ -119,9 +119,10 @@ export async function showHome(user: User): Promise<void> {
   testBtn.addEventListener('click', async () => {
     pushError.textContent = '';
     testBtn.disabled = true;
+    toast('Za 10 s przyjdzie powiadomienie. Wyjdź teraz do ekranu głównego, żeby zobaczyć je jako systemowe.');
     try {
-      const { data } = await sendTestPush();
-      toast(data.sent > 0 ? 'Wysłano – zamknij aplikację, żeby zobaczyć powiadomienie systemowe' : 'Brak urządzeń do wysłania');
+      const { data } = await sendTestPush({ delaySec: 10 });
+      if (data.sent === 0) toast('Brak urządzeń do wysłania – włącz najpierw powiadomienia');
     } catch {
       pushError.textContent = 'Nie udało się wysłać powiadomienia.';
     } finally {

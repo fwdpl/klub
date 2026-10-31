@@ -20,4 +20,8 @@ export const createLoginCode = httpsCallable<{ email: string }, { code: string; 
   functions,
   'createLoginCode',
 );
-export const sendTestPush = httpsCallable<void, { sent: number; failed: number }>(functions, 'sendTestPush');
+export const sendTestPush = httpsCallable<{ delaySec: number }, { sent: number; failed: number }>(
+  functions,
+  'sendTestPush',
+  { timeout: 60_000 },
+);

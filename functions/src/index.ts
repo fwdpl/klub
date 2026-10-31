@@ -26,6 +26,7 @@ initializeApp();
 setGlobalOptions({ region: 'europe-central2', maxInstances: 5 });
 
 const ORGANIZER_EMAIL = defineString('ORGANIZER_EMAIL');
+const TEST_PUSH_MAX_DELAY_SEC = 15;
 const db = getFirestore();
 
 // Logi repozytorium i projektu mogą być publiczne: nigdy nie logujemy kodów ani tokenów.
@@ -149,6 +150,10 @@ export const sendTestPush = onCall(async (request) => {
   const userRef = db.doc(`users/${uid}`);
   const tokens: string[] = (await userRef.get()).get('fcmTokens') ?? [];
   if (tokens.length === 0) return { sent: 0, failed: 0 };
+
+  // Opóźnienie, żeby zdążyć wyjść z aplikacji i zobaczyć powiadomienie systemowe
+  const delaySec = Math.min(Math.max(Number(request.data?.delaySec) || 0, 0), TEST_PUSH_MAX_DELAY_SEC);
+  if (delaySec > 0) await new Promise((resolve) => setTimeout(resolve, delaySec * 1000));
 
   const response = await getMessaging().sendEachForMulticast({
     tokens,
