@@ -22,6 +22,7 @@ Pełna specyfikacja: `docs/SPEC.md`. Przeczytaj ją przed pierwszą zmianą w se
 - Mobile-first (sprawdzaj przy szerokości 375 px), potem tablet.
 - Offline-first: każdy ekran v1 musi działać bez sieci po synchronizacji.
 - Bez sekretów w repozytorium. Konfiguracja webowa Firebase jest jawna; klucze kont serwisowych tylko w GitHub Secrets.
+- Repozytorium i logi GitHub Actions są publiczne: nigdy nie wypisuj w logach (workflow, Cloud Functions) sekretów, kodów logowania ani tokenów.
 - iOS: logowanie wyłącznie w zainstalowanej aplikacji; prośba o powiadomienia tylko po kliknięciu przycisku; nie używaj magic linków ani przekierowań OAuth.
 
 ## Język

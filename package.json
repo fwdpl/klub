@@ -1,0 +1,31 @@
+{
+  "name": "klub",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --mode test",
+    "build": "tsc --noEmit && vite build --mode test",
+    "build:prod": "tsc --noEmit && vite build --mode production",
+    "preview": "vite preview --mode test",
+    "test": "vitest run",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-klub \"vitest run -c vitest.rules.config.ts\"",
+    "test:e2e": "npm run build --prefix functions && firebase emulators:exec --only functions,firestore,auth --project demo-klub \"node tests/e2e/login-flow.mjs\""
+  },
+  "dependencies": {
+    "firebase": "^13.1.0",
+    "workbox-core": "^7.4.1",
+    "workbox-precaching": "^7.4.1",
+    "workbox-routing": "^7.4.1"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase-tools": "^15.34.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.5",
+    "workbox-build": "^7.4.1",
+    "workbox-window": "^7.4.1"
+  }
+}

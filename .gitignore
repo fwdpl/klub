@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dev-dist/
+functions/lib/
+functions/node_modules/
+.firebase/
+*-debug.log
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+.env.local
+*.local
+# klucze kont serwisowych nigdy nie trafiają do repozytorium
+*service-account*.json
+klub-*-*.json

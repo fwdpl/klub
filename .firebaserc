@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "test": "klub-test-bakutis",
+    "prod": "klub-bakutis"
+  }
+}

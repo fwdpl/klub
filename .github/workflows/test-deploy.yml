@@ -1,0 +1,117 @@
+name: Testy i wdrożenie testowe
+
+# Każdy PR do main: testy, a potem publikacja na projekt TESTOWY (klub-test-bakutis).
+# Produkcja nie jest tu wdrażana.
+# Repozytorium jest publiczne, więc logi też: nigdy nie wypisujemy sekretów, kodów ani tokenów.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-test
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_ID: klub-test-bakutis
+
+jobs:
+  test:
+    name: Testy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm ci --prefix functions
+      - name: Testy logiki
+        run: npm test
+      - name: Testy reguł Firestore (emulator)
+        run: npm run test:rules
+      - name: Test logowania kodem (emulatory)
+        run: npm run test:e2e
+      - name: Budowanie aplikacji
+        run: npm run build
+      - name: Budowanie funkcji
+        run: npm run build --prefix functions
+
+  deploy:
+    name: Wdrożenie na środowisko testowe
+    needs: test
+    # PR-y z obcych kopii repozytorium nie dostają sekretów – tylko gałęzie tego repozytorium
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix functions
+      - run: npm run build
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEST }}
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # Idempotentne: przy kolejnych uruchomieniach nic nie zmienia
+      - name: Usługi i uprawnienia projektu testowego
+        run: |
+          gcloud services enable --project "$PROJECT_ID" \
+            cloudfunctions.googleapis.com run.googleapis.com cloudbuild.googleapis.com \
+            artifactregistry.googleapis.com eventarc.googleapis.com pubsub.googleapis.com \
+            firebasehosting.googleapis.com firestore.googleapis.com firebaserules.googleapis.com \
+            fcm.googleapis.com iamcredentials.googleapis.com identitytoolkit.googleapis.com
+
+          DEPLOY_SA=$(jq -r .client_email "$GOOGLE_APPLICATION_CREDENTIALS")
+          NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+          RUNTIME_SA="${NUMBER}-compute@developer.gserviceaccount.com"
+
+          grant() {
+            gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+              --member="serviceAccount:$1" --role="$2" --condition=None --quiet > /dev/null
+            echo "ok: $2 -> $1"
+          }
+
+          # Konto wdrażające: funkcje (publiczne wywołania), hosting, reguły
+          for ROLE in roles/run.admin roles/cloudfunctions.admin roles/iam.serviceAccountUser \
+                      roles/firebasehosting.admin roles/firebaserules.admin; do
+            grant "$DEPLOY_SA" "$ROLE"
+          done
+
+          # Konto, na którym działają funkcje: podpisywanie tokenów logowania, baza, konta, powiadomienia, budowanie
+          for ROLE in roles/iam.serviceAccountTokenCreator roles/datastore.user roles/firebaseauth.admin \
+                      roles/firebasecloudmessaging.admin roles/cloudbuild.builds.builder; do
+            grant "$RUNTIME_SA" "$ROLE"
+          done
+
+      - name: Wdrożenie (hosting, reguły, funkcje)
+        run: npx firebase deploy --project test --only hosting,firestore,functions --non-interactive --force
+
+      - name: Podsumowanie
+        run: |
+          {
+            echo "### Wersja testowa opublikowana"
+            echo ""
+            echo "- https://klub-test-bakutis.web.app"
+            echo "- https://klub2.bakutis.pl (po podpięciu domeny)"
+          } >> "$GITHUB_STEP_SUMMARY"
