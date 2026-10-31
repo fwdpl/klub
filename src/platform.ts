@@ -3,6 +3,10 @@ export function isIOS(): boolean {
   return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
+export function isAndroid(): boolean {
+  return /Android/i.test(navigator.userAgent);
+}
+
 export function isStandalone(): boolean {
   return (
     matchMedia('(display-mode: standalone)').matches ||

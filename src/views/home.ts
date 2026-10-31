@@ -3,7 +3,7 @@ import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, createLoginCode, db, sendTestPush } from '../firebase';
 import { appVersion, isTestEnv } from '../config';
-import { isStandalone } from '../platform';
+import { isAndroid, isIOS, isStandalone } from '../platform';
 import { enablePush, pushState, type PushState } from '../push';
 import { getThemePref, setThemePref, type ThemePref } from '../theme';
 import { h, render, toast } from '../ui';
@@ -86,6 +86,39 @@ function organizerCard(): HTMLElement {
   );
 }
 
+/**
+ * Po odmowie przeglądarka nie pozwala zapytać ponownie, a strona nie może otworzyć ustawień telefonu.
+ * Pokazujemy więc dokładną ścieżkę dla danego urządzenia.
+ */
+function deniedHelp(): HTMLElement {
+  const app = isTestEnv ? 'Klub TEST' : 'Klub';
+  let steps: string[];
+  if (isIOS()) {
+    steps = ['Otwórz Ustawienia telefonu.', 'Wybierz Powiadomienia.', `Znajdź ${app} i włącz „Zezwalaj na powiadomienia”.`];
+  } else if (isAndroid() && isStandalone()) {
+    steps = [
+      `Przytrzymaj ikonę ${app} na ekranie głównym.`,
+      'Stuknij „Informacje o aplikacji” (ikona ⓘ).',
+      'Wybierz Powiadomienia i włącz je.',
+    ];
+  } else if (isAndroid()) {
+    steps = [
+      'Stuknij ikonę po lewej stronie adresu strony (na górze ekranu).',
+      'Wybierz Uprawnienia, potem Powiadomienia, i ustaw Zezwalaj.',
+      'Jeśli to nie pomoże: Ustawienia telefonu → Aplikacje → Chrome → Powiadomienia → włącz.',
+    ];
+  } else {
+    steps = ['Kliknij ikonę obok adresu strony (kłódka lub suwaki).', 'Przy Powiadomieniach wybierz Zezwalaj.'];
+  }
+  return h(
+    'div',
+    {},
+    h('p', {}, 'Powiadomienia są zablokowane. Aplikacja nie może sama otworzyć ustawień, więc trzeba je włączyć ręcznie:'),
+    h('ol', { class: 'steps' }, ...steps.map((s) => h('li', {}, s))),
+    h('p', { class: 'muted' }, 'Po powrocie do aplikacji powiadomienia włączą się same.'),
+  );
+}
+
 export async function showHome(user: User): Promise<void> {
   const snap = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
   const role = snap?.data()?.role === 'organizer' ? 'organizer' : 'member';
@@ -96,18 +129,36 @@ export async function showHome(user: User): Promise<void> {
   const enableBtn = h('button', { type: 'button', class: 'btn' }, 'Włącz powiadomienia');
   const testBtn = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Wyślij testowe powiadomienie za 10 s');
 
+  const help = deniedHelp();
+
   const refreshPush = () => {
     pushStatus.textContent = PUSH_LABEL[push];
-    enableBtn.hidden = push === 'granted' || push === 'unsupported';
+    enableBtn.hidden = push !== 'default';
     testBtn.hidden = push !== 'granted';
+    help.hidden = push !== 'denied';
   };
+
+  // Powrót z ustawień telefonu: jeśli zgoda została włączona, rejestrujemy urządzenie bez dodatkowego klikania
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState !== 'visible' || push !== 'denied') return;
+    const now = await pushState();
+    if (now !== 'granted') return;
+    try {
+      await enablePush(user.uid);
+      toast('Powiadomienia włączone');
+    } catch (err) {
+      pushError.textContent = err instanceof Error ? err.message : 'Nie udało się włączyć powiadomień.';
+    }
+    push = now;
+    refreshPush();
+  });
 
   enableBtn.addEventListener('click', async () => {
     pushError.textContent = '';
     enableBtn.disabled = true;
     try {
       await enablePush(user.uid);
-      toast('Powiadomienia włączone');
+      if ((await pushState()) === 'granted') toast('Powiadomienia włączone');
     } catch (err) {
       pushError.textContent = err instanceof Error ? err.message : 'Nie udało się włączyć powiadomień.';
     }
@@ -147,7 +198,7 @@ export async function showHome(user: User): Promise<void> {
         h('li', {}, 'Wersja', h('b', {}, appVersion)),
       ),
     ),
-    h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, enableBtn, testBtn),
+    h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn),
     ...(role === 'organizer' ? [organizerCard()] : []),
     h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch()),
     h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => signOut(auth) }, 'Wyloguj'),
