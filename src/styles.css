@@ -869,3 +869,8 @@ h1 + .btn--link {
   text-align: center;
   overflow-wrap: anywhere;
 }
+
+/* Jeden przycisk w rzędzie – na całą szerokość, w jednej linii */
+.actions:has(> :only-child) {
+  grid-template-columns: 1fr;
+}

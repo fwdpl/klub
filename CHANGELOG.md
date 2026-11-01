@@ -5,6 +5,7 @@
 - Plan wyjazdu dla zatwierdzonych uczestników: dni z tytułem i uwagą, oś czasu z godzinami w czasie miejsca, dojazdami, propozycjami lokali, miejscem spotkania i przyciskami „Nawiguj”.
 - „Mój plan” – punkty wspólne i moje; „Wszyscy” – gdzie jest reszta. Filtr etykiet, np. #foto.
 - Ostrzeżenie ⚠, gdy mój osobny punkt nachodzi na wspólny.
+- Pojedynczy przycisk (np. „Nawiguj”) zajmuje całą szerokość – niższy i czytelniejszy.
 - Organizator importuje plan z pliku (z podglądem i listą błędów przed zapisem) – import zastępuje tylko dni z pliku – oraz poprawia, dodaje i usuwa pojedyncze punkty.
 
 ## 0.4.0 — szczegóły wyjazdu i checklisty (wersja testowa)
