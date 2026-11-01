@@ -1,5 +1,11 @@
 # Zmiany
 
+## 0.7.0 — dopracowanie (wersja testowa)
+
+- Organizator: podgląd wyjazdu oczami wybranego uczestnika – lista „Podgląd jako uczestnik…” przy wyjeździe. Tylko do oglądania.
+- Organizator: Ustawienia → „Kopia danych” zapisuje na urządzeniu plik z kopią osób, wyjazdów, planów, szczegółów i checklist.
+- Organizator przy wyjeździe ma „Jadę – dopisz mnie” zamiast „Też tam chcę” – po dopisaniu widzi „Mój plan” i ma swoją checklistę.
+
 ## 0.6.0 — wyjazd bez internetu i powiadomienia o zmianach (wersja testowa)
 
 - Ikona pobierania przy wyjeździe – zapisuje ten wyjazd na telefonie; pod nią „Na telefonie: …”. Bez internetu: czerwony pasek, plan, szczegóły i checklista działają, zmiany wysyłają się po połączeniu.

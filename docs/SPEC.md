@@ -207,7 +207,9 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Komunikat o nowej wersji** („Jest nowa wersja, odśwież”).
 - **Motyw jasny/ciemny**: Auto (za systemem) + ręczny wybór; zapis w `users/{uid}.prefs`; ustawiany przed renderem (bez błysku). Na iOS pasek statusu `black-translucent`.
 - **Układ telefonu** + **panel organizatora** (działający też na telefonie): wyjazdy, uczestnicy i statusy, konta, import planu, eksport kopii.
-- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza).
+- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza). Na ekranie wyjazdu lista „Podgląd jako uczestnik…” (osoby przy wyjeździe); widok liczony jak w regułach (status osoby, stan wyjazdu, „dla kogo”), przyciski wyłączone, checklista osoby ukryta (prywatna), „Zakończ podgląd” u góry i na dole.
+- **Eksport kopii** (Ustawienia → „Kopia danych”, tylko organizator): plik `klub-kopia-RRRR-MM-DD-GGMM.json` (format `klub-backup` 1.0) z osobami (bez tokenów powiadomień), wyjazdami i ich warstwami (overview, members, info, days, checklists); daty jako tekst ISO. Odtwarzanie z pliku – poza v1 (w razie potrzeby ręcznie, z pomocą Claude Code).
+- **Organizator na wyjeździe**: zamiast „Też tam chcę” przycisk „Jadę – dopisz mnie” (od razu zatwierdzony) – wtedy ma „Mój plan” i własną checklistę.
 
 ### v2
 - **Wspólna lista życzeń**: miejsce istnieje raz (wyszukiwarka miejsc, unikalny identyfikator, bez duplikatów). Inni klikają „też chcę” z własnym priorytetem. Pola: link/miejsce, priorytet („muszę” / „fajnie by było”), preferowana pora, szacowany czas pobytu, ewentualna stała godzina. Eksport do JSON jednym przyciskiem.

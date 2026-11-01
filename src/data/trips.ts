@@ -148,7 +148,7 @@ export function setMemberStatus(tripId: string, uid: string, status: MemberStatu
 }
 
 /** Dopisanie osoby, która potwierdziła udział poza aplikacją – od razu zatwierdzona. */
-export function addApprovedMember(tripId: string, person: Person): Promise<void> {
+export function addApprovedMember(tripId: string, person: Pick<Person, 'uid' | 'displayName'>): Promise<void> {
   return setDoc(doc(db, 'trips', tripId, 'members', person.uid), {
     uid: person.uid,
     displayName: person.displayName,
