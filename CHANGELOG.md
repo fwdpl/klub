@@ -6,6 +6,7 @@
 - Loty i noclegi mogą być dla wszystkich albo dla wybranych osób – każdy widzi swoje i wspólne.
 - Moja checklista: wspólne punkty od organizatora na górze, pod nimi własne punkty; odhaczenia zapisują się od razu.
 - Organizator uzupełnia to wszystko na ekranie „Edytuj szczegóły i checklistę”.
+- Instrukcja instalacji na iPhonie uwzględnia nowe Safari: „Do ekranu głównego” i przycisk Udostępnij pod „•••”.
 
 ## 0.3.0 — wyjazdy, zgłoszenia i zatwierdzanie (wersja testowa)
 

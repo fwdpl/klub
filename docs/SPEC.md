@@ -285,7 +285,7 @@ Typy pushy: zmiana planu (z/bez wymaganego potwierdzenia), nowe koszty/termin de
 
 ## 11. Zakres wersji i kolejność budowy
 1. **Bramka techniczna (pierwszy krok, zanim powstanie reszta)**: minimalna PWA — instalacja, logowanie, push — przetestowana na prawdziwym iPhonie i Androidzie. Jeśli coś nie działa: korekta założeń.
-   - Stan 1.11.2026: komputer (Firefox) — logowanie ✓, powiadomienia ✓; Android (Chrome, zainstalowana) — instalacja ✓, logowanie ✓, powiadomienia ✓; **iPhone — oczekuje na testerów**. Decyzja Jacka: kroki v1 niezależne od iPhone'a (1–4) idą dalej; przed krokiem 5 (offline, powiadomienia) wymagane potwierdzenie z iPhone'a.
+   - Stan 1.11.2026: komputer (Firefox) — logowanie ✓, powiadomienia ✓; Android (Chrome, zainstalowana) — instalacja ✓, logowanie ✓, powiadomienia ✓; **iPhone (iOS 26, Safari, zainstalowana, 1.11.2026) — instalacja ✓, logowanie ✓, zgoda na powiadomienia ✓, zgłoszenie i zatwierdzenie ✓, doręczenie powiadomienia ✓**. **Bramka techniczna zaliczona na wszystkich urządzeniach.** Kroki v1 niezależne od iPhone'a (1–4) szły równolegle; potwierdzenie z iPhone'a przed krokiem 5 (offline, powiadomienia) – uzyskane 1.11.2026.
    - Wnioski z Androida: blokada powiadomień bywa w Ustawieniach witryn Chrome (lista „Zablokowane”) — opisane w `docs/INSTRUKCJA.md` i w aplikacji.
 2. **v1** według §5 (szacunek: 7–10 sesji po 2–3 h). Kolejność:
    1. logowanie, `users`, statusy, warstwy, reguły + testy reguł,
@@ -347,7 +347,6 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 
 ### OTWARTE (Claude Code: pytaj, nie zakładaj)
 Blokujące v1:
-- [ ] Test bramki technicznej na iPhonie (§11) — wymagany przed krokiem 5 v1.
 - [ ] Oryginały ikony i ekranu startowego w pełnej rozdzielczości (obecne wersje są tymczasowe, §10).
 - [ ] Akceptacja wartości kolorów na podglądzie w telefonie (§10).
 
