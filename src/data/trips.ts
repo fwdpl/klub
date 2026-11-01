@@ -15,6 +15,9 @@ import {
 import { db } from '../firebase';
 import {
   SCHEMA_VERSION,
+  type Audience,
+  type ChecklistDoc,
+  type InfoDoc,
   type MemberDoc,
   type MemberStatus,
   type OverviewDoc,
@@ -160,4 +163,36 @@ export async function listActivePeople(): Promise<Person[]> {
     .map((d) => ({ uid: d.id, ...(d.data() as UserDoc) }))
     .filter((p) => p.active)
     .sort((a, b) => a.displayName.localeCompare(b.displayName, 'pl'));
+}
+
+// ---------- szczegóły (warstwa 3) i checklisty ----------
+
+export const EMPTY_INFO: InfoDoc = { flights: [], hotels: [], emergencyContacts: [], insurance: '', checklistTemplate: [] };
+
+export async function getInfo(tripId: string): Promise<InfoDoc> {
+  const d = await getDoc(doc(db, 'trips', tripId, 'info', 'main'));
+  return d.exists() ? { ...EMPTY_INFO, ...(d.data() as Partial<InfoDoc>) } : EMPTY_INFO;
+}
+
+export function saveInfo(tripId: string, info: InfoDoc): Promise<void> {
+  return setDoc(doc(db, 'trips', tripId, 'info', 'main'), { ...info, updatedAt: serverTimestamp() });
+}
+
+export async function getChecklist(tripId: string, uid: string): Promise<ChecklistDoc> {
+  const d = await getDoc(doc(db, 'trips', tripId, 'checklists', uid));
+  const data = d.exists() ? (d.data() as Partial<ChecklistDoc>) : {};
+  return { templateDone: data.templateDone ?? {}, items: data.items ?? [] };
+}
+
+export function saveChecklist(tripId: string, uid: string, checklist: ChecklistDoc): Promise<void> {
+  return setDoc(doc(db, 'trips', tripId, 'checklists', uid), { ...checklist, updatedAt: serverTimestamp() });
+}
+
+/** Pozycja dla tej osoby: wspólna albo z nią na liście „dla kogo” (decyzja G). */
+export function isFor(audience: Audience, uid: string): boolean {
+  return audience === 'all' || audience.includes(uid);
+}
+
+export function newId(): string {
+  return Math.random().toString(36).slice(2, 10);
 }

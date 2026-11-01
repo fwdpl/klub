@@ -12,6 +12,7 @@ import { showLogin } from './views/login';
 import { showPeople } from './views/people';
 import { showSettings } from './views/settings';
 import { showTrip } from './views/trip';
+import { showTripDetailsEdit } from './views/tripDetailsEdit';
 import { showTripEdit } from './views/tripEdit';
 import { showTrips } from './views/trips';
 
@@ -50,6 +51,7 @@ async function route(): Promise<void> {
     if (path === '/osoby') return showPeople(user.uid);
     if (path === '/nowy-wyjazd') return showTripEdit(null);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/edycja$/))) return showTripEdit(m[1]);
+    if ((m = path.match(/^\/wyjazd\/([\w-]+)\/szczegoly$/))) return showTripDetailsEdit(m[1]);
   }
   if (path !== '/') history.replaceState(null, '', '#/');
   await showTrips(user.uid, me.isOrganizer);

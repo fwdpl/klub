@@ -55,16 +55,68 @@ export interface OverviewDoc {
   decisionDeadline?: string; // 'YYYY-MM-DD'
 }
 
-/** trips/{tripId}/info/main – WARSTWA 3: tylko zatwierdzeni. */
-export interface InfoDoc {
-  flights: unknown[];
-  hotels: unknown[];
-  emergencyContacts: unknown[];
-  insurance: string;
-  countryCard: Record<string, string>;
+/** „Dla kogo”: wszyscy zatwierdzeni albo wybrane osoby (decyzja G). */
+export type Audience = 'all' | string[];
+
+/** Godziny zawsze w czasie lokalnym miejsca ('YYYY-MM-DDTHH:mm') + strefa IANA – nigdy UTC. */
+export interface Flight {
+  id: string;
+  number: string; // np. 'FI 531'
+  airline: string;
+  from: string; // np. 'Warszawa WAW'
+  to: string;
+  departure: string; // czas lokalny lotniska wylotu
+  departureTz: string;
+  arrival: string; // czas lokalny lotniska przylotu
+  arrivalTz: string;
+  notes: string;
+  audience: Audience;
 }
 
-/** trips/{tripId}/checklists/{uid} – właściciel (zatwierdzony) + organizator. */
+export interface Hotel {
+  id: string;
+  name: string;
+  address: string;
+  checkIn: string; // czas lokalny miejsca
+  checkOut: string;
+  phone: string;
+  notes: string;
+  audience: Audience;
+}
+
+export interface EmergencyContact {
+  id: string;
+  name: string;
+  role: string;
+  phone: string;
+}
+
+export interface ChecklistTemplateItem {
+  id: string;
+  text: string;
+}
+
+/** trips/{tripId}/info/main – WARSTWA 3: tylko zatwierdzeni. */
+export interface InfoDoc {
+  flights: Flight[];
+  hotels: Hotel[];
+  emergencyContacts: EmergencyContact[];
+  insurance: string;
+  /** Wspólna część checklisty ustalana przez organizatora (decyzja F). */
+  checklistTemplate: ChecklistTemplateItem[];
+}
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+/**
+ * trips/{tripId}/checklists/{uid} – właściciel (zatwierdzony) + organizator.
+ * Odhaczenia punktów wspólnych (templateDone) + własne punkty dopisane przez osobę (items).
+ */
 export interface ChecklistDoc {
-  items: { id: string; text: string; done: boolean }[];
+  templateDone: Record<string, boolean>;
+  items: ChecklistItem[];
 }
