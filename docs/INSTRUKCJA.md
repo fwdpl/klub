@@ -66,7 +66,7 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Zmieniłem telefon / usunąłem aplikację.** Zainstaluj ją ponownie i poproś Jacka o nowy kod.
 
-**Czy aplikacja działa bez internetu?** Tak. Przed wyjazdem, z internetem, stuknij na ekranie głównym **Pobierz wszystko na wyjazd** – pod przyciskiem zobaczysz „Dane na telefonie z: …”. Bez sieci u góry pojawi się czerwony pasek z datą danych; plan, szczegóły i checklista działają, a odhaczenia wyślą się same po odzyskaniu połączenia. Przycisk „Nawiguj” otwiera Google Maps – bez internetu działa tylko z mapami pobranymi wcześniej w Google Maps.
+**Czy aplikacja działa bez internetu?** Tak. Przed wyjazdem, z internetem, otwórz wyjazd i stuknij ikonę pobierania (strzałka w dół) obok tytułu – pod nią zobaczysz „Na telefonie: …”. Bez sieci u góry pojawi się czerwony pasek „Bez internetu”; plan, szczegóły i checklista działają, a odhaczenia wyślą się same po odzyskaniu połączenia. Przycisk „Nawiguj” otwiera Google Maps – bez internetu działa tylko z mapami pobranymi wcześniej w Google Maps.
 
 **Za dużo powiadomień?** Ustawienia (⚙) → **Wycisz wszystkie powiadomienia z Klubu**.
 

@@ -913,3 +913,44 @@ h1 + .btn--link {
 .card--compact p {
   margin-bottom: 8px;
 }
+
+/* Nagłówek wyjazdu z pobieraniem na telefon */
+.trip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.trip-head h1 {
+  margin-bottom: 4px;
+}
+
+.download {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  max-width: 96px;
+  text-align: center;
+}
+
+.download__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.download__when {
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--text-2);
+}

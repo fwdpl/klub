@@ -17,6 +17,7 @@ import {
 } from '../data/trips';
 import type { MemberStatus, OverviewDoc } from '../model/types';
 import { h, render, toast } from '../ui';
+import { downloadTrip, formatSync, lastSync } from '../offline';
 import { noticeCard, takeNotice } from './notify';
 import { planSection } from './plan';
 import { detailsSection } from './tripDetails';
@@ -183,6 +184,36 @@ function organizerMembersCard(trip: Trip, members: Member[], reload: () => Promi
   );
 }
 
+const DOWNLOAD_ICON =
+  '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>';
+
+/** Pobranie tego wyjazdu na telefon (tryb offline) – ikona przy tytule i data ostatniego pobrania. */
+function downloadButton(tripId: string, me: Me): HTMLElement {
+  const label = h('span', { class: 'download__when' });
+  const showWhen = () => {
+    const when = lastSync(me.uid, tripId);
+    label.textContent = when ? `Na telefonie: ${formatSync(when)}` : 'Nie pobrano na telefon';
+  };
+  const button = h('button', { type: 'button', class: 'download__btn', 'aria-label': 'Pobierz wyjazd na telefon (do użycia bez internetu)', title: 'Pobierz na telefon' });
+  button.innerHTML = DOWNLOAD_ICON; // stała ikona – bez treści od użytkownika
+  button.addEventListener('click', async () => {
+    if (!navigator.onLine) return toast('Brak internetu – pobierz, gdy będzie połączenie.');
+    button.disabled = true;
+    label.textContent = 'Pobieram…';
+    try {
+      await downloadTrip(me.uid, tripId, me.isOrganizer);
+      toast('Wyjazd pobrany – działa bez internetu.');
+    } catch {
+      toast('Nie udało się pobrać. Spróbuj ponownie.');
+    } finally {
+      button.disabled = false;
+      showWhen();
+    }
+  });
+  showWhen();
+  return h('div', { class: 'download' }, button, label);
+}
+
 export async function showTrip(tripId: string, me: Me): Promise<void> {
   const body = h('div', {}, h('p', { class: 'muted' }, 'Wczytuję…'));
   render(h('a', { class: 'back', href: '#/' }, '← Wyjazdy'), body);
@@ -213,8 +244,12 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
       h(
         'div',
         {},
-        h('h1', {}, trip.title),
-        h('p', { class: 'muted' }, [trip.destination, trip.approxDates].filter(Boolean).join(' · ')),
+        h(
+          'div',
+          { class: 'trip-head' },
+          h('div', {}, h('h1', {}, trip.title), h('p', { class: 'muted' }, [trip.destination, trip.approxDates].filter(Boolean).join(' · '))),
+          downloadButton(trip.id, me),
+        ),
         (trip.status !== 'open' || me.isOrganizer) &&
           h('div', { class: 'badges badges--top' }, h('span', { class: `badge badge--trip-${trip.status}` }, TRIP_STATUS_LABEL[trip.status])),
         me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/edycja` }, 'Edytuj wyjazd'),

@@ -69,12 +69,11 @@ window.addEventListener('hashchange', () => {
   window.scrollTo(0, 0);
 });
 
-const refreshConnectionBar = watchConnection(() => currentUser?.uid ?? null);
+watchConnection();
 
 let listening = false;
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
-  refreshConnectionBar();
   try {
     await route();
     if (user && !listening) {

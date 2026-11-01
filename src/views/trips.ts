@@ -2,30 +2,7 @@ import { isTestEnv } from '../config';
 import { MEMBER_STATUS_LABEL, TRIP_STATUS_LABEL, listTrips, myMemberships, type Trip } from '../data/trips';
 import { installCard } from '../install';
 import type { MemberStatus } from '../model/types';
-import { downloadAll, formatSync, lastSync } from '../offline';
-import { h, render, toast } from '../ui';
-
-/** „Pobierz wszystko na wyjazd” + data ostatniej synchronizacji (SPEC §5). */
-function offlineCard(uid: string, isOrganizer: boolean): HTMLElement {
-  const when = h('span', {}, formatSync(lastSync(uid)));
-  const button = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Pobierz wszystko na wyjazd');
-  button.addEventListener('click', async () => {
-    if (!navigator.onLine) return toast('Brak internetu – pobierz dane, gdy będzie połączenie.');
-    button.disabled = true;
-    button.textContent = 'Pobieram…';
-    try {
-      const count = await downloadAll(uid, isOrganizer);
-      when.textContent = formatSync(lastSync(uid));
-      toast(`Pobrano ${count} ${count === 1 ? 'wyjazd' : 'wyjazdy'} – działają bez internetu.`);
-    } catch {
-      toast('Nie udało się pobrać wszystkiego. Spróbuj ponownie.');
-    } finally {
-      button.disabled = false;
-      button.textContent = 'Pobierz wszystko na wyjazd';
-    }
-  });
-  return h('div', { class: 'card card--compact' }, h('p', { class: 'muted' }, 'Dane na telefonie z: ', when), button);
-}
+import { h, render } from '../ui';
 
 function tripCard(trip: Trip, myStatus: MemberStatus | undefined, isOrganizer: boolean): HTMLElement {
   const badges: HTMLElement[] = [];
@@ -54,7 +31,6 @@ export async function showTrips(uid: string, isOrganizer: boolean): Promise<void
       h('a', { class: 'icon-link', href: '#/ustawienia', 'aria-label': 'Ustawienia' }, '⚙'),
     ),
     installCard(),
-    offlineCard(uid, isOrganizer),
     isOrganizer &&
       h(
         'div',

@@ -2,7 +2,7 @@
 
 ## 0.6.0 — wyjazd bez internetu i powiadomienia o zmianach (wersja testowa)
 
-- Przycisk „Pobierz wszystko na wyjazd” i data danych na telefonie. Bez internetu: czerwony pasek z datą danych, plan, szczegóły i checklista działają, zmiany wysyłają się po połączeniu.
+- Ikona pobierania przy wyjeździe – zapisuje ten wyjazd na telefonie; pod nią „Na telefonie: …”. Bez internetu: czerwony pasek, plan, szczegóły i checklista działają, zmiany wysyłają się po połączeniu.
 - Po zmianie planu, szczegółów albo kosztów organizator dostaje gotową propozycję powiadomienia – może ją poprawić, wysłać albo pominąć. Przy wyjeździe jest też „Wyślij powiadomienie”.
 - Ustawienia: „Wycisz wszystkie powiadomienia z Klubu”.
 
