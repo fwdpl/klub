@@ -104,6 +104,8 @@ export interface InfoDoc {
   insurance: string;
   /** Wspólna część checklisty ustalana przez organizatora (decyzja F). */
   checklistTemplate: ChecklistTemplateItem[];
+  /** Uwagi do całego planu (z importu), np. co odpuścić w pierwszej kolejności. */
+  planNotes?: string[];
 }
 
 export interface ChecklistItem {
@@ -132,6 +134,19 @@ export interface PlanPlace {
   lng?: number;
 }
 
+/** Propozycja do wyboru w punkcie (np. restauracje), z oceną w skali 0–5. */
+export interface PlanOption {
+  name: string;
+  rating?: number;
+  address?: string;
+}
+
+/** Miejsce i godzina spotkania po rozdzieleniu się grupy. time – czas lokalny 'YYYY-MM-DDTHH:mm'. */
+export interface PlanMeet {
+  place: string;
+  time?: string;
+}
+
 /**
  * Punkt planu. start/end – czas lokalny miejsca 'YYYY-MM-DDTHH:mm'.
  * tz – strefa początku, gdy inna niż dzień (np. wylot); endTz – strefa końca (przylot). Brak = strefa dnia.
@@ -148,7 +163,18 @@ export interface PlanItem {
   /** Loty, check-in, bilety na godzinę – nie przenoszą się przy zamianie dni (v2). */
   pinnedToDate: boolean;
   place?: PlanPlace;
+  /** Tekst z prostym pogrubieniem **…** */
   notes?: string;
+  /** Dojazd do punktu (linie, przesiadki, alternatywy); pogrubienie **…** */
+  route?: string;
+  meet?: PlanMeet;
+  options?: PlanOption[];
+  /** Osoby rozdzielone, ale „w pobliżu” (do 10 min metrem / 15 min pieszo). */
+  nearby?: boolean;
+  /** Wyróżnienie: stała godzina, rezerwacja, rzecz do sprawdzenia. */
+  important?: boolean;
+  /** Etykiety, np. 'foto' – z nich powstają zestawienia (np. harmonogram zdjęć). */
+  tags?: string[];
 }
 
 export type WeatherDependency = 'beach' | 'viewpoint' | 'night-sky';
@@ -156,6 +182,9 @@ export type WeatherDependency = 'beach' | 'viewpoint' | 'night-sky';
 /** trips/{tripId}/days/{date} – WARSTWA 3. Jeden dokument na dzień. */
 export interface DayDoc {
   date: string; // 'YYYY-MM-DD'
+  title?: string;
+  /** Uwaga do całego dnia (np. „Najdłuższy dzień, wczesna pobudka”). */
+  note?: string;
   /** Strefa dnia, gdy inna niż strefa wyjazdu (wyjazd przez kilka krajów). */
   timezone?: string;
   baseLocation: string;

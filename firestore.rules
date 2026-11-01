@@ -122,7 +122,7 @@ service cloud.firestore {
       match /info/{docId} {
         allow read: if canSeeDetails(tripId);
         allow write: if isOrganizer()
-          && request.resource.data.keys().hasOnly(['flights', 'hotels', 'emergencyContacts', 'insurance', 'checklistTemplate', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(['flights', 'hotels', 'emergencyContacts', 'insurance', 'checklistTemplate', 'planNotes', 'updatedAt'])
           && request.resource.data.flights is list
           && request.resource.data.hotels is list
           && request.resource.data.emergencyContacts is list
@@ -133,7 +133,7 @@ service cloud.firestore {
       match /days/{date} {
         allow read: if canSeeDetails(tripId);
         allow create, update: if isOrganizer()
-          && request.resource.data.keys().hasOnly(['date', 'timezone', 'baseLocation', 'weatherDependent', 'items', 'revision', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(['date', 'title', 'note', 'timezone', 'baseLocation', 'weatherDependent', 'items', 'revision', 'updatedAt'])
           && request.resource.data.date == date
           && request.resource.data.items is list
           && request.resource.data.items.size() <= 100

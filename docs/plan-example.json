@@ -3,10 +3,16 @@
   "version": "1.0",
   "trip": "Islandia zimą",
   "revision": 1,
+  "notes": [
+    "Jeśli dzień się przeciąga – w pierwszej kolejności odpuszczamy **Gljúfrabúi**.",
+    "Paliwo: tankujemy do pełna w Selfoss i w Vík – między nimi stacji jest mało."
+  ],
   "days": [
     {
       "date": "2027-03-10",
+      "title": "Przylot + wodospady południowego wybrzeża",
       "base": "Vík",
+      "note": "Długi dzień: pobudka w Polsce przed 4:00. Odpoczynek dopiero w hotelu.",
       "items": [
         {
           "time": "06:10",
@@ -16,22 +22,31 @@
           "type": "flight",
           "title": "Lot FI 531 Warszawa → Keflavík",
           "for": "all",
+          "important": true,
           "place": { "name": "Lotnisko Chopina", "address": "Żwirki i Wigury 1, Warszawa" },
-          "notes": "Zbiórka przy stanowisku odprawy 04:30 (czas polski)."
+          "notes": "Zbiórka przy stanowisku odprawy **04:30** (czas polski)."
         },
         {
           "time": "10:30",
-          "type": "meeting",
+          "end": "11:15",
+          "type": "transport",
           "title": "Odbiór aut z wypożyczalni",
           "for": "all",
-          "place": { "name": "Blue Car Rental", "address": "Blikavöllur 3, 235 Keflavík", "lat": 63.9875, "lng": -22.6118 }
+          "place": { "name": "Blue Car Rental", "address": "Blikavöllur 3, 235 Keflavík", "lat": 63.9875, "lng": -22.6118 },
+          "route": "Shuttle wypożyczalni spod hali przylotów (co 15 min). **Alt:** pieszo 10 min."
         },
         {
           "time": "13:00",
-          "end": "14:30",
+          "end": "14:15",
           "type": "meal",
           "title": "Obiad w Selfoss",
-          "for": "all"
+          "for": "all",
+          "route": "Droga **1** na wschód, ~1 h jazdy.",
+          "options": [
+            { "name": "Kaffi Krús", "rating": 4.5, "address": "Austurvegur 7, Selfoss" },
+            { "name": "Tryggvaskáli", "rating": 4.6 },
+            { "name": "Mathöll Selfoss", "rating": 4.4 }
+          ]
         },
         {
           "time": "15:30",
@@ -39,27 +54,43 @@
           "type": "activity",
           "title": "Wodospad Seljalandsfoss",
           "for": "all",
+          "tags": ["foto"],
           "place": { "name": "Seljalandsfoss", "lat": 63.6156, "lng": -19.9886 }
         },
         {
-          "time": "16:00",
+          "time": "16:30",
           "end": "17:30",
           "type": "activity",
-          "title": "Zdjęcia przy Gljúfrabúi (osobno)",
+          "title": "Zdjęcia w kanionie Gljúfrabúi",
           "for": ["Ania"],
+          "nearby": true,
+          "tags": ["foto"],
+          "meet": { "place": "parking przy Seljalandsfoss", "time": "17:30" },
           "notes": "Wodoodporna kurtka – przejście przez wodę."
         },
         {
-          "time": "18:00",
+          "time": "16:30",
+          "end": "17:30",
+          "type": "free",
+          "title": "Kawa w kawiarni przy parkingu",
+          "for": ["Bartek"],
+          "nearby": true,
+          "meet": { "place": "parking przy Seljalandsfoss", "time": "17:30" }
+        },
+        {
+          "time": "19:00",
           "type": "checkin",
           "title": "Zameldowanie w Hotelu Kría",
           "for": "all",
+          "important": true,
+          "notes": "Recepcja czynna do 22:00.",
           "place": { "name": "Hotel Kría", "address": "Sléttuvegur 12, 870 Vík" }
         }
       ]
     },
     {
       "date": "2027-03-11",
+      "title": "Czarne plaże + zorza",
       "base": "Vík",
       "weather": "night-sky",
       "items": [
@@ -69,15 +100,19 @@
           "type": "activity",
           "title": "Plaża Reynisfjara",
           "for": "all",
-          "place": { "name": "Reynisfjara", "lat": 63.4044, "lng": -19.0450 },
-          "notes": "Nie podchodzić do linii fal (sneaker waves)."
+          "tags": ["foto"],
+          "place": { "name": "Reynisfjara", "lat": 63.4044, "lng": -19.045 },
+          "notes": "Nie podchodzić do linii fal (**sneaker waves**)."
         },
         {
           "time": "22:00",
           "end": "2027-03-12T01:00",
           "type": "activity",
           "title": "Zorza polarna – jeśli pogoda pozwoli",
-          "for": "all"
+          "for": "all",
+          "important": true,
+          "tags": ["foto"],
+          "route": "Auto, ~10 min na wschód od Vík (z dala od świateł miasta)."
         }
       ]
     }

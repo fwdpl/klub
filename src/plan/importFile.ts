@@ -2,7 +2,7 @@
 // Sprawdza cały plik i zwraca wszystkie błędy naraz, po polsku, z miejscem błędu.
 // Nic nie zapisuje – zapis robi ekran importu po podglądzie.
 
-import type { Audience, DayDoc, PlanItem, PlanItemType, PlanPlace, WeatherDependency } from '../model/types';
+import type { Audience, DayDoc, PlanItem, PlanItemType, PlanMeet, PlanOption, PlanPlace, WeatherDependency } from '../model/types';
 import { isValidDate, isValidLocal, isValidZone, toInstant } from './time';
 
 export const PLAN_FORMAT = 'klub-plan';
@@ -12,6 +12,9 @@ export const ITEM_TYPES: PlanItemType[] = ['activity', 'meal', 'transport', 'fli
 const WEATHER: WeatherDependency[] = ['beach', 'viewpoint', 'night-sky'];
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 const MAX_ITEMS_PER_DAY = 100;
+// Tytuł ma być krótki (widać go na osi czasu); listy i opisy – w „notes”
+const LONG_TITLE = 120;
+const MAX_TITLE = 500;
 
 export interface ImportContext {
   tripTitle: string;
@@ -21,11 +24,12 @@ export interface ImportContext {
 }
 
 export type ImportResult =
-  | { ok: true; days: DayDoc[]; revision: number; warnings: string[] }
+  | { ok: true; days: DayDoc[]; revision: number; planNotes: string[]; warnings: string[] }
   | { ok: false; errors: string[] };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const nameKey = (s: string) => s.trim().toLocaleLowerCase('pl');
+const optionalText = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
 
 function makeId(date: string, index: number): string {
   return `${date.replace(/-/g, '')}-${String(index + 1).padStart(2, '0')}`;
@@ -58,6 +62,12 @@ export function validatePlan(data: unknown, ctx: ImportContext): ImportResult {
     warnings.push(`Plik jest opisany jako „${data.trip}”, a importujesz do wyjazdu „${ctx.tripTitle}”. Upewnij się, że to właściwy plik.`);
   }
 
+  let planNotes: string[] = [];
+  if (data.notes !== undefined) {
+    if (!Array.isArray(data.notes) || !data.notes.every((n) => typeof n === 'string')) errors.push('Pole „notes” musi być listą tekstów.');
+    else planNotes = (data.notes as string[]).map((n) => n.trim()).filter(Boolean);
+  }
+
   // imiona → uid; imię musi być jednoznaczne wśród zatwierdzonych
   const byName = new Map<string, string[]>();
   for (const p of ctx.people) byName.set(nameKey(p.displayName), [...(byName.get(nameKey(p.displayName)) ?? []), p.uid]);
@@ -88,6 +98,8 @@ export function validatePlan(data: unknown, ctx: ImportContext): ImportResult {
         errors.push(`${dayLabel}: nieznana strefa czasowa „${String(rawDay.timezone)}” (np. "Atlantic/Reykjavik").`);
       } else dayZone = rawDay.timezone;
     }
+    if (rawDay.title !== undefined && typeof rawDay.title !== 'string') errors.push(`${dayLabel}: „title” musi być tekstem.`);
+    if (rawDay.note !== undefined && typeof rawDay.note !== 'string') errors.push(`${dayLabel}: „note” musi być tekstem.`);
     if (rawDay.weather !== undefined && !WEATHER.includes(rawDay.weather as WeatherDependency)) {
       errors.push(`${dayLabel}: „weather” może mieć wartość ${WEATHER.map((w) => `"${w}"`).join(', ')}.`);
     }
@@ -106,7 +118,8 @@ export function validatePlan(data: unknown, ctx: ImportContext): ImportResult {
       }
       const title = typeof raw.title === 'string' ? raw.title.trim() : '';
       const label = title ? `${at} („${title}”)` : at;
-      if (!title || title.length > 120) errors.push(`${at}: „title” jest wymagany (do 120 znaków).`);
+      if (!title || title.length > MAX_TITLE) errors.push(`${at}: „title” jest wymagany (do ${MAX_TITLE} znaków).`);
+      else if (title.length > LONG_TITLE) warnings.push(`${label.slice(0, label.indexOf(' („'))}: długi tytuł (${title.length} znaków) – szczegóły lepiej przenieść do „notes”.`);
 
       const type = (raw.type ?? 'activity') as PlanItemType;
       if (!ITEM_TYPES.includes(type)) errors.push(`${label}: „type” może mieć wartość ${ITEM_TYPES.map((t) => `"${t}"`).join(', ')}.`);
@@ -176,8 +189,57 @@ export function validatePlan(data: unknown, ctx: ImportContext): ImportResult {
         }
       }
 
-      if (raw.notes !== undefined && typeof raw.notes !== 'string') errors.push(`${label}: „notes” musi być tekstem.`);
-      if (raw.fixed !== undefined && typeof raw.fixed !== 'boolean') errors.push(`${label}: „fixed” to true albo false.`);
+      for (const key of ['notes', 'route'] as const) {
+        if (raw[key] !== undefined && typeof raw[key] !== 'string') errors.push(`${label}: „${key}” musi być tekstem.`);
+      }
+      for (const key of ['fixed', 'nearby', 'important'] as const) {
+        if (raw[key] !== undefined && typeof raw[key] !== 'boolean') errors.push(`${label}: „${key}” to true albo false.`);
+      }
+
+      // Spotkanie po rozdzieleniu: miejsce + godzina tego dnia (GG:MM) albo z datą
+      let meet: PlanMeet | undefined;
+      if (raw.meet !== undefined) {
+        const m = raw.meet;
+        if (!isObject(m) || typeof m.place !== 'string' || !m.place.trim()) {
+          errors.push(`${label}: „meet” musi mieć „place” (miejsce spotkania) i opcjonalnie „time”.`);
+        } else {
+          meet = { place: m.place.trim() };
+          if (m.time !== undefined) {
+            if (typeof m.time === 'string' && TIME_RE.test(m.time)) meet.time = `${date}T${m.time}`;
+            else if (typeof m.time === 'string' && isValidLocal(m.time)) meet.time = m.time;
+            else errors.push(`${label}: „meet.time” musi mieć postać GG:MM albo RRRR-MM-DDTGG:MM.`);
+          }
+        }
+      }
+
+      // Propozycje do wyboru (np. restauracje)
+      let options: PlanOption[] | undefined;
+      if (raw.options !== undefined) {
+        if (!Array.isArray(raw.options)) errors.push(`${label}: „options” musi być listą propozycji.`);
+        else {
+          options = [];
+          raw.options.forEach((o: unknown, oi: number) => {
+            if (!isObject(o) || typeof o.name !== 'string' || !o.name.trim()) {
+              errors.push(`${label}: propozycja ${oi + 1} musi mieć „name”.`);
+              return;
+            }
+            const option: PlanOption = { name: o.name.trim() };
+            if (o.rating !== undefined) {
+              if (typeof o.rating !== 'number' || o.rating < 0 || o.rating > 5) errors.push(`${label}: „rating” propozycji „${o.name}” to liczba 0–5 (np. 4.5).`);
+              else option.rating = o.rating;
+            }
+            const address = optionalText(o.address);
+            if (address) option.address = address;
+            options!.push(option);
+          });
+        }
+      }
+
+      let tags: string[] | undefined;
+      if (raw.tags !== undefined) {
+        if (!Array.isArray(raw.tags) || !raw.tags.every((t) => typeof t === 'string' && t.trim())) errors.push(`${label}: „tags” to lista słów, np. ["foto"].`);
+        else tags = [...new Set((raw.tags as string[]).map((t) => t.trim().toLocaleLowerCase('pl')))];
+      }
 
       const item: PlanItem = {
         id: makeId(date, ii),
@@ -191,7 +253,15 @@ export function validatePlan(data: unknown, ctx: ImportContext): ImportResult {
       if (tz) item.tz = tz;
       if (endTz) item.endTz = endTz;
       if (place) item.place = place;
-      if (typeof raw.notes === 'string' && raw.notes.trim()) item.notes = raw.notes.trim();
+      const notes = optionalText(raw.notes);
+      if (notes) item.notes = notes;
+      const route = optionalText(raw.route);
+      if (route) item.route = route;
+      if (meet) item.meet = meet;
+      if (options?.length) item.options = options;
+      if (raw.nearby === true) item.nearby = true;
+      if (raw.important === true) item.important = true;
+      if (tags?.length) item.tags = tags;
       items.push(item);
     });
 
@@ -201,6 +271,10 @@ export function validatePlan(data: unknown, ctx: ImportContext): ImportResult {
       items,
       revision: Number.isInteger(revision) ? (revision as number) : 1,
     };
+    const dayTitle = optionalText(rawDay.title);
+    if (dayTitle) day.title = dayTitle;
+    const dayNote = optionalText(rawDay.note);
+    if (dayNote) day.note = dayNote;
     if (dayZone !== ctx.tripTimezone) day.timezone = dayZone;
     if (rawDay.weather !== undefined && WEATHER.includes(rawDay.weather as WeatherDependency)) day.weatherDependent = rawDay.weather as WeatherDependency;
     days.push(day);
@@ -208,5 +282,5 @@ export function validatePlan(data: unknown, ctx: ImportContext): ImportResult {
 
   if (errors.length) return { ok: false, errors };
   days.sort((a, b) => a.date.localeCompare(b.date));
-  return { ok: true, days, revision: revision as number, warnings };
+  return { ok: true, days, revision: revision as number, planNotes, warnings };
 }
