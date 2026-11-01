@@ -127,6 +127,16 @@ button {
   color: var(--accent-text);
 }
 
+.btn--link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .btn--secondary {
   background: var(--surface-2);
   color: var(--text);
@@ -301,4 +311,79 @@ button:disabled {
     animation: none;
     width: 85%;
   }
+}
+
+/* Ekran „Osoby” */
+.back {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  margin: 0 0 12px;
+  padding: 8px 0;
+}
+
+.person {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.person:last-child {
+  border-bottom: 0;
+}
+
+.person__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.person__name {
+  font-weight: 600;
+}
+
+.person__email {
+  font-size: 15px;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.badge--accent {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.person--inactive .person__name,
+.person--inactive .person__email {
+  opacity: 0.55;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.actions button {
+  min-height: 40px;
+  padding: 8px;
+  font-size: 15px;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.inline-form {
+  margin-top: 8px;
 }

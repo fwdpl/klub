@@ -111,7 +111,7 @@ describe('kody logowania i próby', () => {
 
 describe('pozostałe ścieżki', () => {
   it('są zamknięte', async () => {
-    await assertFails(getDoc(doc(as('jacek'), 'trips/t1')));
-    await assertFails(setDoc(doc(as('jacek'), 'trips/t1'), { title: 'x' }));
+    await assertFails(getDoc(doc(as('jacek'), 'inne/x1')));
+    await assertFails(setDoc(doc(as('jacek'), 'inne/x1'), { title: 'x' }));
   });
 });

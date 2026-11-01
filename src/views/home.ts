@@ -1,7 +1,7 @@
 import type { User } from 'firebase/auth';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, createLoginCode, db, sendTestPush } from '../firebase';
+import { auth, db, sendTestPush } from '../firebase';
 import { appVersion, buildId, isTestEnv } from '../config';
 import { isAndroid, isIOS, isStandalone } from '../platform';
 import { enablePush, pushState, type PushState } from '../push';
@@ -47,43 +47,12 @@ function themeSwitch(): HTMLElement {
 }
 
 function organizerCard(): HTMLElement {
-  const email = h('input', { type: 'email', autocomplete: 'off', inputmode: 'email' });
-  const result = h('div');
-  const error = h('p', { class: 'error', role: 'alert' });
-  const button = h('button', { type: 'submit', class: 'btn' }, 'Wygeneruj kod');
   return h(
-    'form',
-    {
-      class: 'card',
-      onsubmit: async (e: Event) => {
-        e.preventDefault();
-        error.textContent = '';
-        result.replaceChildren();
-        button.disabled = true;
-        try {
-          const { data } = await createLoginCode({ email: email.value });
-          const until = new Date(data.expiresAt).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
-          result.replaceChildren(
-            h('p', { class: 'code' }, data.code),
-            h('p', { class: 'muted' }, `Kod działa raz, ważny do ${until}. Przekaż go osobiście lub SMS-em. Poprzednie niewykorzystane kody tej osoby przestały działać.`),
-            h(
-              'button',
-              { type: 'button', class: 'btn btn--secondary', onclick: () => navigator.clipboard?.writeText(data.code).then(() => toast('Skopiowano kod')) },
-              'Kopiuj kod',
-            ),
-          );
-        } catch {
-          error.textContent = navigator.onLine ? 'Nie udało się wygenerować kodu. Sprawdź mail.' : 'Brak połączenia z internetem.';
-        } finally {
-          button.disabled = false;
-        }
-      },
-    },
-    h('h2', {}, 'Kod logowania dla uczestnika'),
-    h('label', { class: 'field' }, h('span', {}, 'Mail uczestnika'), email),
-    error,
-    button,
-    result,
+    'div',
+    { class: 'card' },
+    h('h2', {}, 'Panel organizatora'),
+    h('p', { class: 'muted' }, 'Lista osób, kody logowania, włączanie i wyłączanie dostępu.'),
+    h('a', { class: 'btn btn--link', href: '#/osoby' }, 'Osoby'),
   );
 }
 
