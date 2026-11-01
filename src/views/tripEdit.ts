@@ -1,47 +1,79 @@
 import { TRIP_STATUS_LABEL, getOverview, getTrip, saveTrip, type TripForm } from '../data/trips';
 import type { TripStatus } from '../model/types';
+import { searchZones, utcOffset, zoneLabel } from '../timezones';
 import { h, render, toast } from '../ui';
 
-// Najczęstsze kierunki na górze listy; pełna lista stref z przeglądarki poniżej
-const COMMON_ZONES = [
-  'Europe/Warsaw',
-  'Europe/London',
-  'Europe/Lisbon',
-  'Atlantic/Reykjavik',
-  'Atlantic/Canary',
-  'Europe/Athens',
-  'Europe/Istanbul',
-  'Asia/Dubai',
-  'Asia/Bangkok',
-  'Asia/Tokyo',
-  'America/New_York',
-  'America/Denver',
-  'America/Phoenix',
-  'America/Los_Angeles',
-];
+/**
+ * Wybór strefy: wyszukiwarka po polskiej nazwie kraju lub miasta zamiast listy ~400 stref.
+ * Bez wartości domyślnej – strefa dotyczy całego harmonogramu (decyzja E).
+ */
+function zonePicker(current: string): { el: HTMLElement; value: () => string } {
+  let selected = current;
+  const all: string[] = typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : [];
+  const el = h('div', { class: 'zone-picker' });
+  const input = h('input', {
+    type: 'search',
+    placeholder: 'Wpisz kraj lub miasto, np. Islandia',
+    autocomplete: 'off',
+    'aria-label': 'Szukaj strefy czasowej',
+  });
+  const results = h('div', { class: 'zone-results', role: 'listbox' });
 
-function utcOffset(zone: string): string {
-  try {
-    const part = new Intl.DateTimeFormat('en', { timeZone: zone, timeZoneName: 'shortOffset' })
-      .formatToParts(new Date())
-      .find((p) => p.type === 'timeZoneName')?.value;
-    return (part ?? 'GMT').replace('GMT', 'UTC').replace(/^UTC$/, 'UTC+0');
-  } catch {
-    return '';
-  }
-}
+  const showResults = () => {
+    const found = searchZones(input.value, all);
+    results.replaceChildren(
+      ...(found.length
+        ? found.map((z) =>
+            h(
+              'button',
+              {
+                type: 'button',
+                role: 'option',
+                class: 'zone-option',
+                onclick: () => {
+                  selected = z.zone;
+                  draw();
+                },
+              },
+              h('span', {}, z.label),
+              h('span', { class: 'muted' }, utcOffset(z.zone)),
+            ),
+          )
+        : [h('p', { class: 'muted' }, 'Nic nie znaleziono. Spróbuj nazwy kraju albo większego miasta.')]),
+    );
+  };
+  input.addEventListener('input', showResults);
 
-function zoneSelect(current: string): HTMLSelectElement {
-  const all: string[] = typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : COMMON_ZONES;
-  const option = (z: string) => h('option', { value: z, selected: z === current }, `${z} (${utcOffset(z)})`);
-  return h(
-    'select',
-    { required: true, name: 'timezone' },
-    // bez wartości domyślnej: strefa dotyczy całego harmonogramu, więc trzeba ją wybrać świadomie (decyzja E)
-    h('option', { value: '', selected: !current }, 'Wybierz strefę czasową miejsca'),
-    h('optgroup', { label: 'Najczęstsze' }, ...COMMON_ZONES.map(option)),
-    h('optgroup', { label: 'Wszystkie' }, ...all.filter((z) => !COMMON_ZONES.includes(z)).map(option)),
-  );
+  const draw = () => {
+    if (selected) {
+      el.replaceChildren(
+        h(
+          'div',
+          { class: 'zone-chosen' },
+          h('div', {}, h('b', {}, zoneLabel(selected)), h('div', { class: 'muted' }, `${selected} · ${utcOffset(selected)}`)),
+          h(
+            'button',
+            {
+              type: 'button',
+              class: 'zone-change',
+              onclick: () => {
+                selected = '';
+                input.value = '';
+                draw();
+                input.focus();
+              },
+            },
+            'Zmień',
+          ),
+        ),
+      );
+    } else {
+      el.replaceChildren(input, results);
+      showResults();
+    }
+  };
+  draw();
+  return { el, value: () => selected };
 }
 
 function field(label: string, input: HTMLElement, hint?: string): HTMLElement {
@@ -68,7 +100,7 @@ export async function showTripEdit(tripId: string | null): Promise<void> {
   const destination = text('destination', trip?.destination, { maxlength: '80' });
   const approxDates = text('approxDates', trip?.approxDates, { maxlength: '80', placeholder: 'np. marzec 2027' });
   const description = area('description', trip?.description);
-  const timezone = zoneSelect(trip?.timezone ?? '');
+  const timezone = zonePicker(trip?.timezone ?? '');
   const status = h(
     'select',
     { name: 'status' },
@@ -97,7 +129,7 @@ export async function showTripEdit(tripId: string | null): Promise<void> {
             error.textContent = 'Podaj tytuł.';
             return;
           }
-          if (!timezone.value) {
+          if (!timezone.value()) {
             error.textContent = 'Wybierz strefę czasową miejsca – według niej będą godziny w planie.';
             return;
           }
@@ -106,7 +138,7 @@ export async function showTripEdit(tripId: string | null): Promise<void> {
             destination: destination.value,
             approxDates: approxDates.value,
             description: description.value,
-            timezone: timezone.value,
+            timezone: timezone.value(),
             status: status.value as TripStatus,
             planSummary: planSummary.value,
             costEstimate: costEstimate.value,
@@ -131,7 +163,13 @@ export async function showTripEdit(tripId: string | null): Promise<void> {
         field('Kierunek', destination),
         field('Orientacyjne daty', approxDates),
         field('Opis', description),
-        field('Strefa czasowa miejsca', timezone, 'Wszystkie godziny w planie będą w czasie tego miejsca, niezależnie od strefy telefonu.'),
+        h(
+          'div',
+          { class: 'field' },
+          h('span', {}, 'Strefa czasowa miejsca'),
+          timezone.el,
+          h('small', { class: 'muted' }, 'Wszystkie godziny w planie będą w czasie tego miejsca, niezależnie od strefy telefonu.'),
+        ),
         field('Stan', status, 'Szkic widzisz tylko Ty. Zapisy otwarte – można się zgłaszać. Archiwum widzą tylko uczestnicy.'),
       ),
       h(

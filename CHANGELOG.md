@@ -5,6 +5,7 @@
 - Ekran główny to lista wyjazdów. Ustawienia (powiadomienia, motyw, wylogowanie) są pod ikoną ⚙.
 - Przy wyjeździe: przycisk „Też tam chcę” i „Wycofaj zgłoszenie”. Po zgłoszeniu widać plan, koszty, termin decyzji i kto jedzie.
 - Organizator tworzy i edytuje wyjazdy (opis, strefa czasowa miejsca, stan: szkic, zapisy otwarte, zapisy wstrzymane, archiwum) oraz zatwierdza zgłoszenia albo wpisuje rezygnację.
+- Strefę czasową wyjazdu wybiera się, wpisując kraj albo miasto po polsku (np. „Islandia”, „Bali”), zamiast przewijać długą listę.
 - Organizator może dopisać osobę, która potwierdziła udział poza aplikacją.
 - Powiadomienie dla uczestnika, gdy organizator zatwierdzi jego udział, wpisze rezygnację albo przywróci zgłoszenie.
 
