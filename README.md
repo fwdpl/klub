@@ -1,6 +1,6 @@
 # Klub
 
-Aplikacja wyjazdowa dla grupy (PWA). Specyfikacja: [`docs/SPEC.md`](docs/SPEC.md). Zasady pracy: [`CLAUDE.md`](CLAUDE.md). Instrukcja dla uczestników: [`docs/INSTRUKCJA.md`](docs/INSTRUKCJA.md).
+Aplikacja wyjazdowa dla grupy (PWA). Specyfikacja: [`docs/SPEC.md`](docs/SPEC.md). Zasady pracy: [`CLAUDE.md`](CLAUDE.md). Instrukcja dla uczestników: [`docs/INSTRUKCJA.md`](docs/INSTRUKCJA.md). Format pliku planu: [`docs/plan-format.md`](docs/plan-format.md), skill eksportu dla Claude: [`docs/claude-skill/klub-plan-export`](docs/claude-skill/klub-plan-export).
 
 ## Polecenia
 

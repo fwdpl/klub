@@ -2,12 +2,14 @@ import {
   MEMBER_STATUS_LABEL,
   TRIP_STATUS_LABEL,
   addApprovedMember,
+  getInfo,
   getMyStatus,
   getOverview,
   getTrip,
   joinTrip,
   leaveTrip,
   listActivePeople,
+  listDays,
   listMembers,
   setMemberStatus,
   type Member,
@@ -15,6 +17,7 @@ import {
 } from '../data/trips';
 import type { MemberStatus, OverviewDoc } from '../model/types';
 import { h, render, toast } from '../ui';
+import { planSection } from './plan';
 import { detailsSection } from './tripDetails';
 
 interface Me {
@@ -199,6 +202,11 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
           h('p', { class: 'error' }, 'Nie udało się wczytać szczegółów. Sprawdź połączenie.'),
         )
       : null;
+    const plan = seesDetails
+      ? await Promise.all([listDays(tripId), getInfo(tripId)])
+          .then(([days, info]) => planSection(trip, me, members ?? [], days, info.planNotes ?? [], mine === 'approved'))
+          .catch(() => h('p', { class: 'error' }, 'Nie udało się wczytać planu. Sprawdź połączenie.'))
+      : null;
 
     body.replaceChildren(
       h(
@@ -211,6 +219,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
         me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/edycja` }, 'Edytuj wyjazd'),
         trip.description && h('div', { class: 'card' }, multiline(trip.description)),
         actionCard(trip, mine, me, reload),
+        plan,
         details,
         seesOverview && overviewCard(overview),
         seesOverview && members && (me.isOrganizer ? organizerMembersCard(trip, members, reload) : peopleCard(members)),

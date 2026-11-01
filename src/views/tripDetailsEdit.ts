@@ -34,7 +34,7 @@ function zoneField(label: string, value: string): [HTMLElement, () => string] {
 }
 
 /** „Dla kogo”: wszyscy zatwierdzeni albo zaznaczone osoby (decyzja G). */
-function audienceField(value: Audience, approved: Member[]): [HTMLElement, () => Audience] {
+export function audienceField(value: Audience, approved: Member[]): [HTMLElement, () => Audience] {
   const all = h('input', { type: 'checkbox' });
   all.checked = value === 'all';
   const boxes = approved.map((m) => {

@@ -10,6 +10,8 @@ import { hideSplash, toast } from './ui';
 import { showInstallIOS } from './views/install';
 import { showLogin } from './views/login';
 import { showPeople } from './views/people';
+import { showPlanImport } from './views/planImport';
+import { showPlanItemEdit } from './views/planItemEdit';
 import { showSettings } from './views/settings';
 import { showTrip } from './views/trip';
 import { showTripDetailsEdit } from './views/tripDetailsEdit';
@@ -52,6 +54,9 @@ async function route(): Promise<void> {
     if (path === '/nowy-wyjazd') return showTripEdit(null);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/edycja$/))) return showTripEdit(m[1]);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/szczegoly$/))) return showTripDetailsEdit(m[1]);
+    if ((m = path.match(/^\/wyjazd\/([\w-]+)\/import$/))) return showPlanImport(m[1]);
+    if ((m = path.match(/^\/wyjazd\/([\w-]+)\/punkt\/nowy$/))) return showPlanItemEdit(m[1], null, null);
+    if ((m = path.match(/^\/wyjazd\/([\w-]+)\/punkt\/(\d{4}-\d{2}-\d{2})\/([\w-]+)$/))) return showPlanItemEdit(m[1], m[2], m[3]);
   }
   if (path !== '/') history.replaceState(null, '', '#/');
   await showTrips(user.uid, me.isOrganizer);
