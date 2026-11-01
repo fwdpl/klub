@@ -21,7 +21,7 @@ import {
   type AttemptState,
   type LoginCodeDoc,
 } from './codes.js';
-import { organizerMessage } from './memberEvents.js';
+import { memberNotifications } from './memberEvents.js';
 import { sendToUser } from './push.js';
 
 initializeApp();
@@ -258,21 +258,33 @@ export const sendTestPush = onCall(async (request) => {
   return sendToUser(userRef, { title: 'Klub', body: 'Testowe powiadomienie działa.' });
 });
 
-/** Organizator dostaje powiadomienie, gdy ktoś kliknie „też tam chcę” albo wycofa zgłoszenie. */
+/**
+ * Powiadomienia o statusach przy wyjeździe:
+ * zgłoszenie i wycofanie przez uczestnika → organizator; zatwierdzenie, rezygnacja, przywrócenie → uczestnik.
+ */
 export const onMemberWrite = onDocumentWrittenWithAuthContext('trips/{tripId}/members/{uid}', async (event) => {
   const before = event.data?.before.exists ? event.data.before.data() : undefined;
   const after = event.data?.after.exists ? event.data.after.data() : undefined;
-  const trip = await db.doc(`trips/${event.params.tripId}`).get();
-  const message = organizerMessage(before, after, trip.get('title') ?? 'wyjazd');
-  if (!message) return;
+  const { tripId, uid } = event.params;
+  const trip = await db.doc(`trips/${tripId}`).get();
+  // Uczestnik może zmienić tylko własny wpis (reguły), więc wszystko inne to zmiana organizatora lub konsoli
+  const byMember = event.authId === uid;
+  const notes = memberNotifications(before, after, trip.get('title') ?? 'wyjazd', byMember);
+  const link = `/#/wyjazd/${tripId}`;
+  const sends: Promise<unknown>[] = [];
 
-  const organizers = await db.collection('users').where('role', '==', 'organizer').where('active', '==', true).get();
-  // Zmiany zrobione przez samego organizatora nie wymagają powiadomienia
-  if (event.authId && organizers.docs.some((d) => d.id === event.authId)) return;
-
-  await Promise.all(
+  if (notes.toOrganizers) {
+    const organizers = await db.collection('users').where('role', '==', 'organizer').where('active', '==', true).get();
     organizers.docs
-      .filter((d) => d.get('prefs.muted') !== true)
-      .map((d) => sendToUser(d.ref, { ...message, link: '/' })),
-  );
+      // organizator zgłaszający się sam na swój wyjazd nie dostaje powiadomienia o sobie
+      .filter((d) => d.id !== uid && d.get('prefs.muted') !== true)
+      .forEach((d) => sends.push(sendToUser(d.ref, { ...notes.toOrganizers!, link })));
+  }
+  if (notes.toMember) {
+    const member = await db.doc(`users/${uid}`).get();
+    if (member.get('active') === true && member.get('prefs.muted') !== true) {
+      sends.push(sendToUser(member.ref, { ...notes.toMember, link }));
+    }
+  }
+  await Promise.all(sends);
 });

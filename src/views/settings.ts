@@ -46,16 +46,6 @@ function themeSwitch(): HTMLElement {
   return wrap;
 }
 
-function organizerCard(): HTMLElement {
-  return h(
-    'div',
-    { class: 'card' },
-    h('h2', {}, 'Panel organizatora'),
-    h('p', { class: 'muted' }, 'Lista osób, kody logowania, włączanie i wyłączanie dostępu.'),
-    h('a', { class: 'btn btn--link', href: '#/osoby' }, 'Osoby'),
-  );
-}
-
 /**
  * Po odmowie przeglądarka nie pozwala zapytać ponownie, a strona nie może otworzyć ustawień telefonu.
  * Pokazujemy więc dokładną ścieżkę dla danego urządzenia.
@@ -91,7 +81,15 @@ function deniedHelp(recheck: () => void): HTMLElement {
   );
 }
 
-export async function showHome(user: User): Promise<void> {
+// Nasłuchiwanie zmian zgody na powiadomienia – jedno na raz, odpinane przy ponownym wejściu na ekran
+let listeners: AbortController | null = null;
+
+/** Ustawienia: powiadomienia, motyw, instalacja, informacje o koncie, wylogowanie. */
+export async function showSettings(user: User): Promise<void> {
+  listeners?.abort();
+  listeners = new AbortController();
+  const { signal } = listeners;
+
   const snap = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
   const role = snap?.data()?.role === 'organizer' ? 'organizer' : 'member';
   let push = await pushState();
@@ -137,13 +135,17 @@ export async function showHome(user: User): Promise<void> {
   const silentRecheck = async () => {
     if (push === 'denied' && (await pushState()) !== 'denied') await recheck();
   };
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') void silentRecheck();
-  });
-  window.addEventListener('focus', () => void silentRecheck());
+  document.addEventListener(
+    'visibilitychange',
+    () => {
+      if (document.visibilityState === 'visible') void silentRecheck();
+    },
+    { signal },
+  );
+  window.addEventListener('focus', () => void silentRecheck(), { signal });
   navigator.permissions
     ?.query({ name: 'notifications' })
-    .then((status) => status.addEventListener('change', () => void silentRecheck()))
+    .then((status) => status.addEventListener('change', () => void silentRecheck(), { signal }))
     .catch(() => undefined);
 
   enableBtn.addEventListener('click', async () => {
@@ -177,7 +179,8 @@ export async function showHome(user: User): Promise<void> {
   refreshPush();
 
   render(
-    h('h1', {}, isTestEnv ? 'Klub TEST' : 'Klub'),
+    h('a', { class: 'back', href: '#/' }, '← Wyjazdy'),
+    h('h1', {}, 'Ustawienia'),
     h(
       'div',
       { class: 'card' },
@@ -193,7 +196,6 @@ export async function showHome(user: User): Promise<void> {
     ),
     installCard(),
     h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn),
-    ...(role === 'organizer' ? [organizerCard()] : []),
     h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch()),
     h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => signOut(auth) }, 'Wyloguj'),
   );

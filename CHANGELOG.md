@@ -1,5 +1,13 @@
 # Zmiany
 
+## 0.3.0 — wyjazdy, zgłoszenia i zatwierdzanie (wersja testowa)
+
+- Ekran główny to lista wyjazdów. Ustawienia (powiadomienia, motyw, wylogowanie) są pod ikoną ⚙.
+- Przy wyjeździe: przycisk „Też tam chcę” i „Wycofaj zgłoszenie”. Po zgłoszeniu widać plan, koszty, termin decyzji i kto jedzie.
+- Organizator tworzy i edytuje wyjazdy (opis, strefa czasowa miejsca, stan: szkic, zapisy otwarte, zapisy wstrzymane, archiwum) oraz zatwierdza zgłoszenia albo wpisuje rezygnację.
+- Organizator może dopisać osobę, która potwierdziła udział poza aplikacją.
+- Powiadomienie dla uczestnika, gdy organizator zatwierdzi jego udział, wpisze rezygnację albo przywróci zgłoszenie.
+
 ## 0.2.0 — lista osób i zasady dostępu do wyjazdów (wersja testowa)
 
 - Panel organizatora „Osoby”: dodawanie osoby (mail i imię), kod logowania, zmiana imienia, wyłączanie i włączanie dostępu.

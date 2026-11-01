@@ -1,10 +1,12 @@
 type Attrs = Record<string, string | boolean | EventListener | undefined>;
+/** Puste wartości (warunkowe fragmenty) są pomijane. */
+type Child = Node | string | null | false | undefined;
 
 /** Mały pomocnik do budowania DOM bez frameworka. */
 export function h<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   attrs: Attrs = {},
-  ...children: (Node | string | null | false)[]
+  ...children: Child[]
 ): HTMLElementTagNameMap[K] {
   const el = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
@@ -18,7 +20,7 @@ export function h<K extends keyof HTMLElementTagNameMap>(
     }
   }
   for (const child of children) {
-    if (child === null || child === false) continue;
+    if (child === null || child === false || child === undefined || child === '') continue;
     el.append(child);
   }
   return el;
@@ -26,8 +28,8 @@ export function h<K extends keyof HTMLElementTagNameMap>(
 
 const appEl = document.getElementById('app') as HTMLElement;
 
-export function render(...nodes: Node[]): void {
-  appEl.replaceChildren(...nodes);
+export function render(...nodes: Child[]): void {
+  appEl.replaceChildren(...nodes.filter((n): n is Node | string => n !== null && n !== false && n !== undefined && n !== ''));
   appEl.hidden = false;
 }
 

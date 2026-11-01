@@ -5,21 +5,43 @@ interface MemberSnapshot {
   displayName?: string;
 }
 
+export interface MemberNotifications {
+  toOrganizers?: PushMessage;
+  toMember?: PushMessage;
+}
+
 /**
- * Powiadomienie dla organizatora o zmianie zgłoszenia przez uczestnika (decyzja z 31.10.2026).
- * Zmiany robione przez samego organizatora (zatwierdzenie, rezygnacja) odfiltrowuje wywołujący.
+ * Powiadomienia o zmianie statusu osoby przy wyjeździe.
+ * - Zmiana zrobiona przez samą osobę („też tam chcę”, wycofanie) → organizator (decyzja z 31.10.2026).
+ * - Zmiana zrobiona przez organizatora (zatwierdzenie, rezygnacja, przywrócenie) → ta osoba (decyzja D z 1.11.2026).
  */
-export function organizerMessage(
+export function memberNotifications(
   before: MemberSnapshot | undefined,
   after: MemberSnapshot | undefined,
   tripTitle: string,
-): PushMessage | null {
+  byMember: boolean,
+): MemberNotifications {
   const name = after?.displayName ?? before?.displayName ?? 'Ktoś';
-  if (!before && after?.status === 'interested') {
-    return { title: 'Nowe zgłoszenie', body: `${name} chce jechać: ${tripTitle}` };
+
+  if (byMember) {
+    if (!before && after?.status === 'interested') {
+      return { toOrganizers: { title: 'Nowe zgłoszenie', body: `${name} chce jechać: ${tripTitle}` } };
+    }
+    if (before?.status === 'interested' && !after) {
+      return { toOrganizers: { title: 'Wycofane zgłoszenie', body: `${name} rezygnuje z: ${tripTitle}` } };
+    }
+    return {};
   }
-  if (before?.status === 'interested' && !after) {
-    return { title: 'Wycofane zgłoszenie', body: `${name} rezygnuje z: ${tripTitle}` };
+
+  if (!after || after.status === before?.status) return {};
+  switch (after.status) {
+    case 'approved':
+      return { toMember: { title: 'Jesteś na liście uczestników', body: tripTitle } };
+    case 'withdrawn':
+      return { toMember: { title: 'Wpisano rezygnację', body: `${tripTitle} – nie jesteś już na liście uczestników.` } };
+    case 'interested':
+      return before ? { toMember: { title: 'Przywrócono zgłoszenie', body: tripTitle } } : {};
+    default:
+      return {};
   }
-  return null;
 }

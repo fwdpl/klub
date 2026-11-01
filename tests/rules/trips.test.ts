@@ -8,6 +8,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   collection,
+  collectionGroup,
   deleteDoc,
   doc,
   getDoc,
@@ -119,6 +120,7 @@ describe('wyjazdy – warstwa 1', () => {
     await assertSucceeds(setDoc(doc(as('jacek'), 'trips/nowy'), trip('draft')));
     await assertFails(setDoc(doc(as('jacek'), 'trips/zly'), trip('cokolwiek')));
     await assertFails(setDoc(doc(as('jacek'), 'trips/zly2'), { ...trip('open'), title: '' }));
+    await assertFails(setDoc(doc(as('jacek'), 'trips/zly3'), { ...trip('open'), timezone: '' }));
     await assertSucceeds(updateDoc(doc(as('jacek'), 'trips/t-open'), { status: 'closed' }));
     await assertFails(deleteDoc(doc(as('ania'), 'trips/t-open')));
   });
@@ -182,6 +184,26 @@ describe('statusy – lista osób przy wyjeździe (wariant C)', () => {
     await assertSucceeds(updateDoc(doc(as('jacek'), 'trips/t-open/members/ania'), { status: 'withdrawn' }));
     await assertFails(updateDoc(doc(as('jacek'), 'trips/t-open/members/ania'), { status: 'vip' }));
     await assertSucceeds(updateDoc(doc(as('jacek'), 'trips/t-open/members/darek'), { status: 'interested' }));
+  });
+});
+
+describe('własne statusy na wszystkich wyjazdach', () => {
+  it('osoba pobiera swoje wpisy jednym zapytaniem z filtrem po uid', async () => {
+    const q = query(collectionGroup(as('ania'), 'members'), where('uid', '==', 'ania'));
+    await assertSucceeds(getDocs(q));
+  });
+
+  it('nie da się pobrać cudzych wpisów ani wszystkich naraz', async () => {
+    await assertFails(getDocs(query(collectionGroup(as('celina'), 'members'), where('uid', '==', 'ania'))));
+    await assertFails(getDocs(collectionGroup(as('celina'), 'members')));
+  });
+
+  it('wyłączona osoba nie pobiera nawet swoich wpisów', async () => {
+    await assertFails(getDocs(query(collectionGroup(as('ola'), 'members'), where('uid', '==', 'ola'))));
+  });
+
+  it('organizator dopisuje osobę od razu jako zatwierdzoną', async () => {
+    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/members/celina'), member('celina', 'Celina', 'approved')));
   });
 });
 
