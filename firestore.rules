@@ -129,9 +129,16 @@ service cloud.firestore {
           && request.resource.data.checklistTemplate is list;
       }
 
+      // Plan dni: jeden dokument na dzień (id = data); zapisuje organizator (import albo edycja punktu)
       match /days/{date} {
         allow read: if canSeeDetails(tripId);
-        allow write: if isOrganizer();
+        allow create, update: if isOrganizer()
+          && request.resource.data.keys().hasOnly(['date', 'timezone', 'baseLocation', 'weatherDependent', 'items', 'revision', 'updatedAt'])
+          && request.resource.data.date == date
+          && request.resource.data.items is list
+          && request.resource.data.items.size() <= 100
+          && request.resource.data.revision is int;
+        allow delete: if isOrganizer();
       }
 
       // Checklista osobista: właściciel (zatwierdzony) odhacza punkty wspólne (templateDone)

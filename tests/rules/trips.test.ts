@@ -43,6 +43,8 @@ const trip = (status: string) => ({
   schemaVersion: 1,
 });
 
+const day = (date: string) => ({ date, baseLocation: 'Vík', items: [], revision: 1 });
+
 const info = () => ({ flights: [], hotels: [], emergencyContacts: [], insurance: '', checklistTemplate: [] });
 
 const member = (uid: string, displayName: string, status: string) => ({ uid, displayName, status, updatedAt: new Date() });
@@ -76,7 +78,7 @@ beforeEach(async () => {
       await setDoc(doc(db, `trips/${t}/members/bartek`), member('bartek', 'Bartek', 'interested'));
       await setDoc(doc(db, `trips/${t}/overview/main`), { planSummary: 'plan', costEstimate: '5000 zł' });
       await setDoc(doc(db, `trips/${t}/info/main`), info());
-      await setDoc(doc(db, `trips/${t}/days/2027-03-10`), { date: '2027-03-10', items: [] });
+      await setDoc(doc(db, `trips/${t}/days/2027-03-10`), day('2027-03-10'));
       await setDoc(doc(db, `trips/${t}/checklists/ania`), { items: [{ id: '1', text: 'paszport', done: false }] });
     }
     await setDoc(doc(db, 'trips/t-open/members/darek'), member('darek', 'Darek', 'withdrawn'));
@@ -263,8 +265,17 @@ describe('warstwa 3 – szczegóły', () => {
 
   it('szczegóły zmienia tylko organizator', async () => {
     await assertFails(updateDoc(doc(as('ania'), 'trips/t-open/info/main'), { insurance: 'x' }));
-    await assertFails(setDoc(doc(as('ania'), 'trips/t-open/days/2027-03-11'), { date: '2027-03-11', items: [] }));
-    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-11'), { date: '2027-03-11', items: [] }));
+    await assertFails(setDoc(doc(as('ania'), 'trips/t-open/days/2027-03-11'), day('2027-03-11')));
+    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-11'), day('2027-03-11')));
+  });
+
+  it('dzień planu: id równe dacie, ustalony kształt, rewizja', async () => {
+    await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-12'), day('2027-03-13')));
+    await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-12'), { ...day('2027-03-12'), extra: 1 }));
+    await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-12'), { ...day('2027-03-12'), revision: '1' }));
+    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-12'), { ...day('2027-03-12'), timezone: 'Atlantic/Reykjavik' }));
+    await assertFails(deleteDoc(doc(as('ania'), 'trips/t-open/days/2027-03-12')));
+    await assertSucceeds(deleteDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-12')));
   });
 });
 

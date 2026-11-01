@@ -120,3 +120,47 @@ export interface ChecklistDoc {
   templateDone: Record<string, boolean>;
   items: ChecklistItem[];
 }
+
+// ---------- plan dni (WARSTWA 3) ----------
+
+export type PlanItemType = 'activity' | 'meal' | 'transport' | 'flight' | 'checkin' | 'meeting' | 'free';
+
+export interface PlanPlace {
+  name: string;
+  address?: string;
+  lat?: number;
+  lng?: number;
+}
+
+/**
+ * Punkt planu. start/end – czas lokalny miejsca 'YYYY-MM-DDTHH:mm'.
+ * tz – strefa początku, gdy inna niż dzień (np. wylot); endTz – strefa końca (przylot). Brak = strefa dnia.
+ */
+export interface PlanItem {
+  id: string;
+  type: PlanItemType;
+  title: string;
+  start: string;
+  end?: string;
+  tz?: string;
+  endTz?: string;
+  audience: Audience;
+  /** Loty, check-in, bilety na godzinę – nie przenoszą się przy zamianie dni (v2). */
+  pinnedToDate: boolean;
+  place?: PlanPlace;
+  notes?: string;
+}
+
+export type WeatherDependency = 'beach' | 'viewpoint' | 'night-sky';
+
+/** trips/{tripId}/days/{date} – WARSTWA 3. Jeden dokument na dzień. */
+export interface DayDoc {
+  date: string; // 'YYYY-MM-DD'
+  /** Strefa dnia, gdy inna niż strefa wyjazdu (wyjazd przez kilka krajów). */
+  timezone?: string;
+  baseLocation: string;
+  weatherDependent?: WeatherDependency;
+  items: PlanItem[];
+  /** Rewizja pliku planu, z którego pochodzi dzień (import). */
+  revision: number;
+}

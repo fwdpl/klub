@@ -1,0 +1,85 @@
+{
+  "format": "klub-plan",
+  "version": "1.0",
+  "trip": "Islandia zimą",
+  "revision": 1,
+  "days": [
+    {
+      "date": "2027-03-10",
+      "base": "Vík",
+      "items": [
+        {
+          "time": "06:10",
+          "end": "09:30",
+          "timezone": "Europe/Warsaw",
+          "endTimezone": "Atlantic/Reykjavik",
+          "type": "flight",
+          "title": "Lot FI 531 Warszawa → Keflavík",
+          "for": "all",
+          "place": { "name": "Lotnisko Chopina", "address": "Żwirki i Wigury 1, Warszawa" },
+          "notes": "Zbiórka przy stanowisku odprawy 04:30 (czas polski)."
+        },
+        {
+          "time": "10:30",
+          "type": "meeting",
+          "title": "Odbiór aut z wypożyczalni",
+          "for": "all",
+          "place": { "name": "Blue Car Rental", "address": "Blikavöllur 3, 235 Keflavík", "lat": 63.9875, "lng": -22.6118 }
+        },
+        {
+          "time": "13:00",
+          "end": "14:30",
+          "type": "meal",
+          "title": "Obiad w Selfoss",
+          "for": "all"
+        },
+        {
+          "time": "15:30",
+          "end": "16:30",
+          "type": "activity",
+          "title": "Wodospad Seljalandsfoss",
+          "for": "all",
+          "place": { "name": "Seljalandsfoss", "lat": 63.6156, "lng": -19.9886 }
+        },
+        {
+          "time": "16:00",
+          "end": "17:30",
+          "type": "activity",
+          "title": "Zdjęcia przy Gljúfrabúi (osobno)",
+          "for": ["Ania"],
+          "notes": "Wodoodporna kurtka – przejście przez wodę."
+        },
+        {
+          "time": "18:00",
+          "type": "checkin",
+          "title": "Zameldowanie w Hotelu Kría",
+          "for": "all",
+          "place": { "name": "Hotel Kría", "address": "Sléttuvegur 12, 870 Vík" }
+        }
+      ]
+    },
+    {
+      "date": "2027-03-11",
+      "base": "Vík",
+      "weather": "night-sky",
+      "items": [
+        {
+          "time": "09:00",
+          "end": "12:00",
+          "type": "activity",
+          "title": "Plaża Reynisfjara",
+          "for": "all",
+          "place": { "name": "Reynisfjara", "lat": 63.4044, "lng": -19.0450 },
+          "notes": "Nie podchodzić do linii fal (sneaker waves)."
+        },
+        {
+          "time": "22:00",
+          "end": "2027-03-12T01:00",
+          "type": "activity",
+          "title": "Zorza polarna – jeśli pogoda pozwoli",
+          "for": "all"
+        }
+      ]
+    }
+  ]
+}
