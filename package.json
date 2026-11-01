@@ -1,7 +1,7 @@
 {
   "name": "klub",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite --mode test",
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
+    "ajv": "^8.20.0",
     "firebase-tools": "^15.34.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",

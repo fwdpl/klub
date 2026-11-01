@@ -1,6 +1,6 @@
 # Aplikacja wyjazdowa dla grupy — specyfikacja (PWA)
 
-Wersja specyfikacji: 1.6 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A–G i powiadomienie organizatora z 1.11.2026; stan bramki technicznej.
+Wersja specyfikacji: 1.7 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A–J i powiadomienie organizatora z 1.11.2026; format planu „klub-plan” 1.0 sprawdzony na prawdziwym harmonogramie; stan bramki technicznej.
 
 ---
 
@@ -136,8 +136,9 @@ trips/{tripId}/info/main          # WARSTWA 3 — approved + organizer
   # audience: 'all' | uid[] – „dla kogo” (decyzja G); uczestnik widzi pozycje wspólne i swoje, organizator wszystkie
   # countryCard – karta kraju przeniesiona do „Szybko po v1”
 trips/{tripId}/days/{date}        # WARSTWA 3 — approved + organizer (wszyscy zatwierdzeni widzą wszystkie plany: „gdzie jest reszta”)
-  date, baseLocation, weatherDependent?: 'beach'|'viewpoint'|'night-sky'
-  items: PlanItem[]
+  date, title?, note?, timezone? (strefa dnia, gdy inna niż wyjazdu), baseLocation,
+  weatherDependent?: 'beach'|'viewpoint'|'night-sky', items: PlanItem[], revision (z importu)
+  # import zastępuje tylko dni z pliku (decyzja I); organizator poprawia pojedyncze punkty (decyzja H)
 trips/{tripId}/checklists/{uid}   # właściciel (zatwierdzony) + organizator
   templateDone: { [checklistTemplate.id]: bool }   # odhaczenia punktów wspólnych
   items: { id, text, done }[]                      # własne punkty osoby, pod wspólnymi (decyzja F)
@@ -162,13 +163,24 @@ title, start: 'YYYY-MM-DDTHH:mm', end?: 'YYYY-MM-DDTHH:mm', tz?: IANA   # brak t
 endTz?: IANA                                                               # loty między strefami
 audience: 'all' | uid[]           # „dla kogo”
 pinnedToDate: bool                # loty, check-in, bilety na godzinę — nie przenoszą się przy zamianie dni
-place?: { name, address, lat, lng, placeId? }
-notes?
+place?: { name, address?, lat?, lng? }
+notes?, route?                    # tekst z pogrubieniem **…**; route – dojazd
+meet?: { place, time? }           # spotkanie po rozdzieleniu
+options?: { name, rating?, address? }[]   # propozycje (np. restauracje)
+nearby?, important?: bool         # „w pobliżu”; wyróżnienie (stała godzina, rezerwacja)
+tags?: string[]                   # np. 'foto' – filtr i zestawienia
 ```
+
+### Format pliku planu – `klub-plan` 1.0 (ustalone 1.11.2026)
+Opis: `docs/plan-format.md`, schemat: `docs/plan.schema.v1.json`, przykład: `docs/plan-example.json` (sprawdzany testami).
+Pola ustalone po analizie prawdziwego harmonogramu wyjazdu (8 dni, 80 punktów – przechodzi walidację; sam harmonogram poza repozytorium).
+Osoby w pliku po imieniu (tylko zatwierdzeni), czas lokalny miejsca, nowe pola w 1.x ignorowane, zmiana znaczenia = 2.0.
+Skill dla Claude (eksport planu z rozmowy): `docs/claude-skill/klub-plan-export` – instrukcja, kopia schematu, walidator w Pythonie
+zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 
 ### Zasady modelu
 - Czas: zawsze czas lokalny miejsca + strefa IANA, nigdy UTC jako źródło prawdy. Telefon może być w innej strefie niż wyjazd.
-- **Decyzja E (1.11.2026)**: strefa wyjazdu (`trips.timezone`) dotyczy całego harmonogramu, więc nie ma wartości domyślnej — organizator wybiera ją świadomie przy tworzeniu wyjazdu (lista z przesunięciem względem UTC). Punkt planu może mieć własną strefę (`tz`, `endTz` – loty). Dzień w innej strefie niż wyjazd (wyjazd przez kilka krajów) – do dopracowania w kroku 4 (plan dni). Orientacyjne daty wyjazdu to tekst, strefa ich nie dotyczy.
+- **Decyzja E (1.11.2026)**: strefa wyjazdu (`trips.timezone`) dotyczy całego harmonogramu, więc nie ma wartości domyślnej — organizator wybiera ją świadomie przy tworzeniu wyjazdu (lista z przesunięciem względem UTC). Punkt planu może mieć własną strefę (`tz`, `endTz` – loty). Dzień w innej strefie niż wyjazd (wyjazd przez kilka krajów): `days.timezone`. Orientacyjne daty wyjazdu to tekst, strefa ich nie dotyczy.
 - Własne statusy na wszystkich wyjazdach: zapytanie collection group `members` z filtrem `uid == zalogowany` (reguła `/{path=**}/members/{id}`, indeks collection group na `uid`).
 - Reguły nie są filtrami: każde zapytanie klienta musi być zgodne z regułami (np. nie odpytywać kolekcji, do której użytkownik ma dostęp tylko częściowo).
 - Kopia zapasowa: codzienne kopie Firestore w produkcji (Blaze, ustawiane przy tworzeniu bazy) + przycisk „eksport całego wyjazdu do JSON” w panelu organizatora jako kopia do trzymania u siebie.
@@ -184,7 +196,9 @@ notes?
 - **Informacje o wyjeździe**: loty (godziny w czasie lotnisk), noclegi (nawigacja, telefon), kontakty awaryjne (dzwonienie), ubezpieczenie; loty i noclegi z „dla kogo” (decyzja G). Offline.
 - **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem; wspólna część od organizatora na górze + własne punkty osoby pod nią (decyzja F).
 - **Plan dni z planami indywidualnymi**: każdy punkt ma „dla kogo” (wszyscy / wybrane osoby / jedna osoba). Uczestnik widzi swoją oś czasu: punkty wspólne + swoje. Punkty wspólne wyróżnione, z adresem i nawigacją (link do Google Maps). Podgląd „gdzie jest reszta” (plany wszystkich obok siebie). Ostrzeżenie o kolizji punktu prywatnego ze wspólnym.
-- **Import planu z JSON** (schemat §4/§9) z walidacją i podglądem przed zapisem.
+- **Import planu z JSON** (format „klub-plan”, §4) z walidacją (wszystkie błędy naraz, po polsku, z miejscem) i podglądem przed zapisem; zastępuje tylko dni z pliku (decyzja I).
+- **Ręczna edycja punktu** planu przez organizatora: dodanie, zmiana, usunięcie (decyzja H).
+- **Widok planu**: „Mój plan” / „Wszyscy” (decyzja J; kolumny dla osób – układ tabletowy v2), filtr etykiet (np. #foto), kolizje ⚠, nawigacja do miejsc i propozycji.
 - **Tryb offline**: przycisk „pobierz wszystko na wyjazd”, widoczna data ostatniej synchronizacji.
 - **Powiadomienia** (mechanizm wysyłki: patrz OTWARTE DECYZJE) + przycisk „Włącz powiadomienia”.
 - **Komunikat o nowej wersji** („Jest nowa wersja, odśwież”).
@@ -344,6 +358,10 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 - [x] E: strefa wyjazdu obowiązkowa, bez domyślnej; plan zawsze w czasie miejsca (§4). Wybór przez wyszukiwarkę po polskiej nazwie kraju lub miasta.
 - [x] F: checklista = wspólna część od organizatora + własne punkty każdej osoby (§4, §5).
 - [x] G: loty i noclegi z „dla kogo” – wszyscy albo wybrane osoby (§4, §5).
+- [x] H: organizator poprawia, dodaje i usuwa pojedyncze punkty planu w aplikacji (§5).
+- [x] I: import zastępuje tylko dni zawarte w pliku (§4).
+- [x] J: „gdzie jest reszta” na telefonie – przełącznik „Mój plan / Wszyscy”; kolumny w układzie tabletowym (v2) (§5).
+- [x] Format pliku planu „klub-plan” 1.0 + skill eksportu dla Claude (§4).
 
 ### OTWARTE (Claude Code: pytaj, nie zakładaj)
 Blokujące v1:

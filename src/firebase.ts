@@ -13,6 +13,8 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 // Trwała pamięć offline: dane po synchronizacji są dostępne bez sieci
 export const db = initializeFirestore(app, {
+  // pola opcjonalne modelu bywają puste – nie zapisujemy ich zamiast rzucać błąd
+  ignoreUndefinedProperties: true,
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 });
 const functions = getFunctions(app, functionsRegion);

@@ -17,6 +17,7 @@ import {
   SCHEMA_VERSION,
   type Audience,
   type ChecklistDoc,
+  type DayDoc,
   type InfoDoc,
   type MemberDoc,
   type MemberStatus,
@@ -195,4 +196,25 @@ export function isFor(audience: Audience, uid: string): boolean {
 
 export function newId(): string {
   return Math.random().toString(36).slice(2, 10);
+}
+
+// ---------- plan dni (warstwa 3) ----------
+
+export async function listDays(tripId: string): Promise<DayDoc[]> {
+  const snap = await getDocs(collection(db, 'trips', tripId, 'days'));
+  return snap.docs.map((d) => d.data() as DayDoc).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Import: zastępuje tylko dni z pliku (decyzja I) i uwagi do planu. */
+export async function saveImportedPlan(tripId: string, days: DayDoc[], planNotes: string[]): Promise<void> {
+  const info = await getInfo(tripId);
+  const batch = writeBatch(db);
+  for (const day of days) batch.set(doc(db, 'trips', tripId, 'days', day.date), { ...day, updatedAt: serverTimestamp() });
+  batch.set(doc(db, 'trips', tripId, 'info', 'main'), { ...info, planNotes, updatedAt: serverTimestamp() });
+  await batch.commit();
+}
+
+/** Ręczna zmiana jednego dnia (decyzja H): zapis całego dokumentu dnia. */
+export function saveDay(tripId: string, day: DayDoc): Promise<void> {
+  return setDoc(doc(db, 'trips', tripId, 'days', day.date), { ...day, updatedAt: serverTimestamp() });
 }
