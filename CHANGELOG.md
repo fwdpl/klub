@@ -1,5 +1,14 @@
 # Zmiany
 
+## 0.6.0 — wyjazd bez internetu i powiadomienia o zmianach (wersja testowa)
+
+- Ikona pobierania przy wyjeździe – zapisuje ten wyjazd na telefonie; pod nią „Na telefonie: …”. Bez internetu: czerwony pasek, plan, szczegóły i checklista działają, zmiany wysyłają się po połączeniu.
+- Po zmianie planu, szczegółów albo kosztów organizator dostaje gotową propozycję powiadomienia – może ją poprawić, wysłać albo pominąć. Przy wyjeździe jest też „Wyślij powiadomienie”.
+- Ustawienia: „Wycisz wszystkie powiadomienia z Klubu”.
+- Ekran wyjazdu: każdą sekcję można zwinąć i rozwinąć stuknięciem w nagłówek. Plan pokazuje najpierw listę dni, a każdy dzień rozwija się osobno; dzisiejszy dzień jest oznaczony „dziś” i rozwinięty. Aplikacja pamięta, co było rozwinięte.
+- Ekran „Osoby”: przekreślony głośnik przy imieniu osoby, która wyciszyła albo nie włączyła powiadomień – wiadomo, z kim w pilnej sprawie skontaktować się inaczej.
+- Po wysłaniu powiadomienia podsumowanie (ile osób dostało, ile nie ma włączonych powiadomień, ile wyciszyło) zostaje na ekranie do stuknięcia OK.
+
 ## 0.5.0 — plan dni (wersja testowa)
 
 - Plan wyjazdu dla zatwierdzonych uczestników: dni z tytułem i uwagą, oś czasu z godzinami w czasie miejsca, dojazdami, propozycjami lokali, miejscem spotkania i przyciskami „Nawiguj”.

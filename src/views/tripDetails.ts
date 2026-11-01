@@ -2,6 +2,7 @@ import { getChecklist, getInfo, isFor, newId, saveChecklist, type Member, type T
 import type { Audience, ChecklistDoc, EmergencyContact, Flight, Hotel, InfoDoc } from '../model/types';
 import { zoneLabel } from '../timezones';
 import { h, present, toast } from '../ui';
+import { fold } from './fold';
 
 interface Me {
   uid: string;
@@ -75,7 +76,9 @@ function contactRow(c: EmergencyContact): HTMLElement {
 /** Moja checklista: punkty wspólne od organizatora + własne (decyzja F). */
 function checklistCard(tripId: string, uid: string, template: InfoDoc['checklistTemplate'], initial: ChecklistDoc): HTMLElement {
   let state: ChecklistDoc = initial;
-  const card = h('div', { class: 'card' });
+  const body = h('div');
+  const card = fold({ id: `${tripId}:checklist`, title: 'Moja checklista', open: false }, body);
+  const meta = card.querySelector('.fold__meta') as HTMLElement;
 
   const persist = async (next: ChecklistDoc) => {
     const previous = state;
@@ -108,9 +111,9 @@ function checklistCard(tripId: string, uid: string, template: InfoDoc['checklist
     const input = h('input', { type: 'text', maxlength: '80', placeholder: 'Dopisz swój punkt', 'aria-label': 'Nowy punkt' });
     const add = h('button', { type: 'submit', class: 'btn btn--secondary' }, 'Dodaj');
 
-    card.replaceChildren(
+    meta.textContent = total ? `${doneCount}/${total}` : '';
+    body.replaceChildren(
       ...present(
-        h('h2', {}, `Moja checklista${total ? ` (${doneCount}/${total})` : ''}`),
         ...template.map((t) =>
           checkbox(!!state.templateDone[t.id], t.text, (v) => persist({ ...state, templateDone: { ...state.templateDone, [t.id]: v } })),
         ),
@@ -156,17 +159,17 @@ export async function detailsSection(trip: Trip, me: Me, members: Member[], show
   const hotels = mine(info.hotels).sort((a, b) => a.checkIn.localeCompare(b.checkIn));
   const checklist = showChecklist ? await getChecklist(trip.id, me.uid).catch(() => ({ templateDone: {}, items: [] })) : null;
 
-  const section = (title: string, rows: HTMLElement[], empty: string) =>
-    h('div', { class: 'card' }, h('h2', {}, title), ...(rows.length ? rows : [h('p', { class: 'muted' }, empty)]));
+  const section = (key: string, title: string, rows: HTMLElement[], empty: string) =>
+    fold({ id: `${trip.id}:${key}`, title, meta: rows.length ? String(rows.length) : 'brak', open: false }, ...(rows.length ? rows : [h('p', { class: 'muted' }, empty)]));
 
   return h(
     'div',
     {},
     me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/szczegoly` }, 'Edytuj szczegóły i checklistę'),
-    section('Loty', flights.map((f) => flightRow(f, members)), 'Brak lotów.'),
-    section('Noclegi', hotels.map((x) => hotelRow(x, members)), 'Brak noclegów.'),
-    section('Kontakty awaryjne', info.emergencyContacts.map(contactRow), 'Brak kontaktów.'),
-    info.insurance && h('div', { class: 'card' }, h('h2', {}, 'Ubezpieczenie'), h('p', { class: 'multiline' }, info.insurance)),
+    section('flights', 'Loty', flights.map((f) => flightRow(f, members)), 'Brak lotów.'),
+    section('hotels', 'Noclegi', hotels.map((x) => hotelRow(x, members)), 'Brak noclegów.'),
+    section('contacts', 'Kontakty awaryjne', info.emergencyContacts.map(contactRow), 'Brak kontaktów.'),
+    info.insurance && fold({ id: `${trip.id}:insurance`, title: 'Ubezpieczenie', open: false }, h('p', { class: 'multiline' }, info.insurance)),
     checklist && checklistCard(trip.id, me.uid, info.checklistTemplate, checklist),
   );
 }

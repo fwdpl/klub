@@ -1,7 +1,8 @@
-import { collection, getDocs } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
+import { readDocs } from '../data/read';
 import { addPerson, createLoginCode, db, setPersonActive, updatePerson } from '../firebase';
 import type { UserDoc } from '../model/types';
-import { h, render, toast } from '../ui';
+import { h, present, render, toast } from '../ui';
 
 type Person = UserDoc & { uid: string };
 
@@ -103,13 +104,14 @@ function personRow(person: Person, myUid: string, reload: () => Promise<void>): 
     );
   });
 
+  const silent = person.active ? silentReason(person) : null;
   return h(
     'div',
     { class: `person${person.active ? '' : ' person--inactive'}` },
     h(
       'div',
       { class: 'person__head' },
-      h('span', { class: 'person__name' }, person.displayName),
+      h('span', { class: 'person__name' }, person.displayName, silent && silentIcon(silent)),
       person.role === 'organizer'
         ? h('span', { class: 'badge badge--accent' }, 'organizator')
         : !person.active && h('span', { class: 'badge' }, 'wyłączona'),
@@ -119,6 +121,23 @@ function personRow(person: Person, myUid: string, reload: () => Promise<void>): 
     error,
     extra,
   );
+}
+
+const MUTED_ICON =
+  '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m23 9-6 6"/><path d="m17 9 6 6"/></svg>';
+
+/** Dlaczego osoba nie dostanie powiadomienia – albo null, gdy dostanie. */
+export function silentReason(person: Pick<UserDoc, 'prefs' | 'fcmTokens'>): string | null {
+  if (person.prefs?.muted) return 'Powiadomienia wyciszone';
+  if (!person.fcmTokens?.length) return 'Powiadomienia niewłączone';
+  return null;
+}
+
+/** Przekreślony głośnik przy imieniu – organizator wie, z kim w pilnej sprawie skontaktować się inaczej. */
+export function silentIcon(reason: string): HTMLElement {
+  const icon = h('span', { class: 'silent-icon', role: 'img', 'aria-label': reason, title: reason });
+  icon.innerHTML = MUTED_ICON; // stała ikona – bez treści od użytkownika
+  return icon;
 }
 
 function addForm(onAdded: () => Promise<void>): HTMLElement {
@@ -161,14 +180,23 @@ export async function showPeople(myUid: string): Promise<void> {
   const counter = h('h2', {});
 
   const reload = async () => {
-    const snap = await getDocs(collection(db, 'users'));
+    const snap = await readDocs(collection(db, 'users'));
     const people = snap.docs
       .map((d) => ({ uid: d.id, ...(d.data() as UserDoc) }))
       // aktywni najpierw, potem alfabetycznie
       .sort((a, b) => Number(b.active) - Number(a.active) || a.displayName.localeCompare(b.displayName, 'pl'));
     const active = people.filter((p) => p.active).length;
     counter.textContent = `Osoby na liście: ${active}${people.length > active ? ` (+${people.length - active} wyłączone)` : ''}`;
-    list.replaceChildren(counter, ...people.map((p) => personRow(p, myUid, reload)));
+    const silentCount = people.filter((p) => p.active && silentReason(p)).length;
+    const legend =
+      silentCount > 0 &&
+      h(
+        'p',
+        { class: 'muted silent-legend' },
+        silentIcon('Nie dostanie powiadomień'),
+        ` nie dostanie powiadomień (wyciszone albo niewłączone): ${silentCount}. W pilnej sprawie skontaktuj się inaczej.`,
+      );
+    list.replaceChildren(...present(counter, legend), ...people.map((p) => personRow(p, myUid, reload)));
   };
 
   render(

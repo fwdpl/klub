@@ -3,8 +3,6 @@ import {
   collectionGroup,
   deleteDoc,
   doc,
-  getDoc,
-  getDocs,
   query,
   serverTimestamp,
   setDoc,
@@ -13,6 +11,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { readDoc, readDocs } from './read';
 import {
   SCHEMA_VERSION,
   type Audience,
@@ -50,7 +49,7 @@ export const MEMBER_STATUS_LABEL: Record<MemberStatus, string> = {
 
 /** Moje statusy na wszystkich wyjazdach: tripId → status. */
 export async function myMemberships(uid: string): Promise<Map<string, MemberStatus>> {
-  const snap = await getDocs(query(collectionGroup(db, 'members'), where('uid', '==', uid)));
+  const snap = await readDocs(query(collectionGroup(db, 'members'), where('uid', '==', uid)));
   return new Map(snap.docs.map((d) => [d.ref.parent.parent!.id, d.get('status') as MemberStatus]));
 }
 
@@ -59,13 +58,13 @@ export async function listTrips(isOrganizer: boolean, memberships: Map<string, M
   const toTrip = (d: { id: string; data: () => unknown }) => ({ id: d.id, ...(d.data() as TripDoc) });
   let trips: Trip[];
   if (isOrganizer) {
-    trips = (await getDocs(collection(db, 'trips'))).docs.map(toTrip);
+    trips = (await readDocs(collection(db, 'trips'))).docs.map(toTrip);
   } else {
-    const visible = await getDocs(query(collection(db, 'trips'), where('status', 'in', ['open', 'closed'])));
+    const visible = await readDocs(query(collection(db, 'trips'), where('status', 'in', ['open', 'closed'])));
     trips = visible.docs.map(toTrip);
     const seen = new Set(trips.map((t) => t.id));
     const archivedIds = [...memberships].filter(([id, s]) => s === 'approved' && !seen.has(id)).map(([id]) => id);
-    const archived = await Promise.all(archivedIds.map((id) => getDoc(doc(db, 'trips', id)).catch(() => null)));
+    const archived = await Promise.all(archivedIds.map((id) => readDoc(doc(db, 'trips', id)).catch(() => null)));
     archived.forEach((d) => {
       if (d?.exists() && d.get('status') === 'archived') trips.push(toTrip(d));
     });
@@ -74,23 +73,23 @@ export async function listTrips(isOrganizer: boolean, memberships: Map<string, M
 }
 
 export async function getTrip(id: string): Promise<Trip | null> {
-  const d = await getDoc(doc(db, 'trips', id));
+  const d = await readDoc(doc(db, 'trips', id));
   return d.exists() ? { id: d.id, ...(d.data() as TripDoc) } : null;
 }
 
 export async function getOverview(tripId: string): Promise<OverviewDoc | null> {
-  const d = await getDoc(doc(db, 'trips', tripId, 'overview', 'main'));
+  const d = await readDoc(doc(db, 'trips', tripId, 'overview', 'main'));
   return d.exists() ? (d.data() as OverviewDoc) : null;
 }
 
 /** Własny wpis – czytelny zawsze, także bez dostępu do listy osób. */
 export async function getMyStatus(tripId: string, uid: string): Promise<MemberStatus | undefined> {
-  const d = await getDoc(doc(db, 'trips', tripId, 'members', uid)).catch(() => null);
+  const d = await readDoc(doc(db, 'trips', tripId, 'members', uid)).catch(() => null);
   return d?.exists() ? (d.get('status') as MemberStatus) : undefined;
 }
 
 export async function listMembers(tripId: string): Promise<Member[]> {
-  const snap = await getDocs(collection(db, 'trips', tripId, 'members'));
+  const snap = await readDocs(collection(db, 'trips', tripId, 'members'));
   return snap.docs
     .map((d) => ({ id: d.id, ...(d.data() as MemberDoc) }))
     .sort((a, b) => a.displayName.localeCompare(b.displayName, 'pl'));
@@ -159,7 +158,7 @@ export function addApprovedMember(tripId: string, person: Person): Promise<void>
 }
 
 export async function listActivePeople(): Promise<Person[]> {
-  const snap = await getDocs(collection(db, 'users'));
+  const snap = await readDocs(collection(db, 'users'));
   return snap.docs
     .map((d) => ({ uid: d.id, ...(d.data() as UserDoc) }))
     .filter((p) => p.active)
@@ -171,7 +170,7 @@ export async function listActivePeople(): Promise<Person[]> {
 export const EMPTY_INFO: InfoDoc = { flights: [], hotels: [], emergencyContacts: [], insurance: '', checklistTemplate: [] };
 
 export async function getInfo(tripId: string): Promise<InfoDoc> {
-  const d = await getDoc(doc(db, 'trips', tripId, 'info', 'main'));
+  const d = await readDoc(doc(db, 'trips', tripId, 'info', 'main'));
   return d.exists() ? { ...EMPTY_INFO, ...(d.data() as Partial<InfoDoc>) } : EMPTY_INFO;
 }
 
@@ -180,7 +179,7 @@ export function saveInfo(tripId: string, info: InfoDoc): Promise<void> {
 }
 
 export async function getChecklist(tripId: string, uid: string): Promise<ChecklistDoc> {
-  const d = await getDoc(doc(db, 'trips', tripId, 'checklists', uid));
+  const d = await readDoc(doc(db, 'trips', tripId, 'checklists', uid));
   const data = d.exists() ? (d.data() as Partial<ChecklistDoc>) : {};
   return { templateDone: data.templateDone ?? {}, items: data.items ?? [] };
 }
@@ -201,7 +200,7 @@ export function newId(): string {
 // ---------- plan dni (warstwa 3) ----------
 
 export async function listDays(tripId: string): Promise<DayDoc[]> {
-  const snap = await getDocs(collection(db, 'trips', tripId, 'days'));
+  const snap = await readDocs(collection(db, 'trips', tripId, 'days'));
   return snap.docs.map((d) => d.data() as DayDoc).sort((a, b) => a.date.localeCompare(b.date));
 }
 

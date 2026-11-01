@@ -343,6 +343,17 @@ button:disabled {
   font-weight: 600;
 }
 
+.silent-icon {
+  display: inline-flex;
+  vertical-align: -3px;
+  margin-left: 6px;
+  color: var(--danger);
+}
+
+.silent-legend .silent-icon {
+  margin: 0 2px 0 0;
+}
+
 .person__email {
   font-size: 15px;
   color: var(--text-2);
@@ -386,6 +397,66 @@ button:disabled {
 
 .inline-form {
   margin-top: 8px;
+}
+
+/* Zwijane sekcje (ekran wyjazdu) */
+.fold > .fold__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fold > .fold__head::-webkit-details-marker {
+  display: none;
+}
+
+.fold__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.fold__title {
+  margin: 0;
+}
+
+.fold__meta {
+  flex: none;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.fold__meta:empty {
+  display: none;
+}
+
+.fold__chevron {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin: 0 4px 4px 0;
+  border-right: 2px solid var(--text-2);
+  border-bottom: 2px solid var(--text-2);
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+}
+
+.fold[open] > .fold__head .fold__chevron {
+  transform: rotate(-135deg);
+  margin: 4px 4px 0 0;
+}
+
+.fold.card[open] > .fold__head {
+  margin-bottom: 12px;
+}
+
+.fold > .fold__head:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 /* Wyjazdy */
@@ -721,14 +792,38 @@ h1 + .btn--link {
 }
 
 .plan-day {
-  margin-top: 20px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
 }
 
-.plan-day__head {
+.plan-day > .fold__head {
+  position: sticky;
+  top: env(safe-area-inset-top);
+  z-index: 1;
+  background: var(--surface);
+  padding: 12px 0;
+}
+
+.plan-day[open] > .fold__head {
+  border-bottom: 1px solid var(--border);
   margin-bottom: 8px;
 }
 
+.plan-day__date:empty {
+  display: none;
+}
+
+.plan-day__today {
+  margin-left: 8px;
+  vertical-align: 1px;
+}
+
+.plan-fold-all {
+  margin: 8px 0 4px;
+}
+
 .plan-day__date {
+  display: block;
   font-size: 14px;
   font-weight: 700;
   color: var(--accent);
@@ -736,10 +831,10 @@ h1 + .btn--link {
   letter-spacing: 0.03em;
 }
 
-.plan-day__title {
-  margin: 2px 0 0;
+.plan-day .fold__title {
   font-size: 18px;
 }
+
 
 .plan-day__note {
   margin: 6px 0 0;
@@ -873,4 +968,84 @@ h1 + .btn--link {
 /* Jeden przycisk w rzędzie – na całą szerokość, w jednej linii */
 .actions:has(> :only-child) {
   grid-template-columns: 1fr;
+}
+
+/* Powiadomienia na żądanie i wyciszenie */
+.card--notice {
+  border-color: var(--accent);
+}
+
+.card--notice .btn + .btn,
+.btn--spaced {
+  margin-top: 8px;
+}
+
+.btn--spaced {
+  margin-bottom: 16px;
+}
+
+.mute {
+  margin-top: 12px;
+}
+
+/* Tryb offline */
+.offline-bar {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 8px;
+  background: var(--danger);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.offline-bar[hidden] {
+  display: none;
+}
+
+.card--compact p {
+  margin-bottom: 8px;
+}
+
+/* Nagłówek wyjazdu z pobieraniem na telefon */
+.trip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.trip-head h1 {
+  margin-bottom: 4px;
+}
+
+.download {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  max-width: 96px;
+  text-align: center;
+}
+
+.download__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.download__when {
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--text-2);
 }

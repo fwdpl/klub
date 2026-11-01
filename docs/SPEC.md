@@ -1,6 +1,6 @@
 # Aplikacja wyjazdowa dla grupy — specyfikacja (PWA)
 
-Wersja specyfikacji: 1.7 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A–J i powiadomienie organizatora z 1.11.2026; format planu „klub-plan” 1.0 sprawdzony na prawdziwym harmonogramie; stan bramki technicznej.
+Wersja specyfikacji: 1.8 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A–L i powiadomienie organizatora z 1.11.2026; format planu „klub-plan” 1.0 sprawdzony na prawdziwym harmonogramie; stan bramki technicznej.
 
 ---
 
@@ -199,8 +199,11 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Import planu z JSON** (format „klub-plan”, §4) z walidacją (wszystkie błędy naraz, po polsku, z miejscem) i podglądem przed zapisem; zastępuje tylko dni z pliku (decyzja I).
 - **Ręczna edycja punktu** planu przez organizatora: dodanie, zmiana, usunięcie (decyzja H).
 - **Widok planu**: „Mój plan” / „Wszyscy” (decyzja J; kolumny dla osób – układ tabletowy v2), filtr etykiet (np. #foto), kolizje ⚠, nawigacja do miejsc i propozycji.
-- **Tryb offline**: przycisk „pobierz wszystko na wyjazd”, widoczna data ostatniej synchronizacji.
-- **Powiadomienia** (mechanizm wysyłki: patrz OTWARTE DECYZJE) + przycisk „Włącz powiadomienia”.
+- **Zwijane sekcje ekranu wyjazdu** (uwaga Jacka z 1.11.2026): każdą sekcję (plan, loty, noclegi, kontakty, ubezpieczenie, checklista, plan i koszty, kto jedzie / zgłoszenia) zwija się i rozwija stuknięciem w nagłówek; w nagłówku zostaje krótka informacja (liczba dni, punktów, pozycji, stan checklisty). Plan dwustopniowo: sekcja → lista dni → każdy dzień osobno, z „Rozwiń/Zwiń wszystkie dni”; dzisiejszy dzień (w strefie miejsca) oznaczony „dziś” i rozwinięty; filtr etykiety rozwija pasujące dni. Stan zapamiętany na urządzeniu. Domyślnie rozwinięte: plan (sama lista dni), „Plan i koszty” dla zgłoszonych, „Zgłoszenia”, gdy ktoś czeka na decyzję albo lista jest pusta.
+- **Tryb offline**: pobranie na telefon przy konkretnym wyjeździe – ikona pobierania obok tytułu (warstwy widoczne dla osoby + własna checklista + lista wyjazdów), pod ikoną „Na telefonie: …” albo „Nie pobrano na telefon” (uwaga Jacka z 1.11.2026: pobieranie per wyjazd, ikona zamiast napisu); pasek „Bez internetu”. Bez sieci odczyt od razu z pamięci telefonu; zmiany (np. checklista) czekają w kolejce i wysyłają się po połączeniu. „Nawiguj” wymaga internetu (albo map pobranych w Google Maps) – adresy są widoczne zawsze.
+- **Powiadomienia** (Cloud Functions, plan Blaze) + przycisk „Włącz powiadomienia” + globalne „Wycisz” w ustawieniach.
+- **Decyzja K (1.11.2026)**: zmiana planu/szczegółów nie powiadamia sama – po zapisie organizator dostaje propozycję powiadomienia (do zatwierdzonych) z gotowym tekstem, którą może poprawić, wysłać albo pominąć. Dostępny też przycisk „Wyślij powiadomienie” przy wyjeździe. Po wysłaniu na ekranie zostaje podsumowanie (dostali / bez włączonych powiadomień / wyciszone) do zamknięcia przyciskiem OK. Na ekranie „Osoby” przy imieniu osoby, która nie dostanie powiadomienia (wyciszone albo brak zarejestrowanego telefonu), jest przekreślony głośnik (uwaga Jacka z 1.11.2026) – do kontaktu inną drogą w pilnej sprawie.
+- **Decyzja L (1.11.2026)**: zmiana planu w skrócie, kosztów albo terminu decyzji – tak samo, odbiorcy: zgłoszeni i zatwierdzeni.
 - **Komunikat o nowej wersji** („Jest nowa wersja, odśwież”).
 - **Motyw jasny/ciemny**: Auto (za systemem) + ręczny wybór; zapis w `users/{uid}.prefs`; ustawiany przed renderem (bez błysku). Na iOS pasek statusu `black-translucent`.
 - **Układ telefonu** + **panel organizatora** (działający też na telefonie): wyjazdy, uczestnicy i statusy, konta, import planu, eksport kopii.
@@ -362,6 +365,8 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 - [x] I: import zastępuje tylko dni zawarte w pliku (§4).
 - [x] J: „gdzie jest reszta” na telefonie – przełącznik „Mój plan / Wszyscy”; kolumny w układzie tabletowym (v2) (§5).
 - [x] Format pliku planu „klub-plan” 1.0 + skill eksportu dla Claude (§4).
+- [x] K: powiadomienie o zmianie planu na żądanie organizatora, z gotowym tekstem (§5).
+- [x] L: koszty i termin decyzji – tak samo, do zgłoszonych i zatwierdzonych (§5).
 
 ### OTWARTE (Claude Code: pytaj, nie zakładaj)
 Blokujące v1:
