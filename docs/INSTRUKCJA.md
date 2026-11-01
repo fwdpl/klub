@@ -15,8 +15,8 @@ Wymagany iOS 16.4 lub nowszy. Wersję sprawdzisz w Ustawienia → Ogólne → To
 
 ### 1. Instalacja
 1. Otwórz `klub.bakutis.pl` w **Safari**.
-2. Stuknij **Udostępnij** (kwadrat ze strzałką w górę, na dole ekranu).
-3. Przewiń listę i wybierz **Do ekranu początkowego**.
+2. Stuknij **Udostępnij** (kwadrat ze strzałką w górę). W nowszym Safari (iOS 26) jest pod **•••** w prawym dolnym rogu.
+3. Przewiń listę i wybierz **Do ekranu głównego** (w starszych iPhone’ach: **Do ekranu początkowego**).
 4. Stuknij **Dodaj**.
 
 ### 2. Logowanie

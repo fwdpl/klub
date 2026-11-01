@@ -1,5 +1,13 @@
 # Zmiany
 
+## 0.4.0 — szczegóły wyjazdu i checklisty (wersja testowa)
+
+- Zatwierdzeni uczestnicy widzą przy wyjeździe: loty (godziny w czasie lotnisk), noclegi z przyciskami „Nawiguj” i „Zadzwoń”, kontakty awaryjne z dzwonieniem jednym stuknięciem i ubezpieczenie.
+- Loty i noclegi mogą być dla wszystkich albo dla wybranych osób – każdy widzi swoje i wspólne.
+- Moja checklista: wspólne punkty od organizatora na górze, pod nimi własne punkty; odhaczenia zapisują się od razu.
+- Organizator uzupełnia to wszystko na ekranie „Edytuj szczegóły i checklistę”.
+- Instrukcja instalacji na iPhonie uwzględnia nowe Safari: „Do ekranu głównego” i przycisk Udostępnij pod „•••”.
+
 ## 0.3.0 — wyjazdy, zgłoszenia i zatwierdzanie (wersja testowa)
 
 - Ekran główny to lista wyjazdów. Ustawienia (powiadomienia, motyw, wylogowanie) są pod ikoną ⚙.

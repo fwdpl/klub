@@ -15,6 +15,7 @@ import {
 } from '../data/trips';
 import type { MemberStatus, OverviewDoc } from '../model/types';
 import { h, render, toast } from '../ui';
+import { detailsSection } from './tripDetails';
 
 interface Me {
   uid: string;
@@ -103,7 +104,7 @@ function actionCard(trip: Trip, myStatus: MemberStatus | undefined, me: Me, relo
     );
   }
   if (myStatus === 'approved') {
-    return h('div', { class: 'card card--ok' }, h('p', {}, 'Jesteś na liście uczestników. Szczegóły – loty, hotele, plan dni – pojawią się tutaj.'));
+    return h('div', { class: 'card card--ok' }, h('p', {}, 'Jesteś na liście uczestników.'));
   }
   return h('div', { class: 'card' }, h('p', {}, 'Wpisano rezygnację z tego wyjazdu. Jeśli chcesz wrócić, napisz do organizatora.'));
 }
@@ -192,6 +193,12 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
     const mine = members?.find((m) => m.uid === me.uid)?.status ?? (await getMyStatus(tripId, me.uid));
     const seesOverview = me.isOrganizer || mine === 'interested' || mine === 'approved';
     const overview = seesOverview ? await getOverview(tripId).catch(() => null) : null;
+    const seesDetails = me.isOrganizer || mine === 'approved';
+    const details = seesDetails
+      ? await detailsSection(trip, me, members ?? [], mine === 'approved').catch(() =>
+          h('p', { class: 'error' }, 'Nie udało się wczytać szczegółów. Sprawdź połączenie.'),
+        )
+      : null;
 
     body.replaceChildren(
       h(
@@ -204,6 +211,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
         me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/edycja` }, 'Edytuj wyjazd'),
         trip.description && h('div', { class: 'card' }, multiline(trip.description)),
         actionCard(trip, mine, me, reload),
+        details,
         seesOverview && overviewCard(overview),
         seesOverview && members && (me.isOrganizer ? organizerMembersCard(trip, members, reload) : peopleCard(members)),
       ),

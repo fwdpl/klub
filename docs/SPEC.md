@@ -1,6 +1,6 @@
 # Aplikacja wyjazdowa dla grupy — specyfikacja (PWA)
 
-Wersja specyfikacji: 1.5 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A/B/C/D/E i powiadomienie organizatora z 1.11.2026; stan bramki technicznej.
+Wersja specyfikacji: 1.6 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A–G i powiadomienie organizatora z 1.11.2026; stan bramki technicznej.
 
 ---
 
@@ -127,12 +127,20 @@ trips/{tripId}/overview/main      # WARSTWA 2 — interested + approved + organi
   planSummary, costEstimate, decisionDeadline?
 
 trips/{tripId}/info/main          # WARSTWA 3 — approved + organizer
-  flights[], hotels[], emergencyContacts[], insurance, countryCard{}
+  flights[]: { id, number, airline, from, to, departure, departureTz, arrival, arrivalTz, notes, audience }
+    # departure/arrival: czas lokalny lotniska 'YYYY-MM-DDTHH:mm' + strefa lotniska (IANA)
+  hotels[]: { id, name, address, checkIn, checkOut, phone, notes, audience }   # czas lokalny miejsca
+  emergencyContacts[]: { id, name, role, phone }
+  insurance: string
+  checklistTemplate[]: { id, text }   # wspólna część checklisty od organizatora (decyzja F)
+  # audience: 'all' | uid[] – „dla kogo” (decyzja G); uczestnik widzi pozycje wspólne i swoje, organizator wszystkie
+  # countryCard – karta kraju przeniesiona do „Szybko po v1”
 trips/{tripId}/days/{date}        # WARSTWA 3 — approved + organizer (wszyscy zatwierdzeni widzą wszystkie plany: „gdzie jest reszta”)
   date, baseLocation, weatherDependent?: 'beach'|'viewpoint'|'night-sky'
   items: PlanItem[]
-trips/{tripId}/checklists/{uid}   # właściciel + organizator
-  items: { id, text, done }[]
+trips/{tripId}/checklists/{uid}   # właściciel (zatwierdzony) + organizator
+  templateDone: { [checklistTemplate.id]: bool }   # odhaczenia punktów wspólnych
+  items: { id, text, done }[]                      # własne punkty osoby, pod wspólnymi (decyzja F)
 
 loginCodes/{codeId}               # tylko Cloud Functions (klient: brak dostępu)
   # wygenerowany w panelu:
@@ -173,8 +181,8 @@ notes?
 - **Logowanie**, lista dozwolonych maili (panel „Osoby”), statusy per wyjazd, trzy warstwy danych.
 - **Powiadomienie organizatora** o „też tam chcę” i wycofaniu zgłoszenia (dopisane 1.11.2026).
 - **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka.
-- **Informacje o wyjeździe**: loty, hotele, kontakty awaryjne, ubezpieczenie. Offline.
-- **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem.
+- **Informacje o wyjeździe**: loty (godziny w czasie lotnisk), noclegi (nawigacja, telefon), kontakty awaryjne (dzwonienie), ubezpieczenie; loty i noclegi z „dla kogo” (decyzja G). Offline.
+- **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem; wspólna część od organizatora na górze + własne punkty osoby pod nią (decyzja F).
 - **Plan dni z planami indywidualnymi**: każdy punkt ma „dla kogo” (wszyscy / wybrane osoby / jedna osoba). Uczestnik widzi swoją oś czasu: punkty wspólne + swoje. Punkty wspólne wyróżnione, z adresem i nawigacją (link do Google Maps). Podgląd „gdzie jest reszta” (plany wszystkich obok siebie). Ostrzeżenie o kolizji punktu prywatnego ze wspólnym.
 - **Import planu z JSON** (schemat §4/§9) z walidacją i podglądem przed zapisem.
 - **Tryb offline**: przycisk „pobierz wszystko na wyjazd”, widoczna data ostatniej synchronizacji.
@@ -277,7 +285,7 @@ Typy pushy: zmiana planu (z/bez wymaganego potwierdzenia), nowe koszty/termin de
 
 ## 11. Zakres wersji i kolejność budowy
 1. **Bramka techniczna (pierwszy krok, zanim powstanie reszta)**: minimalna PWA — instalacja, logowanie, push — przetestowana na prawdziwym iPhonie i Androidzie. Jeśli coś nie działa: korekta założeń.
-   - Stan 1.11.2026: komputer (Firefox) — logowanie ✓, powiadomienia ✓; Android (Chrome, zainstalowana) — instalacja ✓, logowanie ✓, powiadomienia ✓; **iPhone — oczekuje na testerów**. Decyzja Jacka: kroki v1 niezależne od iPhone'a (1–4) idą dalej; przed krokiem 5 (offline, powiadomienia) wymagane potwierdzenie z iPhone'a.
+   - Stan 1.11.2026: komputer (Firefox) — logowanie ✓, powiadomienia ✓; Android (Chrome, zainstalowana) — instalacja ✓, logowanie ✓, powiadomienia ✓; **iPhone (iOS 26, Safari, zainstalowana, 1.11.2026) — instalacja ✓, logowanie ✓, zgoda na powiadomienia ✓, zgłoszenie i zatwierdzenie ✓, doręczenie powiadomienia ✓**. **Bramka techniczna zaliczona na wszystkich urządzeniach.** Kroki v1 niezależne od iPhone'a (1–4) szły równolegle; potwierdzenie z iPhone'a przed krokiem 5 (offline, powiadomienia) – uzyskane 1.11.2026.
    - Wnioski z Androida: blokada powiadomień bywa w Ustawieniach witryn Chrome (lista „Zablokowane”) — opisane w `docs/INSTRUKCJA.md` i w aplikacji.
 2. **v1** według §5 (szacunek: 7–10 sesji po 2–3 h). Kolejność:
    1. logowanie, `users`, statusy, warstwy, reguły + testy reguł,
@@ -333,11 +341,12 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 - [x] C: po rezygnacji ponowne zgłoszenie tylko przez organizatora (§3).
 - [x] Powiadomienie organizatora o zgłoszeniach i wycofaniach — dopisane do v1 (§3, §5).
 - [x] D: powiadomienie uczestnika o zatwierdzeniu, rezygnacji i przywróceniu (§3).
-- [x] E: strefa wyjazdu obowiązkowa, bez domyślnej; plan zawsze w czasie miejsca (§4).
+- [x] E: strefa wyjazdu obowiązkowa, bez domyślnej; plan zawsze w czasie miejsca (§4). Wybór przez wyszukiwarkę po polskiej nazwie kraju lub miasta.
+- [x] F: checklista = wspólna część od organizatora + własne punkty każdej osoby (§4, §5).
+- [x] G: loty i noclegi z „dla kogo” – wszyscy albo wybrane osoby (§4, §5).
 
 ### OTWARTE (Claude Code: pytaj, nie zakładaj)
 Blokujące v1:
-- [ ] Test bramki technicznej na iPhonie (§11) — wymagany przed krokiem 5 v1.
 - [ ] Oryginały ikony i ekranu startowego w pełnej rozdzielczości (obecne wersje są tymczasowe, §10).
 - [ ] Akceptacja wartości kolorów na podglądzie w telefonie (§10).
 

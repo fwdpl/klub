@@ -28,8 +28,13 @@ export function h<K extends keyof HTMLElementTagNameMap>(
 
 const appEl = document.getElementById('app') as HTMLElement;
 
+/** Bez pustych wartości – do replaceChildren z warunkowymi fragmentami. */
+export function present(...children: Child[]): (Node | string)[] {
+  return children.filter((n): n is Node | string => n !== null && n !== false && n !== undefined && n !== '');
+}
+
 export function render(...nodes: Child[]): void {
-  appEl.replaceChildren(...nodes.filter((n): n is Node | string => n !== null && n !== false && n !== undefined && n !== ''));
+  appEl.replaceChildren(...present(...nodes));
   appEl.hidden = false;
 }
 

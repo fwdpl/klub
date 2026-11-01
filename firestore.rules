@@ -121,7 +121,12 @@ service cloud.firestore {
       // WARSTWA 3
       match /info/{docId} {
         allow read: if canSeeDetails(tripId);
-        allow write: if isOrganizer();
+        allow write: if isOrganizer()
+          && request.resource.data.keys().hasOnly(['flights', 'hotels', 'emergencyContacts', 'insurance', 'checklistTemplate', 'updatedAt'])
+          && request.resource.data.flights is list
+          && request.resource.data.hotels is list
+          && request.resource.data.emergencyContacts is list
+          && request.resource.data.checklistTemplate is list;
       }
 
       match /days/{date} {
@@ -129,15 +134,17 @@ service cloud.firestore {
         allow write: if isOrganizer();
       }
 
-      // Checklista osobista: właściciel (zatwierdzony) odhacza swoje punkty, organizator wszystko
+      // Checklista osobista: właściciel (zatwierdzony) odhacza punkty wspólne (templateDone)
+      // i dopisuje własne (items); organizator widzi i zmienia wszystko (decyzja F)
       match /checklists/{uid} {
         allow read: if isOrganizer() || (request.auth.uid == uid && canSeeDetails(tripId));
         allow create, update: if isOrganizer()
           || (request.auth.uid == uid
             && canSeeDetails(tripId)
-            && request.resource.data.keys().hasOnly(['items', 'updatedAt'])
+            && request.resource.data.keys().hasOnly(['items', 'templateDone', 'updatedAt'])
             && request.resource.data.items is list
-            && request.resource.data.items.size() <= 200);
+            && request.resource.data.items.size() <= 200
+            && (!('templateDone' in request.resource.data) || request.resource.data.templateDone is map));
         allow delete: if isOrganizer();
       }
     }

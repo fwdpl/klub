@@ -1,5 +1,6 @@
 import { signInWithCustomToken } from 'firebase/auth';
 import { auth, redeemLoginCode } from '../firebase';
+import { isTestEnv } from '../config';
 import { installCard } from '../install';
 import { h, render } from '../ui';
 
@@ -56,5 +57,5 @@ export function showLogin(): void {
     submit,
   );
 
-  render(h('h1', {}, 'Klub'), form, installCard());
+  render(h('h1', {}, isTestEnv ? 'Klub TEST' : 'Klub'), form, installCard());
 }
