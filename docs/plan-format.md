@@ -31,7 +31,7 @@ Kontrakt jest sprawdzany testami – przykład i walidator w aplikacji muszą si
 | Pole | Wymagane | Opis |
 |---|---|---|
 | `date` | tak | `"RRRR-MM-DD"`, każda data raz |
-| `title` | nie | tytuł dnia, np. `"Przylot + zachód słońca w Williamsburgu"` |
+| `title` | nie | tytuł dnia, np. `"Przylot + wodospady południowego wybrzeża"` |
 | `base` | nie | baza noclegowa, np. `"Vík"` |
 | `note` | nie | uwaga do całego dnia (np. „Najdłuższy dzień, pobudka 4:15”) |
 | `timezone` | nie | strefa IANA dnia, gdy inna niż wyjazdu (wyjazd przez kilka krajów) |
@@ -63,10 +63,10 @@ Kontrakt jest sprawdzany testami – przykład i walidator w aplikacji muszą si
 
 **Rozdzielamy się na 2 godziny, potem spotkanie:**
 ```json
-{ "time": "15:30", "end": "17:30", "title": "Macy's Herald Square", "for": ["Jolka"], "nearby": true,
-  "meet": { "place": "główne wejście Macy's, 34th & Broadway", "time": "17:30" } },
-{ "time": "15:30", "end": "17:30", "title": "Zdjęcia 5th Ave", "for": ["Jacek"], "nearby": true, "tags": ["foto"],
-  "meet": { "place": "główne wejście Macy's, 34th & Broadway", "time": "17:30" } }
+{ "time": "15:30", "end": "17:30", "title": "Zakupy w Kringlan", "for": ["Bartek"], "nearby": true,
+  "meet": { "place": "główne wejście Kringlan", "time": "17:30" } },
+{ "time": "15:30", "end": "17:30", "title": "Zdjęcia przy Hallgrímskirkja", "for": ["Ania"], "nearby": true, "tags": ["foto"],
+  "meet": { "place": "główne wejście Kringlan", "time": "17:30" } }
 ```
 
 **Lot między strefami:**
@@ -75,12 +75,12 @@ Kontrakt jest sprawdzany testami – przykład i walidator w aplikacji muszą si
   "type": "flight", "title": "Lot FI 531 Warszawa → Keflavík", "important": true }
 ```
 
-**Noc do 1:00 następnego dnia:** `"time": "23:00", "end": "2026-07-04T01:00"`.
+**Noc do 1:00 następnego dnia:** `"time": "23:00", "end": "2027-03-12T01:00"`.
 
 **Kolacja z propozycjami:**
 ```json
-{ "time": "21:30", "type": "meal", "title": "Kolacja w Williamsburgu",
-  "options": [{ "name": "Le Crocodile", "rating": 4.5 }, { "name": "Misi", "rating": 4.6 }] }
+{ "time": "19:30", "type": "meal", "title": "Kolacja w Vík",
+  "options": [{ "name": "Suður-Vík", "rating": 4.5 }, { "name": "Black Crust Pizzeria", "rating": 4.6 }] }
 ```
 
 ## Co sprawdza import

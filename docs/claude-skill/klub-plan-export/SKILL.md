@@ -22,7 +22,7 @@ bo aplikacja odrzuci plik.
 3. Ustal strefę czasową wyjazdu (IANA, np. `America/New_York`) i ewentualne dni w innej strefie.
 4. Zbuduj JSON według zasad poniżej. `revision`: 1 przy pierwszym eksporcie, przy każdym kolejnym o 1 więcej
    (jeśli nie wiesz, jaka była poprzednia – zapytaj albo użyj bieżącej daty i godziny `MMDDHHmm` jako liczby).
-5. Zapisz jako `plan-<krótka-nazwa-wyjazdu>-r<revision>.json` (np. `plan-nyc-r2.json`).
+5. Zapisz jako `plan-<krótka-nazwa-wyjazdu>-r<revision>.json` (np. `plan-islandia-r2.json`).
 6. Uruchom `python scripts/validate.py <plik> --people "Imię1,Imię2"`. Popraw wszystkie BŁĘDY i uruchom ponownie.
    Nie oddawaj pliku bez `WYNIK: OK`. Brak wykonywania kodu → powiedz to wprost i oddaj plik z adnotacją „niezwalidowany”.
 7. Oddaj plik i wypisz UWAGI walidatora (długie tytuły, kolizje punktów prywatnych ze wspólnymi).
@@ -37,18 +37,18 @@ bo aplikacja odrzuci plik.
 
 ### Punkty
 - **Czas lokalny miejsca**: `time` `"GG:MM"`; `end` `"GG:MM"` albo `"RRRR-MM-DDTGG:MM"`, gdy koniec wypada następnego dnia
-  (np. Times Square 23:00–01:00 → `"end": "2026-07-04T01:00"`). Punkt bez końca (np. „21:30 Kolacja”) – bez `end`.
+  (np. zorza 22:00–01:00 → `"end": "2027-03-12T01:00"`). Punkt bez końca (np. „21:30 Kolacja”) – bez `end`.
 - Godzina przybliżona („~20:00”, „po zmroku”) → najlepsza konkretna godzina z planu + wyjaśnienie w `notes`.
 - **Tytuł krótki** (do ~120 znaków) – listy miejsc, kolejność marszu, opisy → `notes`.
 - `for`: `"all"` albo lista imion. „Razem” → `"all"`; punkt jednej osoby → `["Imię"]`.
-- **Rozdzielenie grupy** („Osobno”, „Macy's / Jacek: zdjęcia 5th Ave”) → **dwa punkty** w tym samym czasie, każdy dla innej osoby,
+- **Rozdzielenie grupy** („Osobno”, „zakupy / Ania: zdjęcia”) → **dwa punkty** w tym samym czasie, każdy dla innej osoby,
   oba z `"nearby": true`, jeśli są blisko, i z tym samym `meet` (`place` + `time`), jeśli plan podaje spotkanie.
 - `important: true` – stała godzina, rezerwacja, „fix”, rzecz do sprawdzenia (w planach oznaczane „Uwaga”, ⚠, ✅ Rezerwacja).
   Treść rezerwacji (np. „wejście 19:10”) → `notes`. **Nie przepisuj kodów rezerwacji ani numerów biletów.**
 - `type`: `meal` (posiłki), `transport` (dojazd jako osobny punkt), `flight`, `checkin`, `meeting` (zbiórka), `free` (czas wolny),
   pozostałe `activity`.
 - `route` – dojazd do punktu: linie, przesiadki, alternatywa (`**Alt:** …`). Nie dubluj w `notes`.
-- `options` – propozycje do wyboru (restauracje „Le Crocodile (4,5) / Misi (4,6)”) → `[{ "name": "Le Crocodile", "rating": 4.5 }, …]`.
+- `options` – propozycje do wyboru (restauracje „Suður-Vík (4,5) / Black Crust (4,6)”) → `[{ "name": "Suður-Vík", "rating": 4.5 }, …]`.
   Ocena z przecinkiem → liczba z kropką.
 - `place` – gdy punkt ma konkretne miejsce docelowe: `name`, `address` jeśli znany. `lat`/`lng` tylko ze źródła –
   **nie zgaduj współrzędnych** (bez nich aplikacja szuka po nazwie i adresie).

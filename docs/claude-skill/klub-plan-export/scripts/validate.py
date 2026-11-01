@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Walidator pliku planu „klub-plan” 1.x dla skilla eksportu.
 
-Użycie: python scripts/validate.py plan.json --people "Jacek,Jolka" [--timezone America/New_York]
+Użycie: python scripts/validate.py plan.json --people "Ania,Bartek" [--timezone Atlantic/Reykjavik]
 
 Sprawdza to samo co import w aplikacji Klub (src/plan/importFile.ts): format, wersję, daty, godziny,
 strefy, koniec po początku, imiona w „for”, propozycje, spotkania. Wypisuje BŁĘDY i UWAGI,
