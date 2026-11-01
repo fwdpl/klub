@@ -7,10 +7,13 @@ import { isIOS, isStandalone } from './platform';
 import { listenForegroundMessages } from './push';
 import { initTheme } from './theme';
 import { hideSplash, toast } from './ui';
-import { showHome } from './views/home';
 import { showInstallIOS } from './views/install';
 import { showLogin } from './views/login';
 import { showPeople } from './views/people';
+import { showSettings } from './views/settings';
+import { showTrip } from './views/trip';
+import { showTripEdit } from './views/tripEdit';
+import { showTrips } from './views/trips';
 
 initTheme();
 
@@ -24,7 +27,7 @@ if (import.meta.env.PROD) {
 
 let currentUser: User | null = null;
 
-/** Proste trasy w adresie (#/osoby); bez frameworka. */
+/** Trasy w adresie (#/…); bez frameworka. */
 async function route(): Promise<void> {
   const user = currentUser;
   if (!user) {
@@ -32,12 +35,24 @@ async function route(): Promise<void> {
     else showLogin();
     return;
   }
-  if (location.hash === '#/osoby') {
-    const me = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
-    if (me?.get('role') === 'organizer') return showPeople(user.uid);
-    history.replaceState(null, '', '#/');
+  const meDoc = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
+  const me = {
+    uid: user.uid,
+    displayName: (meDoc?.get('displayName') as string | undefined) ?? '',
+    isOrganizer: meDoc?.get('role') === 'organizer',
+  };
+  const path = location.hash.replace(/^#/, '') || '/';
+  let m: RegExpMatchArray | null;
+
+  if (path === '/ustawienia') return showSettings(user);
+  if ((m = path.match(/^\/wyjazd\/([\w-]+)$/))) return showTrip(m[1], me);
+  if (me.isOrganizer) {
+    if (path === '/osoby') return showPeople(user.uid);
+    if (path === '/nowy-wyjazd') return showTripEdit(null);
+    if ((m = path.match(/^\/wyjazd\/([\w-]+)\/edycja$/))) return showTripEdit(m[1]);
   }
-  await showHome(user);
+  if (path !== '/') history.replaceState(null, '', '#/');
+  await showTrips(user.uid, me.isOrganizer);
 }
 
 window.addEventListener('hashchange', () => {

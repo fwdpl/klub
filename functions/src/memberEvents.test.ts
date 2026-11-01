@@ -1,24 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { organizerMessage } from './memberEvents';
+import { memberNotifications } from './memberEvents';
 
-describe('powiadomienie organizatora o zgłoszeniach', () => {
+describe('zmiany zrobione przez uczestnika → organizator', () => {
   it('„też tam chcę”', () => {
-    expect(organizerMessage(undefined, { status: 'interested', displayName: 'Ania' }, 'Islandia')).toEqual({
-      title: 'Nowe zgłoszenie',
-      body: 'Ania chce jechać: Islandia',
+    expect(memberNotifications(undefined, { status: 'interested', displayName: 'Ania' }, 'Islandia', true)).toEqual({
+      toOrganizers: { title: 'Nowe zgłoszenie', body: 'Ania chce jechać: Islandia' },
     });
   });
 
   it('wycofanie zgłoszenia', () => {
-    expect(organizerMessage({ status: 'interested', displayName: 'Ania' }, undefined, 'Islandia')?.body).toBe(
+    expect(memberNotifications({ status: 'interested', displayName: 'Ania' }, undefined, 'Islandia', true).toOrganizers?.body).toBe(
       'Ania rezygnuje z: Islandia',
     );
   });
+});
 
-  it('bez powiadomienia przy zatwierdzeniu, rezygnacji wpisanej przez organizatora i usunięciu zatwierdzonego', () => {
-    expect(organizerMessage({ status: 'interested' }, { status: 'approved' }, 'X')).toBeNull();
-    expect(organizerMessage({ status: 'approved' }, { status: 'withdrawn' }, 'X')).toBeNull();
-    expect(organizerMessage({ status: 'approved' }, undefined, 'X')).toBeNull();
-    expect(organizerMessage(undefined, { status: 'approved' }, 'X')).toBeNull();
+describe('zmiany zrobione przez organizatora → uczestnik (decyzja D)', () => {
+  it('zatwierdzenie, także od razu przy dopisaniu', () => {
+    expect(memberNotifications({ status: 'interested' }, { status: 'approved' }, 'Islandia', false).toMember?.title).toBe(
+      'Jesteś na liście uczestników',
+    );
+    expect(memberNotifications(undefined, { status: 'approved' }, 'Islandia', false).toMember?.title).toBe('Jesteś na liście uczestników');
+  });
+
+  it('rezygnacja i przywrócenie', () => {
+    expect(memberNotifications({ status: 'approved' }, { status: 'withdrawn' }, 'Islandia', false).toMember?.title).toBe('Wpisano rezygnację');
+    expect(memberNotifications({ status: 'withdrawn' }, { status: 'interested' }, 'Islandia', false).toMember?.title).toBe(
+      'Przywrócono zgłoszenie',
+    );
+  });
+
+  it('bez powiadomień: brak zmiany statusu, usunięcie wpisu, organizator nie dostaje swoich zmian', () => {
+    expect(memberNotifications({ status: 'approved', displayName: 'A' }, { status: 'approved', displayName: 'B' }, 'X', false)).toEqual({});
+    expect(memberNotifications({ status: 'approved' }, undefined, 'X', false)).toEqual({});
+    expect(memberNotifications({ status: 'interested' }, { status: 'approved' }, 'X', false).toOrganizers).toBeUndefined();
   });
 });

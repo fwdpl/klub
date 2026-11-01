@@ -1,6 +1,6 @@
 # Aplikacja wyjazdowa dla grupy — specyfikacja (PWA)
 
-Wersja specyfikacji: 1.4 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A/B/C i powiadomienie organizatora z 1.11.2026; stan bramki technicznej.
+Wersja specyfikacji: 1.5 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A/B/C/D/E i powiadomienie organizatora z 1.11.2026; stan bramki technicznej.
 
 ---
 
@@ -66,6 +66,8 @@ Adres (`klub.bakutis.pl` — ustalony), nazwa, ikona (512 px + wersja maskable),
 - **Decyzja B (1.11.2026)**: wyjazdy w archiwum widzą tylko osoby zatwierdzone na nie + organizator (wszystkie warstwy).
 - **Decyzja C (1.11.2026)**: po rezygnacji wpisanej przez organizatora osoba nie zgłasza się ponownie sama — przywraca ją tylko organizator.
 - **Powiadomienie organizatora (1.11.2026, dopisane do v1 decyzją Jacka)**: gdy ktoś kliknie „też tam chcę” albo wycofa zgłoszenie, organizator dostaje push (z pominięciem zmian, które robi sam, i przy włączonym „wycisz”).
+- **Decyzja D (1.11.2026)**: uczestnik dostaje push, gdy organizator zatwierdzi jego udział, wpisze rezygnację albo przywróci zgłoszenie (także przy dopisaniu od razu jako zatwierdzony).
+- Organizator może dopisać do wyjazdu osobę z listy od razu jako zatwierdzoną (potwierdzenie poza aplikacją).
 - Widoczność uczestników (ustalone 28.10.2026, wariant C): zainteresowani i zatwierdzeni danego wyjazdu widzą imiona osób zainteresowanych i zatwierdzonych przy tym wyjeździe. Członkowie, którzy nie kliknęli „też tam chcę”, nie widzą listy.
 - Kto nie kliknął „też tam chcę”, nie dostaje powiadomień o danym wyjeździe. Dodatkowo globalny przełącznik „wycisz”.
 - Dane offline po odebraniu dostępu zostają na telefonie do następnej synchronizacji (ograniczenie, nie błąd).
@@ -110,7 +112,7 @@ users/{uid}                       # tworzy/zmienia tylko funkcja (panel „Osoby
 
 trips/{tripId}                    # WARSTWA 1 — każdy aktywny użytkownik
   title, destination, approxDates, description, status: 'draft'|'open'|'closed'|'archived'
-  timezone (IANA), accentColor?, schemaVersion
+  timezone (IANA, wymagana – decyzja E), accentColor?, schemaVersion, updatedAt
 
 trips/{tripId}/members/{uid}      # status uczestnika
   uid, status: 'interested'|'approved'|'withdrawn', displayName, updatedAt
@@ -158,6 +160,8 @@ notes?
 
 ### Zasady modelu
 - Czas: zawsze czas lokalny miejsca + strefa IANA, nigdy UTC jako źródło prawdy. Telefon może być w innej strefie niż wyjazd.
+- **Decyzja E (1.11.2026)**: strefa wyjazdu (`trips.timezone`) dotyczy całego harmonogramu, więc nie ma wartości domyślnej — organizator wybiera ją świadomie przy tworzeniu wyjazdu (lista z przesunięciem względem UTC). Punkt planu może mieć własną strefę (`tz`, `endTz` – loty). Dzień w innej strefie niż wyjazd (wyjazd przez kilka krajów) – do dopracowania w kroku 4 (plan dni). Orientacyjne daty wyjazdu to tekst, strefa ich nie dotyczy.
+- Własne statusy na wszystkich wyjazdach: zapytanie collection group `members` z filtrem `uid == zalogowany` (reguła `/{path=**}/members/{id}`, indeks collection group na `uid`).
 - Reguły nie są filtrami: każde zapytanie klienta musi być zgodne z regułami (np. nie odpytywać kolekcji, do której użytkownik ma dostęp tylko częściowo).
 - Kopia zapasowa: codzienne kopie Firestore w produkcji (Blaze, ustawiane przy tworzeniu bazy) + przycisk „eksport całego wyjazdu do JSON” w panelu organizatora jako kopia do trzymania u siebie.
 
@@ -328,6 +332,8 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 - [x] B: archiwum widzą tylko zatwierdzeni (§3).
 - [x] C: po rezygnacji ponowne zgłoszenie tylko przez organizatora (§3).
 - [x] Powiadomienie organizatora o zgłoszeniach i wycofaniach — dopisane do v1 (§3, §5).
+- [x] D: powiadomienie uczestnika o zatwierdzeniu, rezygnacji i przywróceniu (§3).
+- [x] E: strefa wyjazdu obowiązkowa, bez domyślnej; plan zawsze w czasie miejsca (§4).
 
 ### OTWARTE (Claude Code: pytaj, nie zakładaj)
 Blokujące v1:

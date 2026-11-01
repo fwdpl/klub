@@ -80,6 +80,8 @@ service cloud.firestore {
         && request.resource.data.status in ['draft', 'open', 'closed', 'archived']
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
+        && request.resource.data.timezone is string
+        && request.resource.data.timezone.size() > 0
         && request.resource.data.schemaVersion is int;
       allow delete: if isOrganizer();
 
@@ -138,6 +140,12 @@ service cloud.firestore {
             && request.resource.data.items.size() <= 200);
         allow delete: if isOrganizer();
       }
+    }
+
+    // Własne statusy na wszystkich wyjazdach jednym zapytaniem (collection group).
+    // Zapytanie musi filtrować po uid zalogowanej osoby – reguły nie są filtrami.
+    match /{path=**}/members/{memberId} {
+      allow read: if isActive() && resource.data.uid == request.auth.uid;
     }
 
     // Kody logowania i licznik prób: tylko funkcje serwerowe (konto serwisowe omija reguły)
