@@ -173,7 +173,7 @@ tags?: string[]                   # np. 'foto' – filtr i zestawienia
 
 ### Format pliku planu – `klub-plan` 1.0 (ustalone 1.11.2026)
 Opis: `docs/plan-format.md`, schemat: `docs/plan.schema.v1.json`, przykład: `docs/plan-example.json` (sprawdzany testami).
-Pola ustalone po analizie prawdziwego harmonogramu (NYC 2026: 8 dni, 80 punktów – przechodzi walidację).
+Pola ustalone po analizie prawdziwego harmonogramu wyjazdu (8 dni, 80 punktów – przechodzi walidację; sam harmonogram poza repozytorium).
 Osoby w pliku po imieniu (tylko zatwierdzeni), czas lokalny miejsca, nowe pola w 1.x ignorowane, zmiana znaczenia = 2.0.
 Skill dla Claude (eksport planu z rozmowy): `docs/claude-skill/klub-plan-export` – instrukcja, kopia schematu, walidator w Pythonie
 zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
