@@ -6,6 +6,7 @@
 - Po zmianie planu, szczegółów albo kosztów organizator dostaje gotową propozycję powiadomienia – może ją poprawić, wysłać albo pominąć. Przy wyjeździe jest też „Wyślij powiadomienie”.
 - Ustawienia: „Wycisz wszystkie powiadomienia z Klubu”.
 - Ekran wyjazdu: każdą sekcję można zwinąć i rozwinąć stuknięciem w nagłówek. Plan pokazuje najpierw listę dni, a każdy dzień rozwija się osobno; dzisiejszy dzień jest oznaczony „dziś” i rozwinięty. Aplikacja pamięta, co było rozwinięte.
+- Ekran „Osoby”: przekreślony głośnik przy imieniu osoby, która wyciszyła albo nie włączyła powiadomień – wiadomo, z kim w pilnej sprawie skontaktować się inaczej.
 - Po wysłaniu powiadomienia podsumowanie (ile osób dostało, ile nie ma włączonych powiadomień, ile wyciszyło) zostaje na ekranie do stuknięcia OK.
 
 ## 0.5.0 — plan dni (wersja testowa)

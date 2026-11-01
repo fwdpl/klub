@@ -343,6 +343,17 @@ button:disabled {
   font-weight: 600;
 }
 
+.silent-icon {
+  display: inline-flex;
+  vertical-align: -3px;
+  margin-left: 6px;
+  color: var(--danger);
+}
+
+.silent-legend .silent-icon {
+  margin: 0 2px 0 0;
+}
+
 .person__email {
   font-size: 15px;
   color: var(--text-2);
