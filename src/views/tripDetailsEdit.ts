@@ -1,6 +1,7 @@
 import { getInfo, getTrip, listMembers, newId, saveInfo, type Member } from '../data/trips';
 import type { Audience, ChecklistTemplateItem, EmergencyContact, Flight, Hotel, InfoDoc } from '../model/types';
 import { h, render, toast } from '../ui';
+import { proposeNotice } from './notify';
 import { zonePicker } from './zonePicker';
 
 // Domyślna strefa wylotu: grupa wylatuje zwykle z Polski. Widoczna w formularzu i do zmiany.
@@ -197,6 +198,7 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
           save.disabled = true;
           try {
             await saveInfo(tripId, next);
+            proposeNotice(tripId, { audience: 'approved', title: 'Zmiana szczegółów wyjazdu', body: `${trip.title}: loty, noclegi albo kontakty` });
             toast('Zapisano szczegóły');
             location.hash = `#/wyjazd/${tripId}`;
           } catch {

@@ -288,3 +288,42 @@ export const onMemberWrite = onDocumentWrittenWithAuthContext('trips/{tripId}/me
   }
   await Promise.all(sends);
 });
+
+const NOTIFY_AUDIENCES = {
+  approved: ['approved'],
+  interested: ['interested', 'approved'],
+} as const;
+const MAX_NOTIFY_TITLE = 60;
+const MAX_NOTIFY_BODY = 200;
+
+/**
+ * Powiadomienie wysyłane przez organizatora na żądanie (decyzje K i L z 1.11.2026):
+ * zmiana planu → zatwierdzeni; koszty i termin decyzji → zgłoszeni i zatwierdzeni.
+ * Osoby z włączonym „wycisz” i wyłączone z listy są pomijane.
+ */
+export const notifyTrip = onCall(async (request) => {
+  const organizerUid = await requireOrganizer(request);
+  const tripId = typeof request.data?.tripId === 'string' ? request.data.tripId : '';
+  const audience = request.data?.audience as keyof typeof NOTIFY_AUDIENCES;
+  const title = typeof request.data?.title === 'string' ? request.data.title.trim() : '';
+  const body = typeof request.data?.body === 'string' ? request.data.body.trim() : '';
+  if (!(audience in NOTIFY_AUDIENCES)) throw new HttpsError('invalid-argument', 'Nieznana grupa odbiorców.');
+  if (!title || title.length > MAX_NOTIFY_TITLE) throw new HttpsError('invalid-argument', `Tytuł: od 1 do ${MAX_NOTIFY_TITLE} znaków.`);
+  if (body.length > MAX_NOTIFY_BODY) throw new HttpsError('invalid-argument', `Treść: do ${MAX_NOTIFY_BODY} znaków.`);
+  const trip = tripId ? await db.doc(`trips/${tripId}`).get() : null;
+  if (!trip?.exists) throw new HttpsError('not-found', 'Nie ma takiego wyjazdu.');
+
+  const statuses: readonly string[] = NOTIFY_AUDIENCES[audience];
+  const members = await db.collection(`trips/${tripId}/members`).get();
+  const uids = members.docs.filter((d) => statuses.includes(d.get('status')) && d.id !== organizerUid).map((d) => d.id);
+  const users = await Promise.all(uids.map((uid) => db.doc(`users/${uid}`).get()));
+  const recipients = users.filter((u) => u.get('active') === true && u.get('prefs.muted') !== true);
+
+  const results = await Promise.all(recipients.map((u) => sendToUser(u.ref, { title, body, link: `/#/wyjazd/${tripId}` })));
+  logger.info('Powiadomienie organizatora', { tripId, audience, people: recipients.length });
+  return {
+    people: recipients.length,
+    muted: users.length - recipients.length,
+    reached: results.filter((r) => r.sent > 0).length,
+  };
+});

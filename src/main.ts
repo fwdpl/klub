@@ -1,10 +1,12 @@
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
+import { readDoc } from './data/read';
 import { registerSW } from 'virtual:pwa-register';
 import { auth, db } from './firebase';
 import './install';
 import { isIOS, isStandalone } from './platform';
 import { listenForegroundMessages } from './push';
+import { watchConnection } from './offline';
 import { initTheme } from './theme';
 import { hideSplash, toast } from './ui';
 import { showInstallIOS } from './views/install';
@@ -38,7 +40,7 @@ async function route(): Promise<void> {
     else showLogin();
     return;
   }
-  const meDoc = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
+  const meDoc = await readDoc(doc(db, 'users', user.uid)).catch(() => null);
   const me = {
     uid: user.uid,
     displayName: (meDoc?.get('displayName') as string | undefined) ?? '',
@@ -67,9 +69,12 @@ window.addEventListener('hashchange', () => {
   window.scrollTo(0, 0);
 });
 
+const refreshConnectionBar = watchConnection(() => currentUser?.uid ?? null);
+
 let listening = false;
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
+  refreshConnectionBar();
   try {
     await route();
     if (user && !listening) {

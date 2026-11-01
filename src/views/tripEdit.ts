@@ -1,5 +1,6 @@
 import { TRIP_STATUS_LABEL, getOverview, getTrip, saveTrip, type TripForm } from '../data/trips';
 import type { TripStatus } from '../model/types';
+import { proposeNotice } from './notify';
 import { zonePicker } from './zonePicker';
 import { h, render, toast } from '../ui';
 
@@ -74,6 +75,19 @@ export async function showTripEdit(tripId: string | null): Promise<void> {
           save.disabled = true;
           try {
             const id = await saveTrip(tripId, form);
+            // Zmiana planu w skrócie, kosztów albo terminu decyzji – propozycja powiadomienia zgłoszonych (decyzja L)
+            const overviewChanged =
+              (overview?.planSummary ?? '') !== form.planSummary.trim() ||
+              (overview?.costEstimate ?? '') !== form.costEstimate.trim() ||
+              (overview?.decisionDeadline ?? '') !== form.decisionDeadline;
+            if (tripId && overviewChanged && form.status !== 'draft') {
+              const deadline = form.decisionDeadline ? `, decyzja do ${form.decisionDeadline.split('-').reverse().join('.')}` : '';
+              proposeNotice(id, {
+                audience: 'interested',
+                title: 'Nowe informacje o wyjeździe',
+                body: `${form.title.trim()}: ${form.costEstimate.trim() || 'zaktualizowany plan'}${deadline}`.slice(0, 200),
+              });
+            }
             toast('Zapisano');
             location.hash = `#/wyjazd/${id}`;
           } catch {

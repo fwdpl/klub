@@ -1,6 +1,7 @@
 import type { User } from 'firebase/auth';
 import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
+import { readDoc } from '../data/read';
 import { auth, db, sendTestPush } from '../firebase';
 import { appVersion, buildId, isTestEnv } from '../config';
 import { isAndroid, isIOS, isStandalone } from '../platform';
@@ -81,6 +82,28 @@ function deniedHelp(recheck: () => void): HTMLElement {
   );
 }
 
+/** Globalne „wycisz” (SPEC §3): organizator i funkcje pomijają tę osobę przy wysyłce. */
+function muteToggle(uid: string, initial: boolean): HTMLElement {
+  const box = h('input', { type: 'checkbox' });
+  box.checked = initial;
+  box.addEventListener('change', async () => {
+    const value = box.checked;
+    try {
+      await updateDoc(doc(db, 'users', uid), { 'prefs.muted': value });
+      toast(value ? 'Powiadomienia wyciszone' : 'Powiadomienia włączone ponownie');
+    } catch {
+      box.checked = !value;
+      toast(navigator.onLine ? 'Nie udało się zapisać.' : 'Brak połączenia z internetem.');
+    }
+  });
+  return h(
+    'label',
+    { class: 'audience__person mute' },
+    box,
+    h('span', {}, 'Wycisz wszystkie powiadomienia z Klubu', h('small', { class: 'muted' }, ' – na tym koncie, na wszystkich telefonach')),
+  );
+}
+
 // Nasłuchiwanie zmian zgody na powiadomienia – jedno na raz, odpinane przy ponownym wejściu na ekran
 let listeners: AbortController | null = null;
 
@@ -90,7 +113,7 @@ export async function showSettings(user: User): Promise<void> {
   listeners = new AbortController();
   const { signal } = listeners;
 
-  const snap = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
+  const snap = await readDoc(doc(db, 'users', user.uid)).catch(() => null);
   const role = snap?.data()?.role === 'organizer' ? 'organizer' : 'member';
   let push = await pushState();
 
@@ -195,7 +218,7 @@ export async function showSettings(user: User): Promise<void> {
       ),
     ),
     installCard(),
-    h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn),
+    h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn, muteToggle(user.uid, snap?.get('prefs.muted') === true)),
     h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch()),
     h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => signOut(auth) }, 'Wyloguj'),
   );

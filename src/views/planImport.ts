@@ -3,6 +3,7 @@ import type { DayDoc } from '../model/types';
 import { findCollisions } from '../plan/collisions';
 import { parsePlanFile } from '../plan/importFile';
 import { h, present, render, toast } from '../ui';
+import { proposeNotice } from './notify';
 import { formatLocal } from './tripDetails';
 
 /** Organizator: import planu z pliku JSON (docs/plan-format.md) – sprawdzenie, podgląd, zapis dni z pliku. */
@@ -45,6 +46,8 @@ export async function showPlanImport(tripId: string): Promise<void> {
       save.disabled = true;
       try {
         await saveImportedPlan(tripId, days, planNotes);
+        const range = days.length === 1 ? formatLocal(days[0].date) : `${formatLocal(days[0].date)} – ${formatLocal(days[days.length - 1].date)}`;
+        proposeNotice(tripId, { audience: 'approved', title: 'Zmiana planu', body: `${trip.title}: ${range}` });
         toast('Plan zapisany');
         location.hash = `#/wyjazd/${tripId}`;
       } catch {

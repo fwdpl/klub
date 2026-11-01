@@ -1,4 +1,5 @@
-import { collection, getDocs } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
+import { readDocs } from '../data/read';
 import { addPerson, createLoginCode, db, setPersonActive, updatePerson } from '../firebase';
 import type { UserDoc } from '../model/types';
 import { h, render, toast } from '../ui';
@@ -161,7 +162,7 @@ export async function showPeople(myUid: string): Promise<void> {
   const counter = h('h2', {});
 
   const reload = async () => {
-    const snap = await getDocs(collection(db, 'users'));
+    const snap = await readDocs(collection(db, 'users'));
     const people = snap.docs
       .map((d) => ({ uid: d.id, ...(d.data() as UserDoc) }))
       // aktywni najpierw, potem alfabetycznie

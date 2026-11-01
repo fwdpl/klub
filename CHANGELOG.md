@@ -1,5 +1,11 @@
 # Zmiany
 
+## 0.6.0 — wyjazd bez internetu i powiadomienia o zmianach (wersja testowa)
+
+- Przycisk „Pobierz wszystko na wyjazd” i data danych na telefonie. Bez internetu: czerwony pasek z datą danych, plan, szczegóły i checklista działają, zmiany wysyłają się po połączeniu.
+- Po zmianie planu, szczegółów albo kosztów organizator dostaje gotową propozycję powiadomienia – może ją poprawić, wysłać albo pominąć. Przy wyjeździe jest też „Wyślij powiadomienie”.
+- Ustawienia: „Wycisz wszystkie powiadomienia z Klubu”.
+
 ## 0.5.0 — plan dni (wersja testowa)
 
 - Plan wyjazdu dla zatwierdzonych uczestników: dni z tytułem i uwagą, oś czasu z godzinami w czasie miejsca, dojazdami, propozycjami lokali, miejscem spotkania i przyciskami „Nawiguj”.

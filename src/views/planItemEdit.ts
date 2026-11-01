@@ -3,6 +3,8 @@ import type { DayDoc, PlanItem, PlanItemType } from '../model/types';
 import { ITEM_TYPES } from '../plan/importFile';
 import { isValidDate, toInstant } from '../plan/time';
 import { h, render, toast } from '../ui';
+import { proposeNotice } from './notify';
+import { formatLocal } from './tripDetails';
 import { audienceField } from './tripDetailsEdit';
 
 const TYPE_LABEL: Record<PlanItemType, string> = {
@@ -70,6 +72,7 @@ export async function showPlanItemEdit(tripId: string, date: string | null, item
     remove.disabled = true;
     try {
       await saveDay(tripId, { ...day, items: day.items.filter((i) => i.id !== item!.id) });
+      proposeNotice(tripId, { audience: 'approved', title: 'Zmiana planu', body: `${formatLocal(day.date)}: odwołane – ${item!.title}` });
       toast('Usunięto punkt');
       location.hash = `#/wyjazd/${tripId}`;
     } catch {
@@ -132,6 +135,7 @@ export async function showPlanItemEdit(tripId: string, date: string | null, item
           save.disabled = true;
           try {
             for (const d of changes) await saveDay(tripId, d);
+            proposeNotice(tripId, { audience: 'approved', title: 'Zmiana planu', body: `${formatLocal(targetDate)}: ${updated.title} – ${updated.start.slice(11)}` });
             toast('Zapisano punkt');
             location.hash = `#/wyjazd/${tripId}`;
           } catch {

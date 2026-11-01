@@ -17,6 +17,7 @@ import {
 } from '../data/trips';
 import type { MemberStatus, OverviewDoc } from '../model/types';
 import { h, render, toast } from '../ui';
+import { noticeCard, takeNotice } from './notify';
 import { planSection } from './plan';
 import { detailsSection } from './tripDetails';
 
@@ -217,6 +218,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
         (trip.status !== 'open' || me.isOrganizer) &&
           h('div', { class: 'badges badges--top' }, h('span', { class: `badge badge--trip-${trip.status}` }, TRIP_STATUS_LABEL[trip.status])),
         me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/edycja` }, 'Edytuj wyjazd'),
+        me.isOrganizer && noticeCard(trip.id, takeNotice(trip.id)),
         trip.description && h('div', { class: 'card' }, multiline(trip.description)),
         actionCard(trip, mine, me, reload),
         plan,

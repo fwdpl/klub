@@ -126,3 +126,15 @@ ok(r.error?.status === 'RESOURCE_EXHAUSTED', 'blokada po 5 nieudanych próbach',
 
 r = await call('sendTestPush', { delaySec: 10 }, org);
 ok(r.result?.sent === 0, 'testowy push bez urządzeń zwraca 0', r);
+
+// --- powiadomienie organizatora na żądanie (decyzje K, L) ---
+await putDoc('trips/t1/members/' + aniaUid, { uid: str(aniaUid), displayName: str('Anna'), status: str('approved') });
+r = await call('notifyTrip', { tripId: 't1', audience: 'approved', title: 'Zmiana planu', body: 'śr 10 mar' }, org);
+ok(r.result?.people === 1 && r.result?.reached === 0, 'powiadomienie do zatwierdzonych: 1 osoba (bez urządzeń – nic nie doszło)', r);
+r = await call('notifyTrip', { tripId: 't1', audience: 'approved', title: 'X' }, ania);
+ok(r.error?.status === 'PERMISSION_DENIED', 'uczestnik nie wysyła powiadomień do grupy', r);
+r = await call('notifyTrip', { tripId: 't1', audience: 'wszyscy', title: 'X' }, org);
+ok(r.error?.status === 'INVALID_ARGUMENT', 'nieznana grupa odbiorców – odmowa', r);
+await putDoc('users/' + aniaUid, { email: str('ania@example.com'), displayName: str('Anna'), role: str('member'), active: { booleanValue: true }, prefs: { mapValue: { fields: { muted: { booleanValue: true } } } } });
+r = await call('notifyTrip', { tripId: 't1', audience: 'interested', title: 'Koszty', body: 'nowy szacunek' }, org);
+ok(r.result?.people === 0 && r.result?.muted === 1, 'osoba z włączonym „wycisz” jest pomijana', r);
