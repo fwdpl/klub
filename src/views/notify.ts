@@ -1,5 +1,5 @@
-import { notifyTrip, type NotifyAudience } from '../firebase';
-import { h, toast } from '../ui';
+import { notifyTrip, type NotifyAudience, type NotifyResult } from '../firebase';
+import { h } from '../ui';
 
 // Powiadomienia na żądanie (decyzje K i L): po zapisie zmian organizator dostaje gotową propozycję,
 // którą może poprawić i wysłać – albo pominąć. Propozycja czeka do wejścia na ekran wyjazdu.
@@ -64,13 +64,7 @@ export function noticeCard(tripId: string, draft: NoticeDraft | null): HTMLEleme
             send.disabled = true;
             try {
               const { data } = await notifyTrip({ tripId, audience: audience.value as NotifyAudience, title: title.value, body: body.value });
-              const notes = [
-                data.people > data.reached ? `${data.people - data.reached} bez włączonych powiadomień` : '',
-                data.muted ? `${data.muted} wyciszone` : '',
-              ].filter(Boolean);
-              const extra = notes.length ? ` (${notes.join(', ')})` : '';
-              toast(data.reached ? `Wysłano do ${data.reached} os.${extra}` : `Nikt nie dostał powiadomienia${extra}.`);
-              closed();
+              summary(data);
             } catch {
               error.textContent = navigator.onLine ? 'Nie udało się wysłać.' : 'Brak połączenia z internetem.';
               send.disabled = false;
@@ -85,6 +79,28 @@ export function noticeCard(tripId: string, draft: NoticeDraft | null): HTMLEleme
         error,
         send,
         skip,
+      ),
+    );
+  };
+
+  // Podsumowanie zostaje na ekranie do zamknięcia (wcześniej znikało po 5 s w dymku na dole)
+  const summary = (data: NotifyResult) => {
+    const notReached = data.people - data.reached;
+    const row = (label: string, value: number) => h('li', {}, h('span', {}, label), h('b', {}, String(value)));
+    wrap.replaceChildren(
+      h(
+        'div',
+        { class: `card ${data.reached ? 'card--ok' : 'card--notice'}`, role: 'status' },
+        h('h2', {}, data.reached ? 'Powiadomienie wysłane' : 'Nikt nie dostał powiadomienia'),
+        h(
+          'ul',
+          { class: 'status-list' },
+          row('Dostali', data.reached),
+          row('Bez włączonych powiadomień', notReached),
+          row('Wyciszone', data.muted),
+        ),
+        notReached > 0 && h('p', { class: 'muted' }, 'Osoby bez włączonych powiadomień zobaczą zmianę dopiero po otwarciu aplikacji.'),
+        h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => closed() }, 'OK'),
       ),
     );
   };

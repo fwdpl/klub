@@ -5,6 +5,8 @@
 - Ikona pobierania przy wyjeździe – zapisuje ten wyjazd na telefonie; pod nią „Na telefonie: …”. Bez internetu: czerwony pasek, plan, szczegóły i checklista działają, zmiany wysyłają się po połączeniu.
 - Po zmianie planu, szczegółów albo kosztów organizator dostaje gotową propozycję powiadomienia – może ją poprawić, wysłać albo pominąć. Przy wyjeździe jest też „Wyślij powiadomienie”.
 - Ustawienia: „Wycisz wszystkie powiadomienia z Klubu”.
+- Ekran wyjazdu: każdą sekcję można zwinąć i rozwinąć stuknięciem w nagłówek. Plan pokazuje najpierw listę dni, a każdy dzień rozwija się osobno; dzisiejszy dzień jest oznaczony „dziś” i rozwinięty. Aplikacja pamięta, co było rozwinięte.
+- Po wysłaniu powiadomienia podsumowanie (ile osób dostało, ile nie ma włączonych powiadomień, ile wyciszyło) zostaje na ekranie do stuknięcia OK.
 
 ## 0.5.0 — plan dni (wersja testowa)
 

@@ -2,8 +2,10 @@ import { isFor, type Member, type Trip } from '../data/trips';
 import type { DayDoc, PlanItem, PlanItemType } from '../model/types';
 import { findCollisions, itemInterval, overlaps, sortItems } from '../plan/collisions';
 import { richText } from '../plan/richText';
+import { todayIn } from '../plan/time';
 import { zoneLabel } from '../timezones';
 import { h, present } from '../ui';
+import { fold, remember } from './fold';
 import { formatLocal } from './tripDetails';
 
 interface Me {
@@ -124,20 +126,40 @@ function itemCard(item: PlanItem, day: DayDoc, dayZone: string, trip: Trip, memb
   );
 }
 
-function dayHeader(day: DayDoc, trip: Trip): HTMLElement {
-  return h(
-    'div',
-    { class: 'plan-day__head' },
-    h('div', { class: 'plan-day__date' }, [formatLocal(day.date), day.baseLocation].filter(Boolean).join(' · ')),
-    day.title && h('h3', { class: 'plan-day__title' }, day.title),
+function pointsLabel(n: number): string {
+  if (n === 1) return '1 punkt';
+  const last = n % 10;
+  const teen = n % 100 >= 12 && n % 100 <= 14;
+  return `${n} ${last >= 2 && last <= 4 && !teen ? 'punkty' : 'punktów'}`;
+}
+
+/** Jeden dzień planu – zwijany; nagłówek widać zawsze (data, miejsce, tytuł, liczba punktów). */
+function dayFold(day: DayDoc, trip: Trip, zone: string, body: HTMLElement[], count: number, filtered: boolean): HTMLDetailsElement {
+  const isToday = todayIn(zone) === day.date;
+  const dateLine = [formatLocal(day.date), day.baseLocation].filter(Boolean).join(' · ');
+  return fold(
+    {
+      // przy filtrze etykiety dni są rozwinięte i nie nadpisują zapamiętanego stanu
+      id: filtered ? undefined : `${trip.id}:day:${day.date}`,
+      title: day.title || dateLine,
+      head: [h('span', { class: 'plan-day__date' }, day.title ? dateLine : null, isToday ? h('span', { class: 'badge badge--accent plan-day__today' }, 'dziś') : null)],
+      meta: pointsLabel(count),
+      open: filtered || isToday,
+      className: `plan-day${isToday ? ' plan-day--today' : ''}`,
+      level: 'h3',
+    },
     day.timezone && day.timezone !== trip.timezone && h('div', { class: 'muted' }, `Godziny w czasie: ${zoneLabel(day.timezone)}`),
     day.note && h('p', { class: 'plan-day__note multiline' }, richText(day.note)),
+    ...body,
   );
 }
 
-/** Plan dni: oś czasu z „Mój plan” / „Wszyscy” (decyzja J), filtrem etykiet i kolizjami. */
+/**
+ * Plan dni: oś czasu z „Mój plan” / „Wszyscy” (decyzja J), filtrem etykiet i kolizjami.
+ * Dwa poziomy zwijania (uwaga Jacka z 1.11.2026): cała sekcja → lista dni → każdy dzień osobno.
+ */
 export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[], planNotes: string[], amApproved: boolean): HTMLElement {
-  const wrap = h('div', { class: 'card' });
+  const wrap = h('div');
   let mode: Mode = amApproved ? (savedMode() ?? 'mine') : 'all';
   let tag: string | null = null;
   const tags = [...new Set(days.flatMap((d) => d.items.flatMap((i) => i.tags ?? [])))].sort();
@@ -156,9 +178,16 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
     const button = (label: string, pressed: boolean, onclick: () => void) =>
       h('button', { type: 'button', 'aria-pressed': String(pressed), onclick }, label);
 
+    const dayEls = visible.map(({ day, zone, items }) =>
+      dayFold(day, trip, zone, items.map((i) => itemCard(i, day, zone, trip, members, me, mode)), items.length, tag !== null),
+    );
+    const setAll = (open: boolean) => {
+      for (const el of dayEls) el.open = open;
+      if (tag === null) for (const { day } of visible) remember(`${trip.id}:day:${day.date}`, open);
+    };
+
     wrap.replaceChildren(
       ...present(
-        h('h2', {}, 'Plan'),
         me.isOrganizer &&
           h(
             'div',
@@ -184,9 +213,14 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
           h('div', { class: 'plan-notes' }, h('b', {}, 'Uwagi do planu'), h('ul', {}, ...planNotes.map((n) => h('li', {}, richText(n))))),
         days.length === 0 && h('p', { class: 'muted' }, me.isOrganizer ? 'Plan jest pusty – zaimportuj plik albo dodaj punkt.' : 'Plan pojawi się tutaj, gdy organizator go doda.'),
         days.length > 0 && visible.length === 0 && h('p', { class: 'muted' }, 'Brak punktów dla wybranego widoku.'),
-        ...visible.map(({ day, zone, items }) =>
-          h('section', { class: 'plan-day' }, dayHeader(day, trip), ...items.map((i) => itemCard(i, day, zone, trip, members, me, mode))),
-        ),
+        dayEls.length > 1 &&
+          h(
+            'div',
+            { class: 'actions actions--2 plan-fold-all' },
+            h('button', { type: 'button', class: 'chip-btn', onclick: () => setAll(true) }, 'Rozwiń wszystkie dni'),
+            h('button', { type: 'button', class: 'chip-btn', onclick: () => setAll(false) }, 'Zwiń wszystkie dni'),
+          ),
+        ...dayEls,
       ),
     );
   };
@@ -206,5 +240,5 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
   };
 
   draw();
-  return wrap;
+  return fold({ id: `${trip.id}:plan`, title: 'Plan', meta: days.length ? `${days.length} ${days.length === 1 ? 'dzień' : 'dni'}` : undefined, open: true }, wrap);
 }

@@ -44,10 +44,12 @@ export const setPersonActive = httpsCallable<{ uid: string; active: boolean }, {
   'setPersonActive',
 );
 export type NotifyAudience = 'approved' | 'interested';
-export const notifyTrip = httpsCallable<
-  { tripId: string; audience: NotifyAudience; title: string; body: string },
-  { people: number; muted: number; reached: number }
->(functions, 'notifyTrip');
+export interface NotifyResult {
+  people: number;
+  muted: number;
+  reached: number;
+}
+export const notifyTrip = httpsCallable<{ tripId: string; audience: NotifyAudience; title: string; body: string }, NotifyResult>(functions, 'notifyTrip');
 export const sendTestPush = httpsCallable<{ delaySec: number }, { sent: number; failed: number }>(
   functions,
   'sendTestPush',

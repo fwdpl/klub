@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { PlanItem } from '../model/types';
 import { findCollisions, overlaps, sortItems } from './collisions';
-import { isValidLocal, toInstant } from './time';
+import { isValidLocal, toInstant, todayIn } from './time';
 
 const item = (id: string, start: string, end: string | undefined, audience: PlanItem['audience'], extra: Partial<PlanItem> = {}): PlanItem => ({
   id,
@@ -60,5 +60,14 @@ describe('kolizje i kolejność', () => {
     ];
     expect([...findCollisions(items, 'ania', zone).keys()]).toEqual(['Taxi']);
     expect(sortItems(items, zone).map((i) => i.id)).toEqual(['Śniadanie', 'Lot', 'Taxi']);
+  });
+});
+
+describe('dziś w strefie miejsca', () => {
+  it('liczy datę w strefie wyjazdu, nie telefonu', () => {
+    const now = new Date('2027-03-10T23:30:00Z');
+    expect(todayIn('Atlantic/Reykjavik', now)).toBe('2027-03-10');
+    expect(todayIn('Asia/Tokyo', now)).toBe('2027-03-11');
+    expect(todayIn('America/New_York', now)).toBe('2027-03-10');
   });
 });

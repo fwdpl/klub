@@ -54,3 +54,10 @@ export function toInstant(local: string, zone: string): number {
   if (second !== first) instant = guess - second * 60000;
   return instant;
 }
+
+/** Dzisiejsza data ('YYYY-MM-DD') w strefie miejsca – do wyróżnienia „dziś” w planie. */
+export function todayIn(zone: string, now: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
