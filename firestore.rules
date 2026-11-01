@@ -1,26 +1,65 @@
 rules_version = '2';
 
 // Bezpieczeństwo = te reguły. Każda zmiana modelu danych idzie razem ze zmianą reguł i testów (tests/rules).
+// Model: src/model/types.ts, SPEC §3–§4.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------- osoba ----------
 
     function signedIn() {
       return request.auth != null;
     }
 
-    function me() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
     }
 
     function isActive() {
-      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && me().active == true;
+      return signedIn() && exists(userPath()) && get(userPath()).data.active == true;
     }
 
     function isOrganizer() {
-      return isActive() && me().role == 'organizer';
+      return isActive() && get(userPath()).data.role == 'organizer';
     }
 
-    // Konto tworzy wyłącznie funkcja serwerowa (logowanie kodem).
+    // ---------- wyjazd ----------
+
+    function memberPath(tripId) {
+      return /databases/$(database)/documents/trips/$(tripId)/members/$(request.auth.uid);
+    }
+
+    // status zalogowanej osoby przy wyjeździe albo '' gdy brak wpisu
+    function myStatus(tripId) {
+      return exists(memberPath(tripId)) ? get(memberPath(tripId)).data.status : '';
+    }
+
+    function tripStatus(tripId) {
+      return get(/databases/$(database)/documents/trips/$(tripId)).data.status;
+    }
+
+    // Wyjazd widoczny dla osoby: otwarty/zamknięty dla wszystkich z listy, archiwum tylko dla zatwierdzonych (decyzja B)
+    function canSeeTrip(tripId) {
+      return isOrganizer()
+        || (isActive() && tripStatus(tripId) in ['open', 'closed'])
+        || (isActive() && tripStatus(tripId) == 'archived' && myStatus(tripId) == 'approved');
+    }
+
+    // WARSTWA 2: zainteresowani + zatwierdzeni
+    function canSeeOverview(tripId) {
+      return isOrganizer()
+        || (canSeeTrip(tripId) && myStatus(tripId) in ['interested', 'approved']);
+    }
+
+    // WARSTWA 3: tylko zatwierdzeni
+    function canSeeDetails(tripId) {
+      return isOrganizer()
+        || (canSeeTrip(tripId) && myStatus(tripId) == 'approved');
+    }
+
+    // ---------- kolekcje ----------
+
+    // Konta tworzy i zmienia wyłącznie funkcja serwerowa (lista osób organizatora).
     // Użytkownik czyta swój dokument i zmienia tylko tokeny powiadomień oraz preferencje.
     match /users/{uid} {
       allow read: if (isActive() && request.auth.uid == uid) || isOrganizer();
@@ -32,6 +71,75 @@ service cloud.firestore {
       allow create, delete: if false;
     }
 
+    match /trips/{tripId} {
+      // Zapytanie uczestnika musi filtrować po stanie (open/closed) – reguły nie są filtrami
+      allow read: if isOrganizer()
+        || (isActive() && resource.data.status in ['open', 'closed'])
+        || (isActive() && resource.data.status == 'archived' && myStatus(tripId) == 'approved');
+      allow create, update: if isOrganizer()
+        && request.resource.data.status in ['draft', 'open', 'closed', 'archived']
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.schemaVersion is int;
+      allow delete: if isOrganizer();
+
+      // Status osoby przy wyjeździe. Listę widzą zainteresowani i zatwierdzeni (wariant C).
+      match /members/{uid} {
+        allow read: if isOrganizer()
+          || (canSeeTrip(tripId) && (request.auth.uid == uid || myStatus(tripId) in ['interested', 'approved']));
+
+        // „Też tam chcę”: tylko własny wpis, tylko przy otwartym wyjeździe, tylko jako zainteresowany.
+        // Po rezygnacji wpis zostaje ze statusem 'withdrawn', więc ponowne zgłoszenie nie jest utworzeniem (decyzja C).
+        allow create: if isOrganizer()
+          || (isActive()
+            && request.auth.uid == uid
+            && tripStatus(tripId) == 'open'
+            && request.resource.data.keys().hasOnly(['uid', 'displayName', 'status', 'updatedAt'])
+            && request.resource.data.uid == uid
+            && request.resource.data.status == 'interested'
+            && request.resource.data.displayName == get(userPath()).data.displayName
+            && request.resource.data.updatedAt == request.time);
+
+        // Wycofanie się: osoba usuwa własny wpis, dopóki nie została zatwierdzona
+        allow delete: if isOrganizer()
+          || (isActive() && request.auth.uid == uid && resource.data.status == 'interested');
+
+        // Zatwierdzenie i rezygnacja: tylko organizator
+        allow update: if isOrganizer()
+          && request.resource.data.status in ['interested', 'approved', 'withdrawn']
+          && request.resource.data.uid == uid;
+      }
+
+      // WARSTWA 2
+      match /overview/{docId} {
+        allow read: if canSeeOverview(tripId);
+        allow write: if isOrganizer();
+      }
+
+      // WARSTWA 3
+      match /info/{docId} {
+        allow read: if canSeeDetails(tripId);
+        allow write: if isOrganizer();
+      }
+
+      match /days/{date} {
+        allow read: if canSeeDetails(tripId);
+        allow write: if isOrganizer();
+      }
+
+      // Checklista osobista: właściciel (zatwierdzony) odhacza swoje punkty, organizator wszystko
+      match /checklists/{uid} {
+        allow read: if isOrganizer() || (request.auth.uid == uid && canSeeDetails(tripId));
+        allow create, update: if isOrganizer()
+          || (request.auth.uid == uid
+            && canSeeDetails(tripId)
+            && request.resource.data.keys().hasOnly(['items', 'updatedAt'])
+            && request.resource.data.items is list
+            && request.resource.data.items.size() <= 200);
+        allow delete: if isOrganizer();
+      }
+    }
+
     // Kody logowania i licznik prób: tylko funkcje serwerowe (konto serwisowe omija reguły)
     match /loginCodes/{id} {
       allow read, write: if false;
@@ -41,7 +149,7 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Wszystko inne zamknięte, dopóki nie powstanie model danych v1
+    // Wszystko inne zamknięte
     match /{document=**} {
       allow read, write: if false;
     }

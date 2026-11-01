@@ -1,5 +1,12 @@
 # Zmiany
 
+## 0.2.0 — lista osób i zasady dostępu do wyjazdów (wersja testowa)
+
+- Panel organizatora „Osoby”: dodawanie osoby (mail i imię), kod logowania, zmiana imienia, wyłączanie i włączanie dostępu.
+- Zalogować się mogą tylko osoby z listy. Wyłączona osoba od razu traci dostęp i zostaje wylogowana na wszystkich telefonach.
+- Organizator dostaje powiadomienie, gdy ktoś zgłosi chęć wyjazdu albo wycofa zgłoszenie.
+- Zasady dostępu do wyjazdów: opis widzą wszyscy z listy, ogólny plan i koszty – zainteresowani i zatwierdzeni, szczegóły – tylko zatwierdzeni, archiwum – tylko uczestnicy danego wyjazdu.
+
 ## 0.1.0 — bramka techniczna (wersja testowa)
 
 - Aplikację „Klub TEST” można zainstalować na ekranie głównym iPhone'a i Androida (ikona z paskiem TEST, ekran startowy z nocnym niebem).

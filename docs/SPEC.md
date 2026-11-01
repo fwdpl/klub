@@ -1,6 +1,6 @@
 # Aplikacja wyjazdowa dla grupy — specyfikacja (PWA)
 
-Wersja specyfikacji: 1.3 (31.10.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy).
+Wersja specyfikacji: 1.4 (1.11.2026). Źródła: podsumowanie ustaleń z 3.10.2026 + uzupełnienia i harmonogram z tej samej sesji; decyzje z 28.10.2026 (powiadomienia, logowanie, widoczność uczestników, format planu, adres, nazwa, motywy i kolory); konfiguracja z 31.10.2026 (projekty, organizator, pierwsze logowanie, ikona, ekran startowy); decyzje A/B/C i powiadomienie organizatora z 1.11.2026; stan bramki technicznej.
 
 ---
 
@@ -60,6 +60,12 @@ Adres (`klub.bakutis.pl` — ustalony), nazwa, ikona (512 px + wersja maskable),
 - Ukryty link ani wspólne hasło nie są zabezpieczeniem. Kod może być publiczny — dane chronią reguły Firestore sprawdzające użytkownika i jego status przy każdym odczycie.
 - Każda osoba ma status osobno dla każdego wyjazdu; status decyduje, co widzi.
 - Rezygnację osoby zatwierdzonej zmienia tylko Jacek; jej wydatki zostają w historii rozliczeń.
+- **Lista osób** (od 1.11.2026): organizator dodaje osobę w panelu „Osoby” (mail + imię). Kod logowania można wygenerować tylko dla osoby z listy; mail spoza listy nie zaloguje się nawet kodem wpisanym w konsoli (wyjątek: mail organizatora — awaryjne wejście). Wyłączenie osoby: od razu brak dostępu do danych (reguły sprawdzają `active`), wylogowanie na wszystkich urządzeniach, unieważnienie niewykorzystanych kodów. Organizator nie wyłączy sam siebie.
+- **Decyzja A (1.11.2026)**: imię nadaje organizator; uczestnik go nie zmienia. Zmiana imienia przez organizatora aktualizuje też listy osób przy wyjazdach.
+- **Stany wyjazdu**: szkic (widzi tylko organizator), otwarty (widoczny, zapisy otwarte), zamknięty (widoczny, zapisy wstrzymane), archiwum.
+- **Decyzja B (1.11.2026)**: wyjazdy w archiwum widzą tylko osoby zatwierdzone na nie + organizator (wszystkie warstwy).
+- **Decyzja C (1.11.2026)**: po rezygnacji wpisanej przez organizatora osoba nie zgłasza się ponownie sama — przywraca ją tylko organizator.
+- **Powiadomienie organizatora (1.11.2026, dopisane do v1 decyzją Jacka)**: gdy ktoś kliknie „też tam chcę” albo wycofa zgłoszenie, organizator dostaje push (z pominięciem zmian, które robi sam, i przy włączonym „wycisz”).
 - Widoczność uczestników (ustalone 28.10.2026, wariant C): zainteresowani i zatwierdzeni danego wyjazdu widzą imiona osób zainteresowanych i zatwierdzonych przy tym wyjeździe. Członkowie, którzy nie kliknęli „też tam chcę”, nie widzą listy.
 - Kto nie kliknął „też tam chcę”, nie dostaje powiadomień o danym wyjeździe. Dodatkowo globalny przełącznik „wycisz”.
 - Dane offline po odebraniu dostępu zostają na telefonie do następnej synchronizacji (ograniczenie, nie błąd).
@@ -97,7 +103,7 @@ Reguły Firestore działają na poziomie dokumentów, nie pól. Dane wyjazdu mus
 Wszystkie dokumenty planu mają pole `schemaVersion`. Schemat planu jest wspólny z FrameTrails (patrz §9) i trzymany w jednym module (`src/model/`).
 
 ```
-users/{uid}                       # tylko organizator tworzy; użytkownik czyta swój, organizator wszystkie
+users/{uid}                       # tworzy/zmienia tylko funkcja (panel „Osoby”); użytkownik czyta swój i zmienia fcmTokens/prefs, organizator czyta wszystkie
   email, displayName, role: 'organizer'|'member', active: bool
   prefs: { theme: 'auto'|'light'|'dark', accent?: string, muted: bool }
   fcmTokens: string[]             # każda instalacja ma własny token
@@ -107,10 +113,13 @@ trips/{tripId}                    # WARSTWA 1 — każdy aktywny użytkownik
   timezone (IANA), accentColor?, schemaVersion
 
 trips/{tripId}/members/{uid}      # status uczestnika
-  status: 'interested'|'approved'|'withdrawn', displayName, updatedAt
-  # odczyt: organizator + zainteresowani i zatwierdzeni tego wyjazdu (wariant C)
-  # użytkownik: create/delete własnego wpisu tylko jako 'interested'
-  # 'approved' / 'withdrawn' (po zatwierdzeniu): tylko organizator
+  uid, status: 'interested'|'approved'|'withdrawn', displayName, updatedAt
+  # odczyt listy: organizator + zainteresowani i zatwierdzeni tego wyjazdu (wariant C); własny wpis zawsze
+  # użytkownik: create tylko własnego wpisu jako 'interested' przy wyjeździe otwartym, z imieniem z users
+  #   i updatedAt = czas serwera; delete własnego wpisu tylko gdy 'interested'
+  # 'approved' / 'withdrawn': tylko organizator; wpis 'withdrawn' zostaje (decyzja C)
+  # trips (warstwa 1): uczestnik czyta open/closed (zapytanie musi filtrować po status), archived tylko zatwierdzony
+  # wszystkie warstwy wyjazdu w archiwum: tylko zatwierdzeni (decyzja B)
 
 trips/{tripId}/overview/main      # WARSTWA 2 — interested + approved + organizer
   planSummary, costEstimate, decisionDeadline?
@@ -157,7 +166,8 @@ notes?
 ## 5. Funkcje
 
 ### v1 (rdzeń)
-- **Logowanie**, lista dozwolonych maili, statusy per wyjazd, trzy warstwy danych.
+- **Logowanie**, lista dozwolonych maili (panel „Osoby”), statusy per wyjazd, trzy warstwy danych.
+- **Powiadomienie organizatora** o „też tam chcę” i wycofaniu zgłoszenia (dopisane 1.11.2026).
 - **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka.
 - **Informacje o wyjeździe**: loty, hotele, kontakty awaryjne, ubezpieczenie. Offline.
 - **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem.
@@ -263,6 +273,8 @@ Typy pushy: zmiana planu (z/bez wymaganego potwierdzenia), nowe koszty/termin de
 
 ## 11. Zakres wersji i kolejność budowy
 1. **Bramka techniczna (pierwszy krok, zanim powstanie reszta)**: minimalna PWA — instalacja, logowanie, push — przetestowana na prawdziwym iPhonie i Androidzie. Jeśli coś nie działa: korekta założeń.
+   - Stan 1.11.2026: komputer (Firefox) — logowanie ✓, powiadomienia ✓; Android (Chrome, zainstalowana) — instalacja ✓, logowanie ✓, powiadomienia ✓; **iPhone — oczekuje na testerów**. Decyzja Jacka: kroki v1 niezależne od iPhone'a (1–4) idą dalej; przed krokiem 5 (offline, powiadomienia) wymagane potwierdzenie z iPhone'a.
+   - Wnioski z Androida: blokada powiadomień bywa w Ustawieniach witryn Chrome (lista „Zablokowane”) — opisane w `docs/INSTRUKCJA.md` i w aplikacji.
 2. **v1** według §5 (szacunek: 7–10 sesji po 2–3 h). Kolejność:
    1. logowanie, `users`, statusy, warstwy, reguły + testy reguł,
    2. lista wyjazdów, „też tam chcę”, zatwierdzanie, panel organizatora,
@@ -311,8 +323,15 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 - [x] Ikona: wariant 05; ekran startowy: nocne niebo z terenówką (§10).
 - [x] Nazwa wersji testowej: „Klub TEST”.
 
+### Podjęte 1.11.2026
+- [x] A: imię nadaje organizator, uczestnik go nie zmienia (§3).
+- [x] B: archiwum widzą tylko zatwierdzeni (§3).
+- [x] C: po rezygnacji ponowne zgłoszenie tylko przez organizatora (§3).
+- [x] Powiadomienie organizatora o zgłoszeniach i wycofaniach — dopisane do v1 (§3, §5).
+
 ### OTWARTE (Claude Code: pytaj, nie zakładaj)
 Blokujące v1:
+- [ ] Test bramki technicznej na iPhonie (§11) — wymagany przed krokiem 5 v1.
 - [ ] Oryginały ikony i ekranu startowego w pełnej rozdzielczości (obecne wersje są tymczasowe, §10).
 - [ ] Akceptacja wartości kolorów na podglądzie w telefonie (§10).
 

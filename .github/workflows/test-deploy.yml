@@ -75,6 +75,8 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEST }}
       - uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: beta
 
       # Idempotentne: przy kolejnych uruchomieniach nic nie zmienia
       - name: Usługi i uprawnienia projektu testowego
@@ -101,11 +103,20 @@ jobs:
             grant "$DEPLOY_SA" "$ROLE"
           done
 
-          # Konto, na którym działają funkcje: podpisywanie tokenów logowania, baza, konta, powiadomienia, budowanie
+          # Konto, na którym działają funkcje: podpisywanie tokenów logowania, baza, konta, powiadomienia, budowanie,
+          # odbieranie zdarzeń z bazy (funkcje reagujące na zmiany, np. powiadomienie organizatora)
           for ROLE in roles/iam.serviceAccountTokenCreator roles/datastore.user roles/firebaseauth.admin \
-                      roles/firebasecloudmessaging.admin roles/cloudbuild.builds.builder; do
+                      roles/firebasecloudmessaging.admin roles/cloudbuild.builds.builder \
+                      roles/eventarc.eventReceiver roles/run.invoker; do
             grant "$RUNTIME_SA" "$ROLE"
           done
+
+          # Konta usług Google przekazujących zdarzenia z bazy do funkcji (Eventarc, Pub/Sub).
+          # Tworzone przy pierwszym użyciu – zakładamy je jawnie, żeby nie czekać na propagację.
+          gcloud beta services identity create --service=eventarc.googleapis.com --project "$PROJECT_ID" > /dev/null
+          gcloud beta services identity create --service=pubsub.googleapis.com --project "$PROJECT_ID" > /dev/null
+          grant "service-${NUMBER}@gcp-sa-eventarc.iam.gserviceaccount.com" roles/eventarc.serviceAgent
+          grant "service-${NUMBER}@gcp-sa-pubsub.iam.gserviceaccount.com" roles/iam.serviceAccountTokenCreator
 
       # Mail organizatora nie jest w repozytorium – trafia do funkcji tylko przy wdrożeniu
       - name: Parametry funkcji z sekretów
