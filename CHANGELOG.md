@@ -4,6 +4,7 @@
 
 - Organizator: podgląd wyjazdu oczami wybranego uczestnika – lista „Podgląd jako uczestnik…” przy wyjeździe. Tylko do oglądania.
 - Organizator: Ustawienia → „Kopia danych” zapisuje na urządzeniu plik z kopią osób, wyjazdów, planów, szczegółów i checklist.
+- Lista wyjazdów jest ułożona chronologicznie według orientacyjnych dat (np. „luty 2027” przed „sierpień 2027”); archiwum na końcu. Formularz wyjazdu podpowiada, jak aplikacja odczytała daty.
 - Organizator przy wyjeździe ma „Jadę – dopisz mnie” zamiast „Też tam chcę” – po dopisaniu widzi „Mój plan” i ma swoją checklistę.
 
 ## 0.6.0 — wyjazd bez internetu i powiadomienia o zmianach (wersja testowa)

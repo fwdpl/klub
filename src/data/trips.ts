@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { readDoc, readDocs } from './read';
+import { compareTrips } from './tripOrder';
 import {
   SCHEMA_VERSION,
   type Audience,
@@ -31,8 +32,6 @@ import {
 export type Trip = TripDoc & { id: string };
 export type Member = MemberDoc & { id: string };
 export type Person = UserDoc & { uid: string };
-
-const STATUS_ORDER: Record<TripStatus, number> = { open: 0, closed: 1, draft: 2, archived: 3 };
 
 export const TRIP_STATUS_LABEL: Record<TripStatus, string> = {
   draft: 'szkic',
@@ -69,7 +68,7 @@ export async function listTrips(isOrganizer: boolean, memberships: Map<string, M
       if (d?.exists() && d.get('status') === 'archived') trips.push(toTrip(d));
     });
   }
-  return trips.sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.title.localeCompare(b.title, 'pl'));
+  return trips.sort(compareTrips);
 }
 
 export async function getTrip(id: string): Promise<Trip | null> {

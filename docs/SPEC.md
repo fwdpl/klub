@@ -192,7 +192,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 ### v1 (rdzeń)
 - **Logowanie**, lista dozwolonych maili (panel „Osoby”), statusy per wyjazd, trzy warstwy danych.
 - **Powiadomienie organizatora** o „też tam chcę” i wycofaniu zgłoszenia (dopisane 1.11.2026).
-- **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka.
+- **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka. Kolejność chronologiczna według `approxDates` (uwaga Jacka z 1.11.2026): pole zostaje tekstem, aplikacja odczytuje z niego miesiąc i rok (polskie nazwy miesięcy, pory roku, zapis liczbowy; przy zakresie – początek); nieodczytane na końcu, archiwum na samym końcu; formularz pokazuje, jak daty zostały odczytane.
 - **Informacje o wyjeździe**: loty (godziny w czasie lotnisk), noclegi (nawigacja, telefon), kontakty awaryjne (dzwonienie), ubezpieczenie; loty i noclegi z „dla kogo” (decyzja G). Offline.
 - **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem; wspólna część od organizatora na górze + własne punkty osoby pod nią (decyzja F).
 - **Plan dni z planami indywidualnymi**: każdy punkt ma „dla kogo” (wszyscy / wybrane osoby / jedna osoba). Uczestnik widzi swoją oś czasu: punkty wspólne + swoje. Punkty wspólne wyróżnione, z adresem i nawigacją (link do Google Maps). Podgląd „gdzie jest reszta” (plany wszystkich obok siebie). Ostrzeżenie o kolizji punktu prywatnego ze wspólnym.
