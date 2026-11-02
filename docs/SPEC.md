@@ -192,7 +192,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 ### v1 (rdzeń)
 - **Logowanie**, lista dozwolonych maili (panel „Osoby”), statusy per wyjazd, trzy warstwy danych.
 - **Powiadomienie organizatora** o „też tam chcę” i wycofaniu zgłoszenia (dopisane 1.11.2026).
-- **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka.
+- **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka. Kolejność chronologiczna według `approxDates` (uwaga Jacka z 1.11.2026): pole zostaje tekstem, aplikacja odczytuje z niego miesiąc i rok (polskie nazwy miesięcy, pory roku, zapis liczbowy; przy zakresie – początek); nieodczytane na końcu, archiwum na samym końcu; formularz pokazuje, jak daty zostały odczytane.
 - **Informacje o wyjeździe**: loty (godziny w czasie lotnisk), noclegi (nawigacja, telefon), kontakty awaryjne (dzwonienie), ubezpieczenie; loty i noclegi z „dla kogo” (decyzja G). Offline.
 - **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem; wspólna część od organizatora na górze + własne punkty osoby pod nią (decyzja F).
 - **Plan dni z planami indywidualnymi**: każdy punkt ma „dla kogo” (wszyscy / wybrane osoby / jedna osoba). Uczestnik widzi swoją oś czasu: punkty wspólne + swoje. Punkty wspólne wyróżnione, z adresem i nawigacją (link do Google Maps). Podgląd „gdzie jest reszta” (plany wszystkich obok siebie). Ostrzeżenie o kolizji punktu prywatnego ze wspólnym.
@@ -207,7 +207,9 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Komunikat o nowej wersji** („Jest nowa wersja, odśwież”).
 - **Motyw jasny/ciemny**: Auto (za systemem) + ręczny wybór; zapis w `users/{uid}.prefs`; ustawiany przed renderem (bez błysku). Na iOS pasek statusu `black-translucent`.
 - **Układ telefonu** + **panel organizatora** (działający też na telefonie): wyjazdy, uczestnicy i statusy, konta, import planu, eksport kopii.
-- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza).
+- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza). Na ekranie wyjazdu lista „Podgląd jako uczestnik…” (osoby przy wyjeździe); widok liczony jak w regułach (status osoby, stan wyjazdu, „dla kogo”), przyciski wyłączone, checklista osoby ukryta (prywatna), „Zakończ podgląd” u góry i na dole.
+- **Eksport kopii** (Ustawienia → „Kopia danych”, tylko organizator): plik `klub-kopia-RRRR-MM-DD-GGMM.json` (format `klub-backup` 1.0) z osobami (bez tokenów powiadomień), wyjazdami i ich warstwami (overview, members, info, days, checklists); daty jako tekst ISO. Odtwarzanie z pliku – poza v1 (w razie potrzeby ręcznie, z pomocą Claude Code).
+- **Organizator na wyjeździe**: zamiast „Też tam chcę” przycisk „Jadę – dopisz mnie” (od razu zatwierdzony) – wtedy ma „Mój plan” i własną checklistę.
 
 ### v2
 - **Wspólna lista życzeń**: miejsce istnieje raz (wyszukiwarka miejsc, unikalny identyfikator, bez duplikatów). Inni klikają „też chcę” z własnym priorytetem. Pola: link/miejsce, priorytet („muszę” / „fajnie by było”), preferowana pora, szacowany czas pobytu, ewentualna stała godzina. Eksport do JSON jednym przyciskiem.
