@@ -23,7 +23,8 @@ const PROD: FirebaseOptions | null = {
   messagingSenderId: '151021282622',
   appId: '1:151021282622:web:8733ac0c7cd1f57459f86f',
 };
-const PROD_VAPID: string | null = null;
+// Publiczny klucz VAPID (Web Push) projektu produkcyjnego
+const PROD_VAPID: string | null = 'BH-LOmtL68sli3pvPsBEdmywojx-EbLqsKs1laOWBFsWwZ1dTNenU45FO2XCh46dO1SDLERSzw1a9OLIivIMgKs';
 
 const isProd = import.meta.env.MODE === 'production';
 
