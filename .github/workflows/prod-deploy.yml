@@ -1,0 +1,150 @@
+name: Wdrożenie produkcyjne
+
+# Po każdym merge do main (decyzja Jacka): testy, a potem publikacja na projekt PRODUKCYJNY (klub-bakutis).
+# Klucz produkcyjny jest w środowisku GitHub „production”, dostępnym tylko dla gałęzi main –
+# gałęzie robocze i PR-y nie mają do niego dostępu.
+# Repozytorium jest publiczne, więc logi też: nigdy nie wypisujemy sekretów, kodów ani tokenów.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Wdrożenia produkcyjne po kolei, bez przerywania trwającego
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_ID: klub-bakutis
+
+jobs:
+  test:
+    name: Testy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm ci --prefix functions
+      - name: Testy logiki
+        run: npm test
+      - name: Testy reguł Firestore (emulator)
+        run: npm run test:rules
+      - name: Test logowania kodem (emulatory)
+        run: npm run test:e2e
+      - name: Budowanie aplikacji (produkcja)
+        run: npm run build:prod
+      - name: Budowanie funkcji
+        run: npm run build --prefix functions
+
+  deploy:
+    name: Wdrożenie na produkcję
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://klub.bakutis.pl
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix functions
+      - run: npm run build:prod
+        env:
+          BUILD_ID: ${{ github.sha }}
+
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
+      - uses: google-github-actions/setup-gcloud@v3
+        with:
+          install_components: beta
+
+      # Idempotentne: przy kolejnych uruchomieniach nic nie zmienia (tak samo jak w projekcie testowym)
+      - name: Usługi i uprawnienia projektu produkcyjnego
+        run: |
+          gcloud services enable --project "$PROJECT_ID" \
+            cloudfunctions.googleapis.com run.googleapis.com cloudbuild.googleapis.com \
+            artifactregistry.googleapis.com eventarc.googleapis.com pubsub.googleapis.com \
+            firebasehosting.googleapis.com firestore.googleapis.com firebaserules.googleapis.com \
+            fcm.googleapis.com iamcredentials.googleapis.com identitytoolkit.googleapis.com
+
+          DEPLOY_SA=$(jq -r .client_email "$GOOGLE_APPLICATION_CREDENTIALS")
+          NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+          RUNTIME_SA="${NUMBER}-compute@developer.gserviceaccount.com"
+
+          grant() {
+            gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+              --member="serviceAccount:$1" --role="$2" --condition=None --quiet > /dev/null
+            echo "ok: $2 -> $1"
+          }
+
+          # Konto wdrażające: funkcje (publiczne wywołania), hosting, reguły
+          for ROLE in roles/run.admin roles/cloudfunctions.admin roles/iam.serviceAccountUser \
+                      roles/firebasehosting.admin roles/firebaserules.admin; do
+            grant "$DEPLOY_SA" "$ROLE"
+          done
+
+          # Konto, na którym działają funkcje: podpisywanie tokenów logowania, baza, konta, powiadomienia, budowanie,
+          # odbieranie zdarzeń z bazy (funkcje reagujące na zmiany, np. powiadomienie organizatora)
+          for ROLE in roles/iam.serviceAccountTokenCreator roles/datastore.user roles/firebaseauth.admin \
+                      roles/firebasecloudmessaging.admin roles/cloudbuild.builds.builder \
+                      roles/eventarc.eventReceiver roles/run.invoker; do
+            grant "$RUNTIME_SA" "$ROLE"
+          done
+
+          # Konta usług Google przekazujących zdarzenia z bazy do funkcji (Eventarc, Pub/Sub)
+          gcloud beta services identity create --service=eventarc.googleapis.com --project "$PROJECT_ID" > /dev/null
+          gcloud beta services identity create --service=pubsub.googleapis.com --project "$PROJECT_ID" > /dev/null
+          grant "service-${NUMBER}@gcp-sa-eventarc.iam.gserviceaccount.com" roles/eventarc.serviceAgent
+          grant "service-${NUMBER}@gcp-sa-pubsub.iam.gserviceaccount.com" roles/iam.serviceAccountTokenCreator
+
+      # Domyślna witryna Hostingu powstaje przy pierwszym wdrożeniu, jeśli jej jeszcze nie ma
+      - name: Witryna Hostingu
+        run: |
+          if npx firebase hosting:sites:get "$PROJECT_ID" --project prod --non-interactive > /dev/null 2>&1; then
+            echo "Witryna $PROJECT_ID istnieje"
+          else
+            npx firebase hosting:sites:create "$PROJECT_ID" --project prod --non-interactive
+          fi
+
+      # Mail organizatora nie jest w repozytorium – trafia do funkcji tylko przy wdrożeniu
+      - name: Parametry funkcji z sekretów
+        env:
+          ORGANIZER_EMAIL: ${{ secrets.ORGANIZER_EMAIL }}
+        run: |
+          if [ -z "$ORGANIZER_EMAIL" ]; then echo "Brak sekretu ORGANIZER_EMAIL"; exit 1; fi
+          printf 'ORGANIZER_EMAIL=%s\n' "$ORGANIZER_EMAIL" > "functions/.env.$PROJECT_ID"
+
+      - name: Wdrożenie (hosting, reguły, funkcje)
+        run: npx firebase deploy --project prod --only hosting,firestore,functions --non-interactive --force
+
+      - name: Podsumowanie
+        run: |
+          {
+            echo "### Wersja produkcyjna opublikowana"
+            echo ""
+            echo "- https://klub-bakutis.web.app"
+            echo "- https://klub.bakutis.pl (po podpięciu domeny)"
+          } >> "$GITHUB_STEP_SUMMARY"

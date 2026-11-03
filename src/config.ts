@@ -14,9 +14,17 @@ const TEST: FirebaseOptions = {
 // Publiczny klucz VAPID (Web Push) projektu testowego
 const TEST_VAPID = 'BAlUBjDN9slfcjCMr6_nI8O5d2JCZh_vRBucyDxF-OgCMJdVdDXEgsE-bbx54Z4lTnwzYjTYKWPuwDEAE7SGmtA';
 
-// Projekt produkcyjny (klub-bakutis) – uzupełnić po rejestracji aplikacji webowej
-const PROD: FirebaseOptions | null = null;
-const PROD_VAPID: string | null = null;
+// Projekt produkcyjny (klub-bakutis)
+const PROD: FirebaseOptions | null = {
+  apiKey: 'AIzaSyAA-8pYiICGCAjEUfMJZ7XtRp9XiUFWXeM',
+  authDomain: 'klub-bakutis.firebaseapp.com',
+  projectId: 'klub-bakutis',
+  storageBucket: 'klub-bakutis.firebasestorage.app',
+  messagingSenderId: '151021282622',
+  appId: '1:151021282622:web:8733ac0c7cd1f57459f86f',
+};
+// Publiczny klucz VAPID (Web Push) projektu produkcyjnego
+const PROD_VAPID: string | null = 'BH-LOmtL68sli3pvPsBEdmywojx-EbLqsKs1laOWBFsWwZ1dTNenU45FO2XCh46dO1SDLERSzw1a9OLIivIMgKs';
 
 const isProd = import.meta.env.MODE === 'production';
 

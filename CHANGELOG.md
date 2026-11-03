@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.0.0 — pierwsza wersja dla uczestników
+
+- Klub działa pod adresem klub.bakutis.pl: osobna, produkcyjna baza z codzienną kopią zapasową. Wersja testowa zostaje pod klub2.bakutis.pl.
+- Instrukcja dla uczestników: klub.bakutis.pl/instrukcja.
+
 ## 0.8.0 — instrukcja dla uczestników (wersja testowa)
 
 - Instrukcja pod stałym linkiem `/instrukcja` – otwiera się bez logowania, od razu z sekcją dla Twojego telefonu (iPhone, Android albo komputer). Link jest też na ekranie logowania i w Ustawieniach.
