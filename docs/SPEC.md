@@ -313,6 +313,7 @@ Typy pushy: zmiana planu (z/bez wymaganego potwierdzenia), nowe koszty/termin de
    4. plan dni, „dla kogo”, oś czasu, strefy czasowe, kolizje, import JSON,
    5. offline, powiadomienia, komunikat o nowej wersji,
    6. motyw, dopracowanie, instrukcja instalacji ze zrzutami.
+      - Decyzja Jacka (3.11.2026): **instrukcja bez zrzutów** – krótki tekst pod linkiem. Strona `/instrukcja` (np. `klub.bakutis.pl/instrukcja`) otwiera się bez logowania, z sekcją dla wykrytego telefonu rozwiniętą; link na ekranie logowania, na ekranie instalacji iPhone’a i w Ustawieniach. Przy kodzie w „Osobach” przycisk „Wyślij zaproszenie z instrukcją” (arkusz udostępniania telefonu albo kopiowanie): imię, link do instrukcji, mail, kod i ważność.
 3. **v2** według §5 (szacunek: 6–8 sesji).
 
 ### Harmonogram

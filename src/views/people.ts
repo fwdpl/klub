@@ -3,6 +3,7 @@ import { readDocs } from '../data/read';
 import { addPerson, createLoginCode, db, setPersonActive, updatePerson } from '../firebase';
 import type { UserDoc } from '../model/types';
 import { h, present, render, toast } from '../ui';
+import { guideUrl } from './guide';
 
 type Person = UserDoc & { uid: string };
 
@@ -15,18 +16,25 @@ function errorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-function codeBox(code: string, expiresAt: string): HTMLElement {
+/** Gotowa wiadomość do osoby: link do instrukcji, mail i kod. */
+export function inviteText(name: string, email: string, code: string, until: string, link: string): string {
+  return [`Cześć ${name}! Zapraszam do Klubu – aplikacji naszych wyjazdów.`, `Instrukcja: ${link}`, `Mail do logowania: ${email}`, `Kod: ${code} (działa raz, ważny do ${until})`].join('\n');
+}
+
+function codeBox(person: Person, code: string, expiresAt: string): HTMLElement {
   const until = new Date(expiresAt).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
+  const message = inviteText(person.displayName, person.email, code, until, guideUrl());
+  const copy = (text: string, done: string) => navigator.clipboard?.writeText(text).then(() => toast(done));
+  // Na telefonie: arkusz udostępniania (SMS, komunikator); gdzie go nie ma – kopiowanie
+  const invite = () =>
+    navigator.share ? navigator.share({ text: message }).catch(() => undefined) : copy(message, 'Skopiowano wiadomość z kodem i linkiem');
   return h(
     'div',
     { class: 'inline-form' },
     h('p', { class: 'code' }, code),
     h('p', { class: 'muted' }, `Działa raz, ważny do ${until}. Przekaż osobiście lub SMS-em. Poprzednie niewykorzystane kody tej osoby przestały działać.`),
-    h(
-      'button',
-      { type: 'button', class: 'btn btn--secondary', onclick: () => navigator.clipboard?.writeText(code).then(() => toast('Skopiowano kod')) },
-      'Kopiuj kod',
-    ),
+    h('button', { type: 'button', class: 'btn', onclick: invite }, 'Wyślij zaproszenie z instrukcją'),
+    h('button', { type: 'button', class: 'btn btn--secondary btn--spaced', onclick: () => copy(code, 'Skopiowano kod') }, 'Kopiuj sam kod'),
   );
 }
 
@@ -53,7 +61,7 @@ function personRow(person: Person, myUid: string, reload: () => Promise<void>): 
       codeBtn,
       async () => {
         const { data } = await createLoginCode({ email: person.email });
-        extra.replaceChildren(codeBox(data.code, data.expiresAt));
+        extra.replaceChildren(codeBox(person, data.code, data.expiresAt));
       },
       'Nie udało się wygenerować kodu.',
     ),

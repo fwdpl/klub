@@ -9,6 +9,7 @@ import { isAndroid, isIOS, isStandalone } from '../platform';
 import { enablePush, pushState, type PushState } from '../push';
 import { getThemePref, setThemePref, type ThemePref } from '../theme';
 import { installCard } from '../install';
+import { guideLink } from './guide';
 import { plural } from '../text';
 import { h, render, toast } from '../ui';
 
@@ -252,6 +253,7 @@ export async function showSettings(user: User): Promise<void> {
     h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn, muteToggle(user.uid, snap?.get('prefs.muted') === true)),
     h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch()),
     role === 'organizer' && backupCard(),
+    guideLink('Instrukcja dla uczestników →'),
     h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => signOut(auth) }, 'Wyloguj'),
   );
 }

@@ -3,6 +3,7 @@ import { auth, redeemLoginCode } from '../firebase';
 import { isTestEnv } from '../config';
 import { installCard } from '../install';
 import { h, render } from '../ui';
+import { guideLink } from './guide';
 
 function messageFor(error: unknown): string {
   const code = (error as { code?: string }).code ?? '';
@@ -57,5 +58,5 @@ export function showLogin(): void {
     submit,
   );
 
-  render(h('h1', {}, isTestEnv ? 'Klub TEST' : 'Klub'), form, installCard());
+  render(h('h1', {}, isTestEnv ? 'Klub TEST' : 'Klub'), form, installCard(), guideLink());
 }

@@ -1,6 +1,6 @@
 # Klub – instrukcja dla uczestników
 
-Wersja robocza. Zrzuty ekranu zostaną dodane po teście na telefonach.
+Uczestnicy czytają tę instrukcję w aplikacji pod adresem `https://klub.bakutis.pl/instrukcja` (bez logowania; treść w `src/views/guide.ts`). Ten plik jest pełniejszą wersją dla Jacka – zmieniając jedno, zmień drugie. Bez zrzutów ekranu (decyzja z 3.11.2026).
 
 Klub to aplikacja, którą instalujesz ze strony internetowej, bez sklepu z aplikacjami. Po instalacji ma swoją ikonę na ekranie głównym i działa także bez internetu.
 
