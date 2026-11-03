@@ -1,4 +1,5 @@
 import { TRIP_STATUS_LABEL, getOverview, getTrip, saveTrip, type TripForm } from '../data/trips';
+import { approxMonth, monthLabel } from '../data/tripOrder';
 import type { TripStatus } from '../model/types';
 import { proposeNotice } from './notify';
 import { zonePicker } from './zonePicker';
@@ -27,6 +28,18 @@ export async function showTripEdit(tripId: string | null): Promise<void> {
   const title = text('title', trip?.title, { required: true, maxlength: '80' });
   const destination = text('destination', trip?.destination, { maxlength: '80' });
   const approxDates = text('approxDates', trip?.approxDates, { maxlength: '80', placeholder: 'np. marzec 2027' });
+  // Podpowiedź: jak aplikacja odczytała daty – od tego zależy kolejność na liście wyjazdów
+  const datesHint = h('small', { class: 'muted', 'aria-live': 'polite' });
+  const showDatesHint = () => {
+    const value = approxMonth(approxDates.value);
+    datesHint.textContent = !approxDates.value.trim()
+      ? 'Wpisz miesiąc i rok, np. „marzec 2027” – według nich ustawia się kolejność na liście wyjazdów.'
+      : value === null
+        ? 'Nie rozpoznaję miesiąca i roku – wyjazd będzie na końcu listy. Wpisz np. „marzec 2027”.'
+        : `Na liście wyjazdów: ${monthLabel(value)}.`;
+  };
+  approxDates.addEventListener('input', showDatesHint);
+  showDatesHint();
   const description = area('description', trip?.description);
   const timezone = zonePicker(trip?.timezone ?? '');
   const status = h(
@@ -102,7 +115,7 @@ export async function showTripEdit(tripId: string | null): Promise<void> {
         h('h2', {}, 'Opis – widzą wszyscy z listy'),
         field('Tytuł', title),
         field('Kierunek', destination),
-        field('Orientacyjne daty', approxDates),
+        h('label', { class: 'field' }, h('span', {}, 'Orientacyjne daty'), approxDates, datesHint),
         field('Opis', description),
         h(
           'div',

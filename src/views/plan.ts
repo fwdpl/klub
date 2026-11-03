@@ -4,6 +4,7 @@ import { findCollisions, itemInterval, overlaps, sortItems } from '../plan/colli
 import { richText } from '../plan/richText';
 import { todayIn } from '../plan/time';
 import { zoneLabel } from '../timezones';
+import { plural } from '../text';
 import { h, present } from '../ui';
 import { fold, remember } from './fold';
 import { formatLocal } from './tripDetails';
@@ -126,13 +127,6 @@ function itemCard(item: PlanItem, day: DayDoc, dayZone: string, trip: Trip, memb
   );
 }
 
-function pointsLabel(n: number): string {
-  if (n === 1) return '1 punkt';
-  const last = n % 10;
-  const teen = n % 100 >= 12 && n % 100 <= 14;
-  return `${n} ${last >= 2 && last <= 4 && !teen ? 'punkty' : 'punktów'}`;
-}
-
 /** Jeden dzień planu – zwijany; nagłówek widać zawsze (data, miejsce, tytuł, liczba punktów). */
 function dayFold(day: DayDoc, trip: Trip, zone: string, body: HTMLElement[], count: number, filtered: boolean): HTMLDetailsElement {
   const isToday = todayIn(zone) === day.date;
@@ -143,7 +137,7 @@ function dayFold(day: DayDoc, trip: Trip, zone: string, body: HTMLElement[], cou
       id: filtered ? undefined : `${trip.id}:day:${day.date}`,
       title: day.title || dateLine,
       head: [h('span', { class: 'plan-day__date' }, day.title ? dateLine : null, isToday ? h('span', { class: 'badge badge--accent plan-day__today' }, 'dziś') : null)],
-      meta: pointsLabel(count),
+      meta: plural(count, 'punkt', 'punkty', 'punktów'),
       open: filtered || isToday,
       className: `plan-day${isToday ? ' plan-day--today' : ''}`,
       level: 'h3',
@@ -240,5 +234,5 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
   };
 
   draw();
-  return fold({ id: `${trip.id}:plan`, title: 'Plan', meta: days.length ? `${days.length} ${days.length === 1 ? 'dzień' : 'dni'}` : undefined, open: true }, wrap);
+  return fold({ id: `${trip.id}:plan`, title: 'Plan', meta: days.length ? plural(days.length, 'dzień', 'dni', 'dni') : undefined, open: true }, wrap);
 }

@@ -192,7 +192,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 ### v1 (rdzeń)
 - **Logowanie**, lista dozwolonych maili (panel „Osoby”), statusy per wyjazd, trzy warstwy danych.
 - **Powiadomienie organizatora** o „też tam chcę” i wycofaniu zgłoszenia (dopisane 1.11.2026).
-- **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka.
+- **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka. Kolejność chronologiczna według `approxDates` (uwaga Jacka z 1.11.2026): pole zostaje tekstem, aplikacja odczytuje z niego miesiąc i rok (polskie nazwy miesięcy, pory roku, zapis liczbowy; przy zakresie – początek); nieodczytane na końcu, archiwum na samym końcu; formularz pokazuje, jak daty zostały odczytane.
 - **Informacje o wyjeździe**: loty (godziny w czasie lotnisk), noclegi (nawigacja, telefon), kontakty awaryjne (dzwonienie), ubezpieczenie; loty i noclegi z „dla kogo” (decyzja G). Offline.
 - **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem; wspólna część od organizatora na górze + własne punkty osoby pod nią (decyzja F).
 - **Plan dni z planami indywidualnymi**: każdy punkt ma „dla kogo” (wszyscy / wybrane osoby / jedna osoba). Uczestnik widzi swoją oś czasu: punkty wspólne + swoje. Punkty wspólne wyróżnione, z adresem i nawigacją (link do Google Maps). Podgląd „gdzie jest reszta” (plany wszystkich obok siebie). Ostrzeżenie o kolizji punktu prywatnego ze wspólnym.
@@ -207,7 +207,9 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Komunikat o nowej wersji** („Jest nowa wersja, odśwież”).
 - **Motyw jasny/ciemny**: Auto (za systemem) + ręczny wybór; zapis w `users/{uid}.prefs`; ustawiany przed renderem (bez błysku). Na iOS pasek statusu `black-translucent`.
 - **Układ telefonu** + **panel organizatora** (działający też na telefonie): wyjazdy, uczestnicy i statusy, konta, import planu, eksport kopii.
-- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza).
+- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza). Na ekranie wyjazdu lista „Podgląd jako uczestnik…” (osoby przy wyjeździe); widok liczony jak w regułach (status osoby, stan wyjazdu, „dla kogo”), przyciski wyłączone, checklista osoby ukryta (prywatna), „Zakończ podgląd” u góry i na dole.
+- **Eksport kopii** (Ustawienia → „Kopia danych”, tylko organizator): plik `klub-kopia-RRRR-MM-DD-GGMM.json` (format `klub-backup` 1.0) z osobami (bez tokenów powiadomień), wyjazdami i ich warstwami (overview, members, info, days, checklists); daty jako tekst ISO. Odtwarzanie z pliku – poza v1 (w razie potrzeby ręcznie, z pomocą Claude Code).
+- **Organizator na wyjeździe**: zamiast „Też tam chcę” przycisk „Jadę – dopisz mnie” (od razu zatwierdzony) – wtedy ma „Mój plan” i własną checklistę.
 
 ### v2
 - **Wspólna lista życzeń**: miejsce istnieje raz (wyszukiwarka miejsc, unikalny identyfikator, bez duplikatów). Inni klikają „też chcę” z własnym priorytetem. Pola: link/miejsce, priorytet („muszę” / „fajnie by było”), preferowana pora, szacowany czas pobytu, ewentualna stała godzina. Eksport do JSON jednym przyciskiem.
@@ -295,7 +297,7 @@ Typy pushy: zmiana planu (z/bez wymaganego potwierdzenia), nowe koszty/termin de
   - `theme-color` w manifeście i meta osobno dla obu motywów (`media="(prefers-color-scheme: …)"`).
 - **Ikona (31.10.2026)**: wariant 05 — kremowy glob ze strzałką (`#F4ECDA`) na morskim tle (`#063945`). Wersje generuje `scripts/generate_assets.py` z `assets-src/` (512/192, maskable, apple-touch-icon, favicon; wariant TEST z żółtym paskiem).
 - **Ekran startowy (31.10.2026)**: nocne niebo z Drogą Mleczną i terenówką. iOS: `apple-touch-startup-image` dla 11 rozdzielczości iPhone'ów; Android: ikona na tle `#0B0B14` (kolor nieba). W aplikacji ten sam obraz jako ekran powitalny z animowanym paskiem postępu (pasek wtopiony w oryginał został usunięty).
-- Obecne pliki pochodzą ze zrzutów o niskiej rozdzielczości (ikona ok. 300 px, ekran 863×1823) — do podmiany na oryginały w pełnej rozdzielczości.
+- Obecne pliki pochodzą ze zrzutów o niskiej rozdzielczości (ikona ok. 300 px, ekran 863×1823). **Decyzja Jacka (3.11.2026): grafiki zostają na razie takie, jakie są**; podmiana na oryginały w pełnej rozdzielczości – gdy będą (nie blokuje v1).
 - v2: zestawy kolorów (akcent per osoba) i kolor per wyjazd; sprawdzić kontrast w obu motywach.
 
 ---
@@ -367,11 +369,11 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 - [x] Format pliku planu „klub-plan” 1.0 + skill eksportu dla Claude (§4).
 - [x] K: powiadomienie o zmianie planu na żądanie organizatora, z gotowym tekstem (§5).
 - [x] L: koszty i termin decyzji – tak samo, do zgłoszonych i zatwierdzonych (§5).
+- [x] Kolory motywów zaakceptowane na telefonie (3.11.2026, §10).
+- [x] Ikona i ekran startowy: zostają obecne wersje; oryginały w pełnej rozdzielczości – później, bez blokowania v1 (3.11.2026, §10).
 
 ### OTWARTE (Claude Code: pytaj, nie zakładaj)
-Blokujące v1:
-- [ ] Oryginały ikony i ekranu startowego w pełnej rozdzielczości (obecne wersje są tymczasowe, §10).
-- [ ] Akceptacja wartości kolorów na podglądzie w telefonie (§10).
+Blokujące v1: brak.
 
 Do v2 (nie blokują):
 - [ ] Wyszukiwarka miejsc: Google Places (karta w Google Cloud) czy OpenStreetMap.

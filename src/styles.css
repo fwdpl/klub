@@ -1049,3 +1049,24 @@ h1 + .btn--link {
   line-height: 1.25;
   color: var(--text-2);
 }
+
+/* Podgląd jako uczestnik */
+.preview-picker {
+  margin: 0 0 16px;
+}
+
+.card--preview {
+  border: 2px dashed var(--accent);
+}
+
+.card--preview h2 {
+  margin-bottom: 4px;
+}
+
+.card--preview p {
+  margin: 0 0 8px;
+}
+
+.previewing > .btn:last-child {
+  margin-top: 8px;
+}

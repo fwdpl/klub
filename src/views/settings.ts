@@ -1,6 +1,7 @@
 import type { User } from 'firebase/auth';
 import { signOut } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
+import { backupFileName, buildBackup, saveFile } from '../data/backup';
 import { readDoc } from '../data/read';
 import { auth, db, sendTestPush } from '../firebase';
 import { appVersion, buildId, isTestEnv } from '../config';
@@ -8,6 +9,7 @@ import { isAndroid, isIOS, isStandalone } from '../platform';
 import { enablePush, pushState, type PushState } from '../push';
 import { getThemePref, setThemePref, type ThemePref } from '../theme';
 import { installCard } from '../install';
+import { plural } from '../text';
 import { h, render, toast } from '../ui';
 
 const PUSH_LABEL: Record<PushState, string> = {
@@ -16,6 +18,35 @@ const PUSH_LABEL: Record<PushState, string> = {
   default: 'niewłączone',
   unsupported: 'nieobsługiwane',
 };
+
+/** Organizator: kopia wszystkich danych w pliku JSON na tym urządzeniu (SPEC §5). */
+function backupCard(): HTMLElement {
+  const button = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Pobierz kopię danych');
+  const note = h('p', { class: 'muted' });
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    note.textContent = 'Przygotowuję kopię…';
+    try {
+      const data = await buildBackup(`${appVersion} (${buildId})`);
+      const trips = Object.keys(data.trips as object).length;
+      const people = Object.keys(data.users as object).length;
+      saveFile(backupFileName(), data);
+      note.textContent = `Kopia zapisana: ${plural(trips, 'wyjazd', 'wyjazdy', 'wyjazdów')}, ${plural(people, 'osoba', 'osoby', 'osób')}.${navigator.onLine ? '' : ' Bez internetu – kopia z danych zapisanych na tym urządzeniu.'}`;
+    } catch {
+      note.textContent = 'Nie udało się przygotować kopii. Spróbuj ponownie z internetem.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+  return h(
+    'div',
+    { class: 'card' },
+    h('h2', {}, 'Kopia danych'),
+    h('p', { class: 'muted' }, 'Plik z osobami, wyjazdami, planami, szczegółami i checklistami. Zawiera maile i telefony – trzymaj go u siebie.'),
+    button,
+    note,
+  );
+}
 
 function themeSwitch(): HTMLElement {
   const options: [ThemePref, string][] = [
@@ -220,6 +251,7 @@ export async function showSettings(user: User): Promise<void> {
     installCard(),
     h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn, muteToggle(user.uid, snap?.get('prefs.muted') === true)),
     h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch()),
+    role === 'organizer' && backupCard(),
     h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => signOut(auth) }, 'Wyloguj'),
   );
 }

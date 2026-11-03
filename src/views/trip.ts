@@ -79,6 +79,12 @@ function actionCard(trip: Trip, myStatus: MemberStatus | undefined, me: Me, relo
     }
   };
 
+  if (!myStatus && me.isOrganizer) {
+    // Organizator też jeździ: dopisuje się od razu jako zatwierdzony – ma wtedy „Mój plan” i własną checklistę
+    const self = h('button', { type: 'button', class: 'btn btn--secondary' }, 'Jadę – dopisz mnie');
+    self.addEventListener('click', () => run(self, () => addApprovedMember(trip.id, me), 'Jesteś na liście uczestników'));
+    return h('div', { class: 'card' }, h('p', {}, 'Nie ma Cię na liście uczestników tego wyjazdu.'), error, self);
+  }
   if (!myStatus) {
     if (trip.status !== 'open') {
       return h('div', { class: 'card' }, h('p', {}, trip.status === 'closed' ? 'Zapisy na ten wyjazd są wstrzymane.' : 'Zapisy są niedostępne.'));
@@ -219,9 +225,34 @@ function downloadButton(tripId: string, me: Me): HTMLElement {
   return h('div', { class: 'download' }, button, label);
 }
 
+/** Organizator: wybór osoby do podglądu (SPEC §5 „Podgląd jako uczestnik X”). */
+function previewPicker(members: Member[], selfUid: string, start: (m: Member) => void): HTMLElement | null {
+  const others = members.filter((m) => m.uid !== selfUid);
+  if (others.length === 0) return null;
+  const select = h(
+    'select',
+    { 'aria-label': 'Podgląd jako' },
+    h('option', { value: '' }, 'Podgląd jako uczestnik…'),
+    ...others.map((m) => h('option', { value: m.uid }, `${m.displayName} (${MEMBER_STATUS_LABEL[m.status]})`)),
+  );
+  select.addEventListener('change', () => {
+    const m = others.find((x) => x.uid === select.value);
+    if (m) start(m);
+  });
+  return h('div', { class: 'preview-picker' }, select);
+}
+
+/** Czy osoba o danym statusie widzi wyjazd – jak w firestore.rules (canSeeTrip). */
+function participantSeesTrip(trip: Trip, status: MemberStatus | undefined): boolean {
+  if (trip.status === 'open' || trip.status === 'closed') return true;
+  return trip.status === 'archived' && status === 'approved';
+}
+
 export async function showTrip(tripId: string, me: Me): Promise<void> {
   const body = h('div', {}, h('p', { class: 'muted' }, 'Wczytuję…'));
   render(h('a', { class: 'back', href: '#/' }, '← Wyjazdy'), body);
+  // Podgląd jako uczestnik – tylko widok; zmiany i tak blokują reguły bazy, a tu wyłączamy przyciski
+  let previewOf: Member | null = null;
 
   const reload = async (): Promise<void> => {
     const trip = await getTrip(tripId).catch(() => null);
@@ -230,41 +261,78 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
       return;
     }
     const members = await listMembers(tripId).catch(() => null);
-    const mine = members?.find((m) => m.uid === me.uid)?.status ?? (await getMyStatus(tripId, me.uid));
-    const seesOverview = me.isOrganizer || mine === 'interested' || mine === 'approved';
+    const preview = me.isOrganizer && previewOf ? previewOf : null;
+    const viewer: Me = preview ? { uid: preview.uid, displayName: preview.displayName, isOrganizer: false } : me;
+    const mine = members?.find((m) => m.uid === viewer.uid)?.status ?? (preview ? undefined : await getMyStatus(tripId, me.uid));
+    const seesOverview = viewer.isOrganizer || mine === 'interested' || mine === 'approved';
     const overview = seesOverview ? await getOverview(tripId).catch(() => null) : null;
-    const seesDetails = me.isOrganizer || mine === 'approved';
+    const seesDetails = viewer.isOrganizer || mine === 'approved';
     const details = seesDetails
-      ? await detailsSection(trip, me, members ?? [], mine === 'approved').catch(() =>
+      ? await detailsSection(trip, viewer, members ?? [], !preview && mine === 'approved').catch(() =>
           h('p', { class: 'error' }, 'Nie udało się wczytać szczegółów. Sprawdź połączenie.'),
         )
       : null;
     const plan = seesDetails
       ? await Promise.all([listDays(tripId), getInfo(tripId)])
-          .then(([days, info]) => planSection(trip, me, members ?? [], days, info.planNotes ?? [], mine === 'approved'))
+          .then(([days, info]) => planSection(trip, viewer, members ?? [], days, info.planNotes ?? [], mine === 'approved'))
           .catch(() => h('p', { class: 'error' }, 'Nie udało się wczytać planu. Sprawdź połączenie.'))
       : null;
+
+    const stopPreview = () => {
+      previewOf = null;
+      void reload().then(() => window.scrollTo(0, 0));
+    };
+    const banner =
+      preview &&
+      h(
+        'div',
+        { class: 'card card--preview', role: 'status' },
+        h('h2', {}, `Podgląd: ${preview.displayName}`),
+        h('p', {}, `Tak ${preview.displayName} (${MEMBER_STATUS_LABEL[preview.status]}) widzi ten wyjazd. To tylko podgląd – przyciski nic nie zmieniają.`),
+        preview.status === 'approved' && h('p', { class: 'muted' }, 'Checklista tej osoby jest prywatna – w podglądzie jej nie pokazujemy.'),
+        h('button', { type: 'button', class: 'btn', onclick: stopPreview }, 'Zakończ podgląd'),
+      );
+    if (preview && !participantSeesTrip(trip, mine)) {
+      body.replaceChildren(
+        h('h1', {}, trip.title),
+        banner as HTMLElement,
+        h('div', { class: 'card' }, h('p', {}, `${preview.displayName} nie widzi tego wyjazdu (${TRIP_STATUS_LABEL[trip.status]}).`)),
+      );
+      return;
+    }
+
+    const action = actionCard(trip, mine, viewer, reload);
+    if (preview) action?.querySelectorAll('button').forEach((b) => (b.disabled = true));
 
     body.replaceChildren(
       h(
         'div',
-        {},
+        { class: preview ? 'previewing' : '' },
+        banner,
         h(
           'div',
           { class: 'trip-head' },
           h('div', {}, h('h1', {}, trip.title), h('p', { class: 'muted' }, [trip.destination, trip.approxDates].filter(Boolean).join(' · '))),
-          downloadButton(trip.id, me),
+          !preview && downloadButton(trip.id, me),
         ),
-        (trip.status !== 'open' || me.isOrganizer) &&
+        (trip.status !== 'open' || viewer.isOrganizer) &&
           h('div', { class: 'badges badges--top' }, h('span', { class: `badge badge--trip-${trip.status}` }, TRIP_STATUS_LABEL[trip.status])),
-        me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/edycja` }, 'Edytuj wyjazd'),
-        me.isOrganizer && noticeCard(trip.id, takeNotice(trip.id)),
+        !preview && me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/edycja` }, 'Edytuj wyjazd'),
+        !preview && me.isOrganizer && noticeCard(trip.id, takeNotice(trip.id)),
+        !preview &&
+          me.isOrganizer &&
+          members &&
+          previewPicker(members, me.uid, (m) => {
+            previewOf = m;
+            void reload().then(() => window.scrollTo(0, 0));
+          }),
         trip.description && h('div', { class: 'card' }, multiline(trip.description)),
-        actionCard(trip, mine, me, reload),
+        action,
         plan,
         details,
-        seesOverview && overviewCard(trip.id, overview, !me.isOrganizer && mine !== 'approved'),
-        seesOverview && members && (me.isOrganizer ? organizerMembersCard(trip, members, reload) : peopleCard(trip.id, members)),
+        seesOverview && overviewCard(trip.id, overview, !viewer.isOrganizer && mine !== 'approved'),
+        seesOverview && members && (viewer.isOrganizer ? organizerMembersCard(trip, members, reload) : peopleCard(trip.id, members)),
+        preview && h('button', { type: 'button', class: 'btn', onclick: stopPreview }, 'Zakończ podgląd'),
       ),
     );
   };
