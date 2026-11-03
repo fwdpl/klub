@@ -37,13 +37,13 @@ Aplikacja natywna (99 USD/rok Apple, recenzje), gotowe aplikacje typu Wanderlog 
 ### Środowiska
 - **Dwa projekty Firebase**, oba na planie Blaze (Functions są potrzebne w obu), wspólne konto rozliczeniowe, osobne alerty budżetowe:
   - testowy `klub-test-bakutis` — dane testowe; dostęp Claude wyłącznie przez GitHub Actions (konto serwisowe `github-deploy`, klucz w sekrecie `FIREBASE_SERVICE_ACCOUNT_TEST`); Firestore bez kopii zapasowych,
-  - produkcyjny `klub-bakutis` — Claude nie ma dostępu; Firestore w `europe-central2` z codzienną kopią zapasową (Scheduled backups → Daily).
+  - produkcyjny `klub-bakutis` — Claude nie ma dostępu; Firestore w `europe-central2` z codzienną kopią zapasową (Scheduled backups → Daily, przechowywanie 98 dni; założone 3.11.2026); konto serwisowe `github-deploy` (Editor + Project IAM Admin), klucz w sekrecie `FIREBASE_SERVICE_ACCOUNT_PROD` środowiska GitHub `production`, dostępnego tylko dla gałęzi `main`.
 - Okres próbny Google Cloud (300 USD / 90 dni): przed końcem stycznia 2027 aktywować pełne konto rozliczeniowe („Activate full account”), inaczej usługi mogą stanąć.
 - **Adres produkcyjny: `klub.bakutis.pl`** (ustalone 28.10.2026). To stały adres aplikacji, nie tylko adres instalacji — logowanie, dane offline i zgoda na powiadomienia są przypisane do niego.
 - **Stały adres testowy: `klub2.bakutis.pl`** (ustalone 28.10.2026) zamiast kanałów podglądu — kanały mają zmienne adresy i wygasają, nie nadają się do instalacji na ekranie.
 - **Nazwa aplikacji: „Klub”** (pełna i krótka). Wersja testowa: „Klub TEST” + ikona z żółtym paskiem „TEST”, żeby Jacek odróżniał dwie instalacje.
 - **GitHub**: jedno publiczne repozytorium `fwdpl/klub` (kod jawny, dane chronią reguły Firestore), aplikacja Claude GitHub App tylko do niego, ruleset na `main`: wymagany PR, blokada force push i usunięcia (merge wyłącznie przez Jacka), klucze Firebase w GitHub Secrets.
-- **Deploy**: PR → testy (logika, reguły w emulatorze, logowanie kodem w emulatorach) i automatyczny deploy na projekt testowy (`.github/workflows/test-deploy.yml`); merge do `main` → deploy produkcyjny (workflow powstanie przed startem produkcji).
+- **Deploy**: PR → testy (logika, reguły w emulatorze, logowanie kodem w emulatorach) i automatyczny deploy na projekt testowy (`.github/workflows/test-deploy.yml`); merge do `main` → testy i deploy produkcyjny (`.github/workflows/prod-deploy.yml`, środowisko `production`).
 - Repozytorium jest publiczne, więc logi GitHub Actions też: nigdy nie wypisywać sekretów, kodów logowania ani tokenów. Cofnięcie wersji: revert w Git / poprzednia wersja w Firebase Hosting.
 
 ### Raz na stałe, przed pierwszą instalacją u grupy
