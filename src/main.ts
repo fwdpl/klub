@@ -9,6 +9,7 @@ import { listenForegroundMessages } from './push';
 import { watchConnection } from './offline';
 import { initTheme } from './theme';
 import { hideSplash, toast } from './ui';
+import { isGuidePath, showGuide } from './views/guide';
 import { showInstallIOS } from './views/install';
 import { showLogin } from './views/login';
 import { showPeople } from './views/people';
@@ -34,6 +35,8 @@ let currentUser: User | null = null;
 
 /** Trasy w adresie (#/…); bez frameworka. */
 async function route(): Promise<void> {
+  // Instrukcja dla uczestników – bez logowania, pod stałym adresem /instrukcja
+  if (isGuidePath()) return showGuide();
   const user = currentUser;
   if (!user) {
     if (isIOS() && !isStandalone()) showInstallIOS();

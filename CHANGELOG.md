@@ -1,5 +1,10 @@
 # Zmiany
 
+## 0.8.0 — instrukcja dla uczestników (wersja testowa)
+
+- Instrukcja pod stałym linkiem `/instrukcja` – otwiera się bez logowania, od razu z sekcją dla Twojego telefonu (iPhone, Android albo komputer). Link jest też na ekranie logowania i w Ustawieniach.
+- Organizator: przy wygenerowanym kodzie przycisk „Wyślij zaproszenie z instrukcją” – gotowa wiadomość z linkiem, mailem i kodem do wysłania SMS-em albo komunikatorem.
+
 ## 0.7.0 — dopracowanie (wersja testowa)
 
 - Organizator: podgląd wyjazdu oczami wybranego uczestnika – lista „Podgląd jako uczestnik…” przy wyjeździe. Tylko do oglądania.

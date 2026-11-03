@@ -1,5 +1,6 @@
 import { isTestEnv } from '../config';
 import { h, render } from '../ui';
+import { guideLink } from './guide';
 
 export function showInstallIOS(): void {
   render(
@@ -20,5 +21,6 @@ export function showInstallIOS(): void {
       ),
       h('p', { class: 'muted' }, 'iPhone przechowuje dane Safari i zainstalowanej aplikacji osobno, dlatego logowanie w Safari nic by nie dało.'),
     ),
+    guideLink('Cała instrukcja →'),
   );
 }
