@@ -97,6 +97,9 @@ export interface Hotel {
   id: string;
   name: string;
   address: string;
+  /** Karta „pokaż kierowcy”: nazwa i adres w lokalnym języku/piśmie (np. japońskim), wpisuje organizator. */
+  localName?: string;
+  localAddress?: string;
   checkIn: string; // czas lokalny miejsca
   checkOut: string;
   phone: string;

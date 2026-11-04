@@ -130,7 +130,7 @@ trips/{tripId}/overview/countries # WARSTWA 2 — karty krajów { countries: Cou
 trips/{tripId}/info/main          # WARSTWA 3 — approved + organizer
   flights[]: { id, number, airline, from, to, departure, departureTz, arrival, arrivalTz, notes, audience }
     # departure/arrival: czas lokalny lotniska 'YYYY-MM-DDTHH:mm' + strefa lotniska (IANA)
-  hotels[]: { id, name, address, checkIn, checkOut, phone, notes, audience }   # czas lokalny miejsca
+  hotels[]: { id, name, address, localName?, localAddress?, checkIn, checkOut, phone, notes, audience }   # czas lokalny miejsca; local* – karta „pokaż kierowcy” (1.3.0)
   emergencyContacts[]: { id, name, role, phone }
   insurance: string
   checklistTemplate[]: { id, text }   # wspólna część checklisty od organizatora (decyzja F)
@@ -200,6 +200,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Import planu z JSON** (format „klub-plan”, §4) z walidacją (wszystkie błędy naraz, po polsku, z miejscem) i podglądem przed zapisem; zastępuje tylko dni z pliku (decyzja I).
 - **Ręczna edycja punktu** planu przez organizatora: dodanie, zmiana, usunięcie (decyzja H).
 - **Widok planu**: „Mój plan” / „Wszyscy” (decyzja J; kolumny dla osób – układ tabletowy v2), filtr etykiet (np. #foto), kolizje ⚠, nawigacja do miejsc i propozycji.
+- **Karta „pokaż kierowcy” (1.3.0, prośba Jacka z 4.11.2026)**: przy każdym noclegu przycisk „🚕 Pokaż kierowcy” – cały ekran, duży kontrastowy tekst: „Please take me to this address”, nazwa i adres w lokalnym języku/piśmie (pola `localName`, `localAddress` noclegu, wpisuje organizator – np. z maila z rezerwacją), pod spodem mniejszy adres łaciński i telefon do stuknięcia. Bez wersji lokalnej duży jest adres łaciński. Ekran nie gaśnie, póki karta jest otwarta (Wake Lock, gdzie działa). Działa bez internetu. Zamknięcie: „Zamknij” lub Esc.
 - **Karta kraju (1.2.0, decyzje Jacka z 4.11.2026)**: przy wyjeździe kilka krajów (do 10), każdy jako zwijana karta pod „Plan i koszty”; widzą zgłoszeni i zatwierdzeni (warstwa 2, dokument `trips/{id}/overview/countries`: `{ countries: CountryCard[], updatedAt }`, `CountryCard = { code, name?, zone?, currency?, plugs?, emergency?, tipping?, visa?, notes? }`). Dane wbudowane dla ok. 55 krajów (`src/data/countries.ts`: waluta, gniazdka + napięcie z oceną „polska wtyczka pasuje / potrzebna przejściówka”, numer alarmowy, napiwki, główna strefa) – organizator może każde pole poprawić; puste pole = dane wbudowane. Kraj spoza listy: kod `ZZ` + nazwa, pola wpisuje organizator. Różnica czasu względem Polski liczona ze strefy – teraz i w miesiącu wyjazdu (z „Orientacyjnych dat”). **Wiza/ESTA: aplikacja sama nic nie twierdzi** – notatka organizatora + link do informacji MSZ dla podróżujących. Edycja: `#/wyjazd/{id}/kraje`. Pobierane do trybu offline razem z wyjazdem.
 - **Zwijane sekcje ekranu wyjazdu** (uwaga Jacka z 1.11.2026): każdą sekcję (plan, loty, noclegi, kontakty, ubezpieczenie, checklista, plan i koszty, kto jedzie / zgłoszenia) zwija się i rozwija stuknięciem w nagłówek; w nagłówku zostaje krótka informacja (liczba dni, punktów, pozycji, stan checklisty). Plan dwustopniowo: sekcja → lista dni → każdy dzień osobno, z „Rozwiń/Zwiń wszystkie dni”; dzisiejszy dzień (w strefie miejsca) oznaczony „dziś” i rozwinięty; filtr etykiety rozwija pasujące dni. Stan zapamiętany na urządzeniu. Domyślnie rozwinięte: plan (sama lista dni), „Plan i koszty” dla zgłoszonych, „Zgłoszenia”, gdy ktoś czeka na decyzję albo lista jest pusta.
 - **Tryb offline**: pobranie na telefon przy konkretnym wyjeździe – ikona pobierania obok tytułu (warstwy widoczne dla osoby + własna checklista + lista wyjazdów), pod ikoną „Na telefonie: …” albo „Nie pobrano na telefon” (uwaga Jacka z 1.11.2026: pobieranie per wyjazd, ikona zamiast napisu); pasek „Bez internetu”. Bez sieci odczyt od razu z pamięci telefonu; zmiany (np. checklista) czekają w kolejce i wysyłają się po połączeniu. „Nawiguj” wymaga internetu (albo map pobranych w Google Maps) – adresy są widoczne zawsze.
@@ -233,7 +234,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - Eksport osobistego planu do kalendarza (.ics) — kalendarz telefonu przypomina natywnie, w tle, z dźwiękiem.
 - Ekran „Dziś”: następny punkt, zbiórka z odliczaniem, adres hotelu, pogoda.
 - ~~Karta kraju~~ – zrobiona w 1.2.0 (opis w §5).
-- Karta „pokaż kierowcy”: adres hotelu dużą czcionką, w lokalnym języku.
+- ~~Karta „pokaż kierowcy”~~ – zrobiona w 1.3.0 (opis w §5).
 
 ### Później / opcjonalnie
 - Wysłanie lokalizacji: jednorazowy punkt GPS z pushem i linkiem do Google Maps; awaryjnie SMS z linkiem. Bez śledzenia na żywo.

@@ -261,6 +261,16 @@ describe('warstwa 2 – karty krajów', () => {
 });
 
 describe('warstwa 3 – szczegóły', () => {
+  it('nocleg z nazwą i adresem w lokalnym języku (karta „pokaż kierowcy”) zapisuje organizator, czyta zatwierdzony', async () => {
+    const hotel = {
+      id: 'h1', name: 'Hotel Sakura', address: '1-2-3 Naha, Okinawa', localName: 'ホテルさくら', localAddress: '沖縄県那覇市1-2-3',
+      checkIn: '2026-12-10T15:00', checkOut: '2026-12-12T11:00', phone: '+81 98 000 0000', notes: '', audience: 'all',
+    };
+    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/info/main'), { ...info(), hotels: [hotel] }));
+    await assertFails(setDoc(doc(as('ania'), 'trips/t-open/info/main'), { ...info(), hotels: [hotel] }));
+    await assertSucceeds(getDoc(doc(as('ania'), 'trips/t-open/info/main')));
+  });
+
   it('informacje i plan dni widzą tylko zatwierdzeni', async () => {
     await assertSucceeds(getDoc(doc(as('ania'), 'trips/t-open/info/main')));
     await assertSucceeds(getDoc(doc(as('ania'), 'trips/t-open/days/2027-03-10')));
