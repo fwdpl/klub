@@ -73,6 +73,7 @@ export function tabbedSections(tripId: string, tabs: Tab[], fallback: string): H
     ),
   );
 
+  const built = new Map<string, HTMLElement>();
   const select = (key: string, save = true) => {
     current = key;
     if (save) remember(tripId, key);
@@ -82,7 +83,13 @@ export function tabbedSections(tripId: string, tabs: Tab[], fallback: string): H
       b.setAttribute('aria-selected', String(on));
       b.classList.toggle('tab--on', on);
     }
-    panel.replaceChildren(...(tab.key === 'today' ? [] : [h('h2', { class: 'tabs__title' }, tab.title)]), tab.content());
+    // zawartość budowana raz i pokazywana ponownie przy każdym powrocie do ikony (stan, np. rozwinięte dni, zostaje)
+    let content = built.get(key);
+    if (!content) {
+      content = tab.content();
+      built.set(key, content);
+    }
+    panel.replaceChildren(...(tab.key === 'today' ? [] : [h('h2', { class: 'tabs__title' }, tab.title)]), content);
   };
 
   bar.append(...buttons);

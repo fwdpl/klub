@@ -6,9 +6,13 @@ import { h } from '../ui';
 const KEY = 'klub.fold';
 type Child = Node | string | null | false | undefined;
 
-function load(): Record<string, boolean> {
+/** Klucz zaczynający się od „session:” – stan tylko do zamknięcia aplikacji (np. dni planu). */
+const SESSION = 'session:';
+const storeFor = (id: string): Storage => (id.startsWith(SESSION) ? sessionStorage : localStorage);
+
+function load(store: Storage): Record<string, boolean> {
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(KEY) ?? '{}');
+    const parsed: unknown = JSON.parse(store.getItem(KEY) ?? '{}');
     return parsed && typeof parsed === 'object' ? (parsed as Record<string, boolean>) : {};
   } catch {
     return {};
@@ -16,14 +20,19 @@ function load(): Record<string, boolean> {
 }
 
 export function isOpen(id: string, fallback: boolean): boolean {
-  return load()[id] ?? fallback;
+  try {
+    return load(storeFor(id))[id] ?? fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export function remember(id: string, open: boolean): void {
   try {
-    const all = load();
+    const store = storeFor(id);
+    const all = load(store);
     all[id] = open;
-    localStorage.setItem(KEY, JSON.stringify(all));
+    store.setItem(KEY, JSON.stringify(all));
   } catch {
     // bez pamięci urządzenia sekcje wracają do domyślnego stanu
   }

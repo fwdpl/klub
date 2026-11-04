@@ -5,6 +5,7 @@
 - Ekran wyjazdu bez długiej listy: pod tytułem rząd ikon (Plan, Loty, Noclegi, Lista, Kraj, Kontakty, Polisa, Koszty, Kto jedzie) – stuknięcie pokazuje tylko tę część. Aplikacja pamięta ostatnio oglądaną.
 - Mniej okienek: zamiast „Jesteś na liście uczestników” mały znaczek „✓ jedziesz” przy tytule; organizator ma małe ikony ✏️ (edycja) i 🔔 (powiadomienie) obok tytułu, „Podgląd jako uczestnik” jest w „Kto”.
 - Poprawka: zapisanie szczegółów (lotów, noclegów) nie kasuje już „Uwag do planu” z importu.
+- Plan zawsze zaczyna się od zwiniętych dni; rozwinięty dzień zostaje rozwinięty do zamknięcia aplikacji.
 - W czasie wyjazdu na górze ekranu wyjazdu karta „Dziś”: co trwa teraz, co dalej (z odliczaniem, np. „za 30 min”), zbiórka z godziną i odliczaniem, nawigacja do następnego miejsca i nocleg na dziś z przyciskami Nawiguj, Zadzwoń i „Pokaż kierowcy”. Wieczorem – pierwszy punkt jutra.
 - Dni i godziny liczone w czasie miejsca; karta odświeża się sama i działa bez internetu.
 
