@@ -84,11 +84,11 @@ export function todayCard(trip: Trip, viewer: Viewer, days: DayDoc[], hotels: Ho
             hotel.address ? h('p', { class: 'muted' }, hotel.address) : '',
             h(
               'div',
-              { class: 'actions actions--2' },
+              { class: 'actions actions--row' },
               hotel.address ? h('a', { class: 'chip-btn', href: mapsUrl(hotel), target: '_blank', rel: 'noopener' }, 'Nawiguj') : '',
               hotel.phone ? h('a', { class: 'chip-btn', href: telLink(hotel.phone) }, 'Zadzwoń') : '',
+              hasDriverCard(hotel) ? h('button', { type: 'button', class: 'chip-btn', onclick: () => showDriverCard(hotel) }, '🚕 Pokaż kierowcy') : '',
             ),
-            hasDriverCard(hotel) ? h('button', { type: 'button', class: 'chip-btn chip-btn--wide', onclick: () => showDriverCard(hotel) }, '🚕 Pokaż kierowcy') : '',
           )
         : '',
     );

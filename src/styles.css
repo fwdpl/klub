@@ -1290,3 +1290,17 @@ body.driver-open {
 .today__hotel p {
   margin-top: 4px;
 }
+
+/* Przyciski obok siebie w jednym rzędzie, równej szerokości (2–3 sztuki) */
+.actions.actions--row {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-template-columns: none;
+}
+
+.actions--row .chip-btn {
+  padding: 8px 6px;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
