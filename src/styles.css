@@ -739,6 +739,11 @@ h1 + .btn--link {
   margin-bottom: 8px;
 }
 
+.row-compact--sortable {
+  grid-template-columns: 1fr auto auto;
+  gap: 4px;
+}
+
 .audience__people {
   display: grid;
   gap: 2px;
@@ -1080,4 +1085,35 @@ h1 + .btn--link {
 
 .guide-link a {
   color: var(--accent);
+}
+
+/* Przesuwanie za uchwyt ⠿ */
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 44px;
+  font-size: 22px;
+  color: var(--text-2);
+  cursor: grab;
+  /* przeciąganie za uchwyt nie przewija strony i nie zaznacza tekstu */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.drag-ghost {
+  opacity: 0.35;
+}
+
+.drag-chosen,
+.drag-active {
+  background: var(--surface-2);
+  border-radius: 10px;
+}
+
+.drag-active {
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.25);
 }

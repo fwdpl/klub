@@ -3,6 +3,8 @@ import type { Audience, ChecklistDoc, EmergencyContact, Flight, Hotel, InfoDoc }
 import { zoneLabel } from '../timezones';
 import { h, present, toast } from '../ui';
 import { fold } from './fold';
+import type Sortable from 'sortablejs';
+import { dragHandle, makeSortable, moveItem } from './sortable';
 
 interface Me {
   uid: string;
@@ -93,7 +95,7 @@ function checklistCard(tripId: string, uid: string, template: InfoDoc['checklist
     }
   };
 
-  const checkbox = (checked: boolean, label: string, onChange: (v: boolean) => void, onDelete?: () => void) => {
+  const checkbox = (checked: boolean, label: string, onChange: (v: boolean) => void, onDelete?: () => void, movable = false) => {
     const box = h('input', { type: 'checkbox' });
     box.checked = checked;
     box.addEventListener('change', () => onChange(box.checked));
@@ -102,8 +104,12 @@ function checklistCard(tripId: string, uid: string, template: InfoDoc['checklist
       { class: `check${checked ? ' check--done' : ''}` },
       h('label', {}, box, h('span', {}, label)),
       onDelete && h('button', { type: 'button', class: 'check__delete', 'aria-label': `Usuń: ${label}`, onclick: onDelete }, '×'),
+      movable && dragHandle(label),
     );
   };
+
+  // Własne punkty można przestawiać za uchwyt ⠿; kolejność wspólnej części ustala organizator
+  let sorter: Sortable | null = null;
 
   const draw = () => {
     const doneCount = template.filter((t) => state.templateDone[t.id]).length + state.items.filter((i) => i.done).length;
@@ -112,20 +118,29 @@ function checklistCard(tripId: string, uid: string, template: InfoDoc['checklist
     const add = h('button', { type: 'submit', class: 'btn btn--secondary' }, 'Dodaj');
 
     meta.textContent = total ? `${doneCount}/${total}` : '';
+    const movable = state.items.length > 1;
+    const ownList = h(
+      'div',
+      { class: 'check-own' },
+      ...state.items.map((item) =>
+        checkbox(
+          item.done,
+          item.text,
+          (v) => persist({ ...state, items: state.items.map((i) => (i.id === item.id ? { ...i, done: v } : i)) }),
+          () => persist({ ...state, items: state.items.filter((i) => i.id !== item.id) }),
+          movable,
+        ),
+      ),
+    );
+    sorter?.destroy();
+    sorter = movable ? makeSortable(ownList, (from, to) => void persist({ ...state, items: moveItem(state.items, from, to) })) : null;
     body.replaceChildren(
       ...present(
         ...template.map((t) =>
           checkbox(!!state.templateDone[t.id], t.text, (v) => persist({ ...state, templateDone: { ...state.templateDone, [t.id]: v } })),
         ),
         template.length > 0 && state.items.length > 0 && h('div', { class: 'check-divider' }, 'Moje punkty'),
-        ...state.items.map((item) =>
-          checkbox(
-            item.done,
-            item.text,
-            (v) => persist({ ...state, items: state.items.map((i) => (i.id === item.id ? { ...i, done: v } : i)) }),
-            () => persist({ ...state, items: state.items.filter((i) => i.id !== item.id) }),
-          ),
-        ),
+        ownList,
         h(
           'form',
           {
