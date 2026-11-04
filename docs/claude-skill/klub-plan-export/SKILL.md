@@ -53,7 +53,7 @@ bo aplikacja odrzuci plik.
 - `place` – gdy punkt ma konkretne miejsce docelowe: `name`, `address` jeśli znany. `lat`/`lng` tylko ze źródła –
   **nie zgaduj współrzędnych** (bez nich aplikacja szuka po nazwie i adresie).
 - `tags`: `["foto"]` dla punktów fotograficznych (z nich aplikacja zbuduje harmonogram zdjęć – nie eksportuj osobnej tabeli zdjęć).
-- Pogrubienie tylko `**tekst**` (linie metra, nazwy lokali). Bez HTML.
+- Pogrubienie tylko `**tekst**` (linie metra, nazwy lokali). Adresy `https://…` będą w aplikacji klikalne (np. strona rezerwacji). Bez HTML.
 
 ### Uwagi do całego planu
 Bloki typu „co odpuścić w pierwszej kolejności”, ogólne informacje o transporcie → `notes` pliku (lista krótkich tekstów).
