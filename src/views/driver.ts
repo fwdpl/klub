@@ -10,6 +10,12 @@ function telLink(phone: string): string {
   return `tel:${phone.replace(/[^\d+]/g, '')}`;
 }
 
+/** Wyszukiwanie w Google Maps: najlepiej po adresie lokalnym, inaczej po nazwie i adresie. */
+export function mapsUrl(hotel: Pick<Hotel, 'name' | 'address' | 'localAddress'>): string {
+  const query = hotel.localAddress?.replace(/\s+/g, ' ').trim() || [hotel.name, hotel.address].filter(Boolean).join(', ');
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 /** Czy jest co pokazać kierowcy. */
 export function hasDriverCard(hotel: Hotel): boolean {
   return !!(hotel.localAddress || hotel.address);
@@ -42,6 +48,8 @@ export function showDriverCard(hotel: Hotel): void {
     h('p', { class: local ? 'driver__latin' : 'driver__address' }, hotel.name),
     hotel.address && h('p', { class: local ? 'driver__latin' : 'driver__address' }, hotel.address),
     hotel.phone && h('a', { class: 'driver__phone', href: telLink(hotel.phone) }, `☎ ${hotel.phone}`),
+    // mapa z pinezką: kierowca rozpozna miejsce, nawet gdy nie ma adresu w lokalnym języku (wymaga internetu)
+    h('a', { class: 'btn btn--link driver__map', href: mapsUrl(hotel), target: '_blank', rel: 'noopener' }, '🗺 Pokaż na mapie'),
     closeBtn,
   );
 

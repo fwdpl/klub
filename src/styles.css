@@ -1218,3 +1218,7 @@ body.driver-open {
 .driver__close {
   margin-top: 16px;
 }
+
+.driver__map {
+  margin-top: 8px;
+}

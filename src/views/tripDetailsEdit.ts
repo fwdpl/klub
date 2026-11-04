@@ -97,7 +97,7 @@ function hotelEditor(x: Partial<Hotel>, approved: Member[]): RowEditor<Hotel> {
   const driverHint = h(
     'p',
     { class: 'muted' },
-    'Do karty „Pokaż kierowcy”. Skopiuj z maila z rezerwacją, ze strony hotelu albo z Google Maps po przełączeniu języka na lokalny.',
+    'Do karty „Pokaż kierowcy” – aplikacja sama nie tłumaczy. Skopiuj nazwę i adres w lokalnym piśmie z maila z rezerwacją, ze strony hotelu albo z Google Maps po przełączeniu języka na lokalny. Bez tego kierowca zobaczy adres łaciński i przycisk mapy.',
   );
   const [inEl, checkIn] = localTime('Zameldowanie (czas lokalny)', x.checkIn ?? '');
   const [outEl, checkOut] = localTime('Wymeldowanie (czas lokalny)', x.checkOut ?? '');
