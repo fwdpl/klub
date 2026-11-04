@@ -1222,3 +1222,39 @@ body.driver-open {
 .driver__map {
   margin-top: 8px;
 }
+
+/* Edycja szczegółów: pozycja zwinięta do jednej linii */
+.row-fold {
+  border-bottom: 1px solid var(--border);
+  padding: 4px 0 12px;
+  margin: 0 0 8px;
+}
+
+.row-fold > .row-fold__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+}
+
+.row-fold > .row-fold__head::-webkit-details-marker {
+  display: none;
+}
+
+.row-fold__title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.row-fold[open] > .row-fold__head {
+  margin-bottom: 8px;
+}
+
+.row-fold[open] > .row-fold__head .fold__chevron {
+  transform: rotate(-135deg);
+  margin: 4px 4px 0 0;
+}

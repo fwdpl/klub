@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.4.0 — wygodniejsza edycja szczegółów
+
+- Edycja szczegółów wyjazdu: sekcje (loty, noclegi, kontakty, ubezpieczenie, checklista) zwijają się jak na ekranie wyjazdu, z liczbą pozycji w nagłówku.
+- Każdy lot, nocleg i kontakt zwija się do jednej linii (np. „LO 79 · Warszawa WAW → Tokio NRT · czw., 10 gru, 06:10”); nowa pozycja jest od razu rozwinięta. Przy błędzie aplikacja sama rozwija właściwą pozycję.
+
 ## 1.3.0 — pokaż kierowcy
 
 - Przy noclegu przycisk „🚕 Pokaż kierowcy”: adres hotelu na cały ekran, dużą czcionką, w lokalnym języku (np. po japońsku), z angielskim „Please take me to this address” i telefonem hotelu. Ekran nie gaśnie, póki karta jest otwarta; działa bez internetu.

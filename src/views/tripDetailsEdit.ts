@@ -1,6 +1,8 @@
 import { getInfo, getTrip, listMembers, newId, saveInfo, type Member } from '../data/trips';
 import type { Audience, ChecklistTemplateItem, EmergencyContact, Flight, Hotel, InfoDoc } from '../model/types';
+import { fold } from './fold';
 import { dragHandle, makeSortable, moveItem } from './sortable';
+import { formatLocal } from './tripDetails';
 import { h, render, toast } from '../ui';
 import { proposeNotice } from './notify';
 import { zonePicker } from './zonePicker';
@@ -134,33 +136,99 @@ function templateEditor(t: Partial<ChecklistTemplateItem>): RowEditor<ChecklistT
 }
 
 /** Lista pozycji z przyciskami „Usuń” i „+ Dodaj …”. */
-function listEditor<T>(title: string, addLabel: string, initial: T[], make: (value: Partial<T>) => RowEditor<T>, compact = false, sortable = false) {
-  const rows: RowEditor<T>[] = [];
+interface ListOptions<T> {
+  /** Klucz zapamiętania zwinięcia sekcji. */
+  id: string;
+  compact?: boolean;
+  sortable?: boolean;
+  /** Jednoliniowy opis pozycji – wtedy każda pozycja zwija się do tej linii (uwaga Jacka z 4.11.2026). */
+  rowTitle?: (value: T) => string;
+}
+
+function listEditor<T>(title: string, addLabel: string, initial: T[], make: (value: Partial<T>) => RowEditor<T>, opts: ListOptions<T>) {
+  const { compact = false, sortable = false, rowTitle } = opts;
+  const rows: { editor: RowEditor<T>; fold?: HTMLDetailsElement }[] = [];
   const container = h('div');
-  const addRow = (value: Partial<T>) => {
+  const countMeta = () => (rows.length ? String(rows.length) : 'brak');
+
+  const addRow = (value: Partial<T>, open: boolean) => {
     const editor = make(value);
+    const row: (typeof rows)[number] = { editor };
     const remove = h('button', { type: 'button', class: compact ? 'row-remove' : 'btn btn--secondary', 'aria-label': 'Usuń' }, compact ? '×' : 'Usuń');
-    const wrap = h('div', { class: `${compact ? 'row-compact' : 'row-block'}${sortable ? ' row-compact--sortable' : ''}` }, editor.el, remove);
-    if (sortable) wrap.append(dragHandle('punkt'));
+    let wrap: HTMLElement;
+    if (rowTitle) {
+      // pozycja zwinięta do jednej linii; opis odświeża się przy każdej zmianie pól
+      const label = h('span', { class: 'row-fold__title' });
+      const refresh = () => (label.textContent = rowTitle(editor.read()) || 'Nowa pozycja');
+      const details = h('details', { class: 'row-fold', open }, h('summary', { class: 'row-fold__head' }, label, h('span', { class: 'fold__chevron', 'aria-hidden': 'true' })), editor.el, remove);
+      details.addEventListener('input', refresh);
+      details.addEventListener('change', refresh);
+      refresh();
+      row.fold = details;
+      wrap = details;
+    } else {
+      wrap = h('div', { class: `${compact ? 'row-compact' : 'row-block'}${sortable ? ' row-compact--sortable' : ''}` }, editor.el, remove);
+      if (sortable) wrap.append(dragHandle('punkt'));
+    }
     remove.addEventListener('click', () => {
-      rows.splice(rows.indexOf(editor), 1);
+      rows.splice(rows.indexOf(row), 1);
       wrap.remove();
+      meta.textContent = countMeta();
     });
-    rows.push(editor);
+    rows.push(row);
     container.append(wrap);
   };
-  initial.forEach(addRow);
+  initial.forEach((v) => addRow(v, false));
   // Sortable przestawia wiersze na ekranie; tu ta sama zmiana w kolejności zapisu
   if (sortable) makeSortable(container, (from, to) => rows.splice(0, rows.length, ...moveItem(rows, from, to)));
-  const card = h(
-    'div',
-    { class: 'card' },
-    h('h2', {}, title),
+
+  const card = fold(
+    { id: opts.id, title, meta: countMeta(), open: false },
     sortable && initial.length > 1 && h('p', { class: 'muted' }, 'Kolejność zmienisz, przesuwając punkt za uchwyt ⠿.'),
     container,
-    h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => addRow({}) }, addLabel),
+    h(
+      'button',
+      {
+        type: 'button',
+        class: 'btn btn--secondary',
+        onclick: () => {
+          addRow({}, true);
+          meta.textContent = countMeta();
+        },
+      },
+      addLabel,
+    ),
   );
-  return { card, read: () => rows.map((r) => r.read()) };
+  const meta = card.querySelector('.fold__meta') as HTMLElement;
+  return {
+    card,
+    read: () => rows.map((r) => r.editor.read()),
+    /** Rozwija sekcję i pozycję – np. gdy w niej jest błąd. */
+    reveal: (index: number) => {
+      card.open = true;
+      const target = rows[index]?.fold;
+      if (target) {
+        target.open = true;
+        target.scrollIntoView({ block: 'center' });
+      }
+    },
+  };
+}
+
+const short = (local: string) => (local ? formatLocal(local) : '');
+
+function flightTitle(f: Flight): string {
+  const route = [f.from, f.to].filter(Boolean).join(' → ');
+  return [f.number, route, short(f.departure)].filter(Boolean).join(' · ');
+}
+
+function hotelTitle(x: Hotel): string {
+  const dates = [short(x.checkIn.slice(0, 10)), short(x.checkOut.slice(0, 10))].filter(Boolean).join(' – ');
+  return [x.name, dates].filter(Boolean).join(' · ');
+}
+
+function contactTitle(c: EmergencyContact): string {
+  return [c.name, c.role, c.phone].filter(Boolean).join(' · ');
 }
 
 /** Organizator: loty, noclegi, kontakty, ubezpieczenie i wspólna część checklisty (warstwa 3). */
@@ -173,11 +241,11 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
   }
   const approved = members.filter((m) => m.status === 'approved');
 
-  const flights = listEditor('Loty', '+ Dodaj lot', info.flights, (f) => flightEditor(f, approved, trip.timezone));
-  const hotels = listEditor('Noclegi', '+ Dodaj nocleg', info.hotels, (x) => hotelEditor(x, approved));
-  const contacts = listEditor('Kontakty awaryjne', '+ Dodaj kontakt', info.emergencyContacts, contactEditor);
+  const flights = listEditor('Loty', '+ Dodaj lot', info.flights, (f) => flightEditor(f, approved, trip.timezone), { id: `${tripId}:edit:flights`, rowTitle: flightTitle });
+  const hotels = listEditor('Noclegi', '+ Dodaj nocleg', info.hotels, (x) => hotelEditor(x, approved), { id: `${tripId}:edit:hotels`, rowTitle: hotelTitle });
+  const contacts = listEditor('Kontakty awaryjne', '+ Dodaj kontakt', info.emergencyContacts, contactEditor, { id: `${tripId}:edit:contacts`, rowTitle: contactTitle });
   const [insuranceEl, insurance] = area('Ubezpieczyciel, numer polisy, numer alarmowy', info.insurance);
-  const template = listEditor('Wspólna checklista', '+ Dodaj punkt', info.checklistTemplate, templateEditor, true, true);
+  const template = listEditor('Wspólna checklista', '+ Dodaj punkt', info.checklistTemplate, templateEditor, { id: `${tripId}:edit:checklist`, compact: true, sortable: true });
 
   const error = h('p', { class: 'error', role: 'alert' });
   const save = h('button', { type: 'submit', class: 'btn' }, 'Zapisz szczegóły');
@@ -201,11 +269,15 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
           };
           const badFlight = next.flights.find((f) => !f.departure || !f.arrival || !f.departureTz || !f.arrivalTz);
           if (badFlight) {
+            flights.reveal(next.flights.indexOf(badFlight));
             error.textContent = `Lot ${badFlight.number || 'bez numeru'}: uzupełnij godziny wylotu i przylotu oraz strefy lotnisk.`;
             return;
           }
           const noAudience = [...next.flights, ...next.hotels].find((x) => Array.isArray(x.audience) && x.audience.length === 0);
           if (noAudience) {
+            const fi = next.flights.indexOf(noAudience as Flight);
+            if (fi >= 0) flights.reveal(fi);
+            else hotels.reveal(hotels.read().findIndex((x) => x.id === noAudience.id));
             error.textContent = 'Każdy lot i nocleg musi być dla kogoś – zaznacz „Wszyscy uczestnicy” albo wybrane osoby.';
             return;
           }
@@ -224,7 +296,7 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
       flights.card,
       hotels.card,
       contacts.card,
-      h('div', { class: 'card' }, h('h2', {}, 'Ubezpieczenie'), insuranceEl),
+      fold({ id: `${tripId}:edit:insurance`, title: 'Ubezpieczenie', meta: info.insurance ? '' : 'brak', open: false }, insuranceEl),
       template.card,
       h('p', { class: 'muted' }, 'Wspólna checklista pojawi się u każdego uczestnika na górze jego listy; każdy może dopisać własne punkty.'),
       error,
