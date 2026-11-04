@@ -321,6 +321,10 @@ Typy pushy: zmiana planu (z/bez wymaganego potwierdzenia), nowe koszty/termin de
 - Bramka techniczna: 9–13.11.
 - Jednorazowa konfiguracja (ok. 1 h): GitHub, dwa projekty Firebase (Blaze + alert budżetowy w obu), GitHub Actions, DNS (`klub.bakutis.pl`, `klub2.bakutis.pl`), token Claude Code, ochrona `main`.
 - Cel: v1 przetestowana przed **10.12.2026** (test offline w terenie).
+- **Stan 4.11.2026: v1 (1.0.0) działa na produkcji** pod `https://klub.bakutis.pl`: logowanie organizatora ✓, instalacja ✓, powiadomienie testowe ✓. Wersja testowa zostaje pod `klub2.bakutis.pl` (osobna baza).
+- **DNS produkcji (home.pl, pozycja `klub.bakutis.pl`)**: A `199.36.158.100`, TXT `hosting-site=klub-bakutis`, TXT `_acme-challenge` (certyfikat; wartość z Firebase Hosting → Advanced). CNAME nie da się dodać, bo home.pl prowadzi `klub.bakutis.pl` jako osobną strefę – stąd tryb Advanced (tak samo `klub2`). Rekordu `*.bakutis.pl` w strefie głównej nie ruszać.
+- **Pierwsze logowanie organizatora** na nowym projekcie: w konsoli Firestore dokument w `loginCodes` z polami `email` (= sekret `ORGANIZER_EMAIL`) i `code` (≥ 6 znaków); działa raz.
+- **Okres próbny Google Cloud** w obu projektach do 30.01.2027 – przejście na płatne konto rozliczeniowe przed tą datą (przypomnienie ustawione na 15.01.2027).
 
 ---
 
