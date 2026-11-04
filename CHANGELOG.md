@@ -1,5 +1,12 @@
 # Zmiany
 
+## 1.2.0 — karta kraju
+
+- Przy wyjeździe karty krajów: waluta, gniazdka (czy pasuje polska wtyczka i jakie napięcie), numer alarmowy, napiwki i różnica czasu względem Polski – także w miesiącu wyjazdu. Widzą je zgłoszeni i zatwierdzeni, działają bez internetu.
+- Wiza i ESTA: notatka organizatora i link do informacji MSZ dla podróżujących.
+- Organizator wybiera kraje wyjazdu (także kilka) i może poprawić każde pole; puste pola wypełnia aplikacja.
+- Wyszukiwarka strefy czasowej zna Hongkong, Tajwan, Makau, Okinawę, Malediwy, Laos, Mongolię, Uzbekistan i więcej stref Australii.
+
 ## 1.1.0 — kolejność punktów checklisty
 
 - Punkty checklisty można przestawiać: przytrzymaj uchwyt ⠿ z prawej strony punktu i przesuń go w nowe miejsce. Organizator układa w ten sposób wspólną część (w edycji szczegółów), a każdy – swoje własne punkty.

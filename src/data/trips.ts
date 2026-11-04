@@ -17,6 +17,7 @@ import {
   SCHEMA_VERSION,
   type Audience,
   type ChecklistDoc,
+  type CountryCard,
   type DayDoc,
   type InfoDoc,
   type MemberDoc,
@@ -79,6 +80,16 @@ export async function getTrip(id: string): Promise<Trip | null> {
 export async function getOverview(tripId: string): Promise<OverviewDoc | null> {
   const d = await readDoc(doc(db, 'trips', tripId, 'overview', 'main'));
   return d.exists() ? (d.data() as OverviewDoc) : null;
+}
+
+/** Karty krajów wyjazdu (warstwa 2). */
+export async function getCountries(tripId: string): Promise<CountryCard[]> {
+  const d = await readDoc(doc(db, 'trips', tripId, 'overview', 'countries'));
+  return d.exists() ? ((d.get('countries') as CountryCard[] | undefined) ?? []) : [];
+}
+
+export function saveCountries(tripId: string, countries: CountryCard[]): Promise<void> {
+  return setDoc(doc(db, 'trips', tripId, 'overview', 'countries'), { countries, updatedAt: serverTimestamp() });
 }
 
 /** Własny wpis – czytelny zawsze, także bez dostępu do listy osób. */

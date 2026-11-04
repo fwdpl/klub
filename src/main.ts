@@ -9,6 +9,7 @@ import { listenForegroundMessages } from './push';
 import { watchConnection } from './offline';
 import { initTheme } from './theme';
 import { hideSplash, toast } from './ui';
+import { showCountriesEdit } from './views/country';
 import { isGuidePath, showGuide } from './views/guide';
 import { showInstallIOS } from './views/install';
 import { showLogin } from './views/login';
@@ -59,6 +60,7 @@ async function route(): Promise<void> {
     if (path === '/nowy-wyjazd') return showTripEdit(null);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/edycja$/))) return showTripEdit(m[1]);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/szczegoly$/))) return showTripDetailsEdit(m[1]);
+    if ((m = path.match(/^\/wyjazd\/([\w-]+)\/kraje$/))) return showCountriesEdit(m[1]);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/import$/))) return showPlanImport(m[1]);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/punkt\/nowy$/))) return showPlanItemEdit(m[1], null, null);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/punkt\/(\d{4}-\d{2}-\d{2})\/([\w-]+)$/))) return showPlanItemEdit(m[1], m[2], m[3]);

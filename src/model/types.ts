@@ -55,6 +55,26 @@ export interface OverviewDoc {
   decisionDeadline?: string; // 'YYYY-MM-DD'
 }
 
+/**
+ * Karta kraju (warstwa 2: zgłoszeni i zatwierdzeni). Dokument trips/{id}/overview/countries.
+ * Puste pola = dane wbudowane w aplikację (src/data/countries.ts); wypełnione = poprawka organizatora.
+ */
+export interface CountryCard {
+  code: string; // ISO 3166-1 alfa-2, np. 'JP'; 'ZZ' = kraj spoza wbudowanej listy (wtedy name)
+  name?: string;
+  zone?: string; // IANA – do różnicy czasu, gdy kraj ma kilka stref albo kraju nie ma na liście
+  currency?: string;
+  plugs?: string;
+  emergency?: string;
+  tipping?: string;
+  visa?: string; // notatka organizatora o wizie / ESTA (aplikacja sama nic nie twierdzi)
+  notes?: string;
+}
+
+export interface CountriesDoc {
+  countries: CountryCard[];
+}
+
 /** „Dla kogo”: wszyscy zatwierdzeni albo wybrane osoby (decyzja G). */
 export type Audience = 'all' | string[];
 

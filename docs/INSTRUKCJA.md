@@ -70,6 +70,8 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Jak znaleźć dany dzień planu?** Na ekranie wyjazdu każdą sekcję zwijasz i rozwijasz stuknięciem w nagłówek. W planie najpierw widać listę dni – stuknij dzień, żeby zobaczyć jego punkty. Dzisiejszy dzień jest oznaczony „dziś” i rozwija się sam.
 
+**Co to jest karta kraju?** Przy wyjeździe, po zgłoszeniu, każdy kraj ma swoją kartę: waluta, gniazdka (czy pasuje polska wtyczka), numer alarmowy, napiwki, różnica czasu i notatka Jacka o wizie z linkiem do informacji MSZ. Przed wyjazdem sprawdź wymogi wjazdu na stronie MSZ.
+
 **Za dużo powiadomień?** Ustawienia (⚙) → **Wycisz wszystkie powiadomienia z Klubu**.
 
 **Komunikat „Jest nowa wersja aplikacji”.** Stuknij **Odśwież** – aplikacja wczyta poprawki.
