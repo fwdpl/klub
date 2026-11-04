@@ -79,10 +79,11 @@ describe('pogoda', () => {
   });
 
   it('słońce i księżyc bez sieci, w czasie miejsca', () => {
-    const marrakesh = { name: 'Marrakesz', lat: 31.63, lng: -8.0 };
-    const t = sunTimes('2027-08-02', marrakesh, 'Africa/Casablanca');
-    expect(t.sunrise).toMatch(/^0[67]:\d\d$/);
-    expect(t.sunset).toMatch(/^(19|20):\d\d$/);
+    // strefa bez zmian czasu – wynik nie zależy od wersji danych o strefach na serwerze
+    const tokyo = { name: 'Tokio', lat: 35.68, lng: 139.69 };
+    const t = sunTimes('2027-08-02', tokyo, 'Asia/Tokyo');
+    expect(t.sunrise).toMatch(/^04:\d\d$/);
+    expect(t.sunset).toMatch(/^18:\d\d$/);
     // dzień zaćmienia 2.08.2027 to nów
     expect(moonPhase(new Date('2027-08-02T10:00:00Z'))).toBe('🌑 nów');
     // dzień polarny na Svalbardzie – bez zachodu
