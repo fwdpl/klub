@@ -1222,3 +1222,17 @@ body.driver-open {
 .driver__map {
   margin-top: 8px;
 }
+
+/* Eksport do kalendarza */
+.calendar-export {
+  margin: 8px 0 12px;
+}
+
+.card--inner {
+  background: var(--bg);
+  margin: 8px 0 0;
+}
+
+.card--inner p {
+  margin: 0 0 10px;
+}

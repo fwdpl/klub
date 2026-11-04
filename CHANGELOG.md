@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.5.0 — plan w kalendarzu telefonu
+
+- Przy planie przycisk „📅 Dodaj do kalendarza telefonu”: pobiera Twój plan (wspólne punkty i Twoje) jako plik do kalendarza, z przypomnieniem do wyboru (np. 30 min przed). Kalendarz telefonu przypomina sam, z dźwiękiem, także gdy Klub jest zamknięty.
+- Godziny zgadzają się w każdej strefie – kalendarz pokazuje je w czasie telefonu, po przylocie w czasie miejsca.
+
 ## 1.3.0 — pokaż kierowcy
 
 - Przy noclegu przycisk „🚕 Pokaż kierowcy”: adres hotelu na cały ekran, dużą czcionką, w lokalnym języku (np. po japońsku), z angielskim „Please take me to this address” i telefonem hotelu. Ekran nie gaśnie, póki karta jest otwarta; działa bez internetu.
