@@ -1,5 +1,12 @@
 # Zmiany
 
+## 1.8.0 — lista życzeń
+
+- Nowa ikona „Życzenia” przy wyjeździe (dla zatwierdzonych): wspólna lista miejsc, które chcemy zobaczyć.
+- Miejsce dodajesz z podpowiedzi (mapa OpenStreetMap) albo wklejając link z Google Maps. Możesz dopisać porę dnia, czas pobytu, stałą godzinę (bilet, rezerwacja) i notatkę.
+- Każde miejsce jest na liście raz – jeśli ktoś już je dodał, dopisujesz się przyciskiem „❤️ Muszę” albo „👍 Fajnie”. Drugie stuknięcie wycofuje głos. Najpopularniejsze miejsca są na górze.
+- Jacek pobiera listę jednym przyciskiem jako plik do ułożenia planu.
+
 ## 1.6.0 — ikony sekcji i ekran „Dziś”
 
 - Ekran wyjazdu bez długiej listy: pod tytułem rząd ikon (Plan, Loty, Noclegi, Lista, Kraj, Kontakty, Polisa, Koszty, Kto jedzie) – stuknięcie pokazuje tylko tę część. Aplikacja pamięta ostatnio oglądaną.

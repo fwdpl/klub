@@ -23,6 +23,7 @@ export const ICONS = {
   people: svg(
     '<circle cx="12" cy="7.5" r="3"/><path d="M6.5 20v-1.2a5.5 5.5 0 0 1 11 0V20"/><circle cx="5" cy="9.5" r="2.2"/><path d="M1.5 19.5v-.7A3.8 3.8 0 0 1 5 15"/><circle cx="19" cy="9.5" r="2.2"/><path d="M22.5 19.5v-.7A3.8 3.8 0 0 0 19 15"/>',
   ),
+  wishes: svg('<path d="M12 20.5s-7.5-4.4-7.5-10A4.3 4.3 0 0 1 12 7.8a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10-7.5 10z"/><path d="M12 3v1.5M5.6 4.8l1 1M18.4 4.8l-1 1"/>'),
   edit: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
   bell: svg('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/>'),
 } as const;

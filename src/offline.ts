@@ -1,3 +1,4 @@
+import { listWishes } from './data/wishes';
 import { getChecklist, getCountries, getInfo, getOverview, getTrip, listDays, listMembers, listTrips, myMemberships } from './data/trips';
 
 // Tryb offline (SPEC §5): Firestore trzyma odczytane dane w trwałej pamięci telefonu.
@@ -29,7 +30,7 @@ export async function downloadTrip(uid: string, tripId: string, isOrganizer: boo
   const seesDetails = isOrganizer || status === 'approved';
   const reads: Promise<unknown>[] = [getTrip(tripId), listTrips(isOrganizer, memberships)];
   if (seesOverview) reads.push(getOverview(tripId), getCountries(tripId), listMembers(tripId));
-  if (seesDetails) reads.push(getInfo(tripId), listDays(tripId));
+  if (seesDetails) reads.push(getInfo(tripId), listDays(tripId), listWishes(tripId));
   if (status === 'approved') reads.push(getChecklist(tripId, uid));
   await Promise.all(reads);
   try {

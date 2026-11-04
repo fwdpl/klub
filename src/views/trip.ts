@@ -25,6 +25,7 @@ import { todayCard } from './today';
 import { fold, foldBody } from './fold';
 import { ICONS } from './icons';
 import { tabbedSections, type Tab } from './tabs';
+import { wishlistSection } from './wishlist';
 import { noticeCard, takeNotice } from './notify';
 import { planSection } from './plan';
 import { detailsSection } from './tripDetails';
@@ -325,6 +326,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
       tabs.push({ key: 'flights', icon: 'flights', label: 'Loty', title: 'Loty', content: () => (details ? withEdit(foldBody(details.flights)) : loadError('loty')) });
       tabs.push({ key: 'hotels', icon: 'hotels', label: 'Noclegi', title: 'Noclegi', content: () => (details ? withEdit(foldBody(details.hotels)) : loadError('noclegi')) });
       if (details?.checklist) tabs.push({ key: 'checklist', icon: 'checklist', label: 'Lista', title: 'Moja checklista', content: () => foldBody(details.checklist!) });
+      tabs.push({ key: 'wishes', icon: 'wishes', label: 'Życzenia', title: 'Lista życzeń', content: () => wishlistSection(trip, viewer.isOrganizer ? viewer : { ...viewer, isOrganizer: false }) });
     }
     if (seesOverview) {
       tabs.push({ key: 'country', icon: 'country', label: 'Kraj', title: countries.length > 1 ? 'Karty krajów' : 'Karta kraju', content: () => h('div', {}, ...countrySection(trip, countries, organizer)) });
