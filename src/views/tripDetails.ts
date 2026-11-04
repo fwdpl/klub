@@ -59,14 +59,14 @@ function hotelRow(hotel: Hotel, members: Member[]): HTMLElement {
     hotel.checkOut && h('div', {}, h('b', {}, 'Wymeldowanie: '), formatLocal(hotel.checkOut)),
     hotel.notes && h('p', { class: 'multiline muted' }, richText(hotel.notes)),
     audienceNote(hotel.audience, members),
+    // przyciski w jednym rzędzie (uwaga Jacka z 4.11.2026)
     h(
       'div',
-      { class: 'actions actions--2' },
+      { class: 'actions actions--row' },
       hotel.address && h('a', { class: 'chip-btn', href: mapsLink(hotel.address), target: '_blank', rel: 'noopener' }, 'Nawiguj'),
       hotel.phone && h('a', { class: 'chip-btn', href: telLink(hotel.phone) }, 'Zadzwoń'),
+      hasDriverCard(hotel) && h('button', { type: 'button', class: 'chip-btn', onclick: () => showDriverCard(hotel) }, '🚕 Pokaż kierowcy'),
     ),
-    hasDriverCard(hotel) &&
-      h('button', { type: 'button', class: 'chip-btn chip-btn--wide', onclick: () => showDriverCard(hotel) }, '🚕 Pokaż kierowcy'),
   );
 }
 
