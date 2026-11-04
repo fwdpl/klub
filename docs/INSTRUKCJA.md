@@ -70,6 +70,8 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Jak znaleźć dany dzień planu?** Na ekranie wyjazdu każdą sekcję zwijasz i rozwijasz stuknięciem w nagłówek. W planie najpierw widać listę dni – stuknij dzień, żeby zobaczyć jego punkty. Dzisiejszy dzień jest oznaczony „dziś” i rozwija się sam.
 
+**Czy plan może przypominać o punktach?** Tak – w planie stuknij **📅 Dodaj do kalendarza telefonu**, wybierz przypomnienie i pobierz plik. Na iPhonie wybierz „Kalendarz” (albo „Zachowaj w Plikach”, otwórz plik i „Dodaj wszystkie”), na Androidzie otwórz pobrany plik w Kalendarzu Google. Po zmianach w planie dodaj plik jeszcze raz.
+
 **Jak pokazać adres hotelu taksówkarzowi?** W szczegółach wyjazdu, w sekcji Noclegi, stuknij **🚕 Pokaż kierowcy**. Adres pojawi się na cały ekran, dużą czcionką i – jeśli Jacek go wpisał – w lokalnym języku. Działa bez internetu.
 
 **Co to jest karta kraju?** Przy wyjeździe, po zgłoszeniu, każdy kraj ma swoją kartę: waluta, gniazdka (czy pasuje polska wtyczka), numer alarmowy, napiwki, różnica czasu i notatka Jacka o wizie z linkiem do informacji MSZ. Przed wyjazdem sprawdź wymogi wjazdu na stronie MSZ.

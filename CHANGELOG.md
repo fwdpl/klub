@@ -5,6 +5,17 @@
 - W czasie wyjazdu na górze ekranu wyjazdu karta „Dziś”: co trwa teraz, co dalej (z odliczaniem, np. „za 30 min”), zbiórka z godziną i odliczaniem, nawigacja do następnego miejsca i nocleg na dziś z przyciskami Nawiguj, Zadzwoń i „Pokaż kierowcy”. Wieczorem – pierwszy punkt jutra.
 - Dni i godziny liczone w czasie miejsca; karta odświeża się sama i działa bez internetu.
 
+## 1.5.0 — plan w kalendarzu telefonu
+
+- Przy planie przycisk „📅 Dodaj do kalendarza telefonu”: pobiera Twój plan (wspólne punkty i Twoje) jako plik do kalendarza, z przypomnieniem do wyboru (np. 30 min przed). Kalendarz telefonu przypomina sam, z dźwiękiem, także gdy Klub jest zamknięty.
+- Godziny zgadzają się w każdej strefie – kalendarz pokazuje je w czasie telefonu, po przylocie w czasie miejsca.
+
+## 1.4.0 — wygodniejsza edycja szczegółów
+
+- Edycja szczegółów wyjazdu: sekcje (loty, noclegi, kontakty, ubezpieczenie, checklista) zwijają się jak na ekranie wyjazdu, z liczbą pozycji w nagłówku.
+- Przy noclegu przyciski Nawiguj, Zadzwoń i „Pokaż kierowcy” stoją obok siebie w jednym rzędzie.
+- Każdy lot, nocleg i kontakt zwija się do jednej linii (np. „LO 79 · Warszawa WAW → Tokio NRT · czw., 10 gru, 06:10”); nowa pozycja jest od razu rozwinięta. Przy błędzie aplikacja sama rozwija właściwą pozycję.
+
 ## 1.3.0 — pokaż kierowcy
 
 - Przy noclegu przycisk „🚕 Pokaż kierowcy”: adres hotelu na cały ekran, dużą czcionką, w lokalnym języku (np. po japońsku), z angielskim „Please take me to this address” i telefonem hotelu. Ekran nie gaśnie, póki karta jest otwarta; działa bez internetu.

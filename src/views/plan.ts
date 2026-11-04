@@ -6,6 +6,7 @@ import { todayIn } from '../plan/time';
 import { zoneLabel } from '../timezones';
 import { plural } from '../text';
 import { h, present } from '../ui';
+import { calendarExport } from './calendar';
 import { fold, remember } from './fold';
 import { formatLocal } from './tripDetails';
 
@@ -158,6 +159,9 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
   let tag: string | null = null;
   const tags = [...new Set(days.flatMap((d) => d.items.flatMap((i) => i.tags ?? [])))].sort();
 
+  // Eksport do kalendarza: „Mój plan” dla uczestnika, cały plan dla organizatora spoza listy
+  const calendar = calendarExport(trip, days, me.uid, amApproved);
+
   const draw = () => {
     const visible = days
       .map((day) => {
@@ -203,6 +207,7 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
             button('Wszystko', tag === null, () => setTag(null)),
             ...tags.map((t) => button(`#${t}`, tag === t, () => setTag(t))),
           ),
+        days.length > 0 && calendar,
         planNotes.length > 0 &&
           h('div', { class: 'plan-notes' }, h('b', {}, 'Uwagi do planu'), h('ul', {}, ...planNotes.map((n) => h('li', {}, richText(n))))),
         days.length === 0 && h('p', { class: 'muted' }, me.isOrganizer ? 'Plan jest pusty – zaimportuj plik albo dodaj punkt.' : 'Plan pojawi się tutaj, gdy organizator go doda.'),
