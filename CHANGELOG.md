@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.5.0 — plan w kalendarzu telefonu
+
+- Przy planie przycisk „📅 Dodaj do kalendarza telefonu”: pobiera Twój plan (wspólne punkty i Twoje) jako plik do kalendarza, z przypomnieniem do wyboru (np. 30 min przed). Kalendarz telefonu przypomina sam, z dźwiękiem, także gdy Klub jest zamknięty.
+- Godziny zgadzają się w każdej strefie – kalendarz pokazuje je w czasie telefonu, po przylocie w czasie miejsca.
+
 ## 1.4.0 — wygodniejsza edycja szczegółów
 
 - Edycja szczegółów wyjazdu: sekcje (loty, noclegi, kontakty, ubezpieczenie, checklista) zwijają się jak na ekranie wyjazdu, z liczbą pozycji w nagłówku.
