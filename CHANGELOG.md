@@ -1,5 +1,11 @@
 # Zmiany
 
+## 1.3.0 — pokaż kierowcy
+
+- Przy noclegu przycisk „🚕 Pokaż kierowcy”: adres hotelu na cały ekran, dużą czcionką, w lokalnym języku (np. po japońsku), z angielskim „Please take me to this address” i telefonem hotelu. Ekran nie gaśnie, póki karta jest otwarta; działa bez internetu.
+- Na karcie kierowcy przycisk „🗺 Pokaż na mapie” – Google Maps z pinezką hotelu (wymaga internetu).
+- Organizator wpisuje nazwę i adres w lokalnym języku przy noclegu (np. z maila z rezerwacją) – aplikacja sama nie tłumaczy.
+
 ## 1.2.0 — karta kraju
 
 - Przy wyjeździe karty krajów: waluta, gniazdka (czy pasuje polska wtyczka i jakie napięcie), numer alarmowy, napiwki i różnica czasu względem Polski – także w miesiącu wyjazdu. Widzą je zgłoszeni i zatwierdzeni, działają bez internetu.

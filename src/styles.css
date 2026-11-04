@@ -1153,3 +1153,72 @@ h1 + .btn--link {
   text-decoration: underline;
   overflow-wrap: anywhere;
 }
+
+/* Karta „pokaż kierowcy” – cały ekran, duży kontrastowy tekst */
+.chip-btn--wide {
+  width: 100%;
+  margin-top: 8px;
+}
+
+body.driver-open {
+  overflow: hidden;
+}
+
+.driver {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
+  background: var(--bg);
+  color: var(--text);
+  text-align: center;
+}
+
+.driver p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.driver__ask {
+  font-size: 18px;
+  color: var(--text-2);
+}
+
+.driver__name {
+  font-size: clamp(28px, 8vw, 48px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.driver__address {
+  font-size: clamp(30px, 9vw, 56px);
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: pre-line;
+}
+
+.driver__latin {
+  font-size: 18px;
+  color: var(--text-2);
+  white-space: pre-line;
+}
+
+.driver__phone {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.driver__close {
+  margin-top: 16px;
+}
+
+.driver__map {
+  margin-top: 8px;
+}

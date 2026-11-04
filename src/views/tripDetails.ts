@@ -3,6 +3,7 @@ import type { Audience, ChecklistDoc, EmergencyContact, Flight, Hotel, InfoDoc }
 import { richText } from '../plan/richText';
 import { zoneLabel } from '../timezones';
 import { h, present, toast } from '../ui';
+import { hasDriverCard, showDriverCard } from './driver';
 import { fold } from './fold';
 import type Sortable from 'sortablejs';
 import { dragHandle, makeSortable, moveItem } from './sortable';
@@ -64,6 +65,8 @@ function hotelRow(hotel: Hotel, members: Member[]): HTMLElement {
       hotel.address && h('a', { class: 'chip-btn', href: mapsLink(hotel.address), target: '_blank', rel: 'noopener' }, 'Nawiguj'),
       hotel.phone && h('a', { class: 'chip-btn', href: telLink(hotel.phone) }, 'Zadzwoń'),
     ),
+    hasDriverCard(hotel) &&
+      h('button', { type: 'button', class: 'chip-btn chip-btn--wide', onclick: () => showDriverCard(hotel) }, '🚕 Pokaż kierowcy'),
   );
 }
 

@@ -92,17 +92,26 @@ function flightEditor(f: Partial<Flight>, approved: Member[], tripZone: string):
 function hotelEditor(x: Partial<Hotel>, approved: Member[]): RowEditor<Hotel> {
   const [nameEl, name] = text('Nazwa', x.name ?? '');
   const [addressEl, address] = text('Adres', x.address ?? '');
+  const [localNameEl, localName] = text('Nazwa w lokalnym języku – dla kierowcy (opcjonalnie)', x.localName ?? '');
+  const [localAddressEl, localAddress] = area('Adres w lokalnym języku – dla kierowcy (opcjonalnie)', x.localAddress ?? '');
+  const driverHint = h(
+    'p',
+    { class: 'muted' },
+    'Do karty „Pokaż kierowcy” – aplikacja sama nie tłumaczy. Skopiuj nazwę i adres w lokalnym piśmie z maila z rezerwacją, ze strony hotelu albo z Google Maps po przełączeniu języka na lokalny. Bez tego kierowca zobaczy adres łaciński i przycisk mapy.',
+  );
   const [inEl, checkIn] = localTime('Zameldowanie (czas lokalny)', x.checkIn ?? '');
   const [outEl, checkOut] = localTime('Wymeldowanie (czas lokalny)', x.checkOut ?? '');
   const [phoneEl, phone] = text('Telefon', x.phone ?? '', { type: 'tel' });
   const [notesEl, notes] = area('Uwagi', x.notes ?? '');
   const [audEl, audience] = audienceField(x.audience ?? 'all', approved);
   return {
-    el: h('div', {}, nameEl, addressEl, inEl, outEl, phoneEl, notesEl, audEl),
+    el: h('div', {}, nameEl, addressEl, localNameEl, localAddressEl, driverHint, inEl, outEl, phoneEl, notesEl, audEl),
     read: () => ({
       id: x.id ?? newId(),
       name: name(),
       address: address(),
+      ...(localName() ? { localName: localName() } : {}),
+      ...(localAddress() ? { localAddress: localAddress() } : {}),
       checkIn: checkIn(),
       checkOut: checkOut(),
       phone: phone(),
