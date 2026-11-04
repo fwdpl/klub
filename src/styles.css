@@ -1222,3 +1222,71 @@ body.driver-open {
 .driver__map {
   margin-top: 8px;
 }
+
+/* Karta „Dziś” */
+.card--today {
+  border: 2px solid var(--accent);
+}
+
+.today__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.today__head h2 {
+  margin: 0;
+}
+
+.today__title {
+  margin: 4px 0 8px;
+  font-weight: 600;
+}
+
+.today__row {
+  margin: 8px 0 4px;
+}
+
+.today__label {
+  display: inline-block;
+  min-width: 64px;
+  margin-right: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+}
+
+.today__countdown {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.today__meet {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.today__next,
+.today__hotel {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 4px;
+}
+
+.today__next p,
+.today__hotel p {
+  margin-top: 4px;
+}

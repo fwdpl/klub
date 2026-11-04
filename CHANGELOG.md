@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.6.0 — ekran „Dziś”
+
+- W czasie wyjazdu na górze ekranu wyjazdu karta „Dziś”: co trwa teraz, co dalej (z odliczaniem, np. „za 30 min”), zbiórka z godziną i odliczaniem, nawigacja do następnego miejsca i nocleg na dziś z przyciskami Nawiguj, Zadzwoń i „Pokaż kierowcy”. Wieczorem – pierwszy punkt jutra.
+- Dni i godziny liczone w czasie miejsca; karta odświeża się sama i działa bez internetu.
+
 ## 1.3.0 — pokaż kierowcy
 
 - Przy noclegu przycisk „🚕 Pokaż kierowcy”: adres hotelu na cały ekran, dużą czcionką, w lokalnym języku (np. po japońsku), z angielskim „Please take me to this address” i telefonem hotelu. Ekran nie gaśnie, póki karta jest otwarta; działa bez internetu.

@@ -21,6 +21,7 @@ import { h, render, toast } from '../ui';
 import { downloadTrip, formatSync, lastSync } from '../offline';
 import { richText } from '../plan/richText';
 import { countrySection } from './country';
+import { todayCard } from './today';
 import { fold } from './fold';
 import { noticeCard, takeNotice } from './notify';
 import { planSection } from './plan';
@@ -276,11 +277,14 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
           h('p', { class: 'error' }, 'Nie udało się wczytać szczegółów. Sprawdź połączenie.'),
         )
       : null;
-    const plan = seesDetails
-      ? await Promise.all([listDays(tripId), getInfo(tripId)])
-          .then(([days, info]) => planSection(trip, viewer, members ?? [], days, info.planNotes ?? [], mine === 'approved'))
-          .catch(() => h('p', { class: 'error' }, 'Nie udało się wczytać planu. Sprawdź połączenie.'))
-      : null;
+    const planData = seesDetails ? await Promise.all([listDays(tripId), getInfo(tripId)]).catch(() => null) : null;
+    const plan = !seesDetails
+      ? null
+      : planData
+        ? planSection(trip, viewer, members ?? [], planData[0], planData[1].planNotes ?? [], mine === 'approved')
+        : h('p', { class: 'error' }, 'Nie udało się wczytać planu. Sprawdź połączenie.');
+    // „Dziś” – tylko w dniach z planu; uczestnik widzi swój plan, organizator spoza listy – cały
+    const today = planData ? todayCard(trip, viewer, planData[0], planData[1].hotels, mine === 'approved') : null;
 
     const stopPreview = () => {
       previewOf = null;
@@ -332,6 +336,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
           }),
         trip.description && h('div', { class: 'card' }, multiline(trip.description)),
         action,
+        today,
         plan,
         details,
         seesOverview && overviewCard(trip.id, overview, !viewer.isOrganizer && mine !== 'approved'),
