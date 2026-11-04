@@ -124,8 +124,8 @@ trips/{tripId}/members/{uid}      # status uczestnika
   # wszystkie warstwy wyjazdu w archiwum: tylko zatwierdzeni (decyzja B)
 
 trips/{tripId}/overview/main      # WARSTWA 2 — interested + approved + organizer
-trips/{tripId}/overview/countries # WARSTWA 2 — karty krajów { countries: CountryCard[] } (1.2.0, §5)
   planSummary, costEstimate, decisionDeadline?
+trips/{tripId}/overview/countries # WARSTWA 2 — karty krajów { countries: CountryCard[] } (1.2.0, §5)
 
 trips/{tripId}/info/main          # WARSTWA 3 — approved + organizer
   flights[]: { id, number, airline, from, to, departure, departureTz, arrival, arrivalTz, notes, audience }
