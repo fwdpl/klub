@@ -5,6 +5,7 @@ import { zoneLabel } from '../timezones';
 import { h } from '../ui';
 import { hasDriverCard, mapsUrl, showDriverCard } from './driver';
 import { formatLocal } from './tripDetails';
+import { todayWeather } from './weatherView';
 
 // Karta „Dziś” na górze ekranu wyjazdu – tylko w dniach z planu. Odświeża się co 30 s (odliczanie).
 
@@ -38,6 +39,10 @@ export function todayCard(trip: Trip, viewer: Viewer, days: DayDoc[], hotels: Ho
   const card = h('section', { class: 'card card--today', 'aria-live': 'polite' });
   const myHotels = viewer.isOrganizer && !mineOnly ? hotels : hotels.filter((x) => isFor(x.audience, viewer.uid));
 
+  // pogoda na dziś – ładowana raz (prognoza z pamięci urządzenia albo z sieci)
+  const first = todayView(days, trip.timezone, include);
+  const weather = first ? todayWeather(trip, first.day, first.zone) : '';
+
   const draw = () => {
     const now = Date.now();
     const v = todayView(days, trip.timezone, include, new Date(now));
@@ -53,6 +58,7 @@ export function todayCard(trip: Trip, viewer: Viewer, days: DayDoc[], hotels: Ho
         h('span', { class: 'muted' }, [formatLocal(v.day.date), v.day.baseLocation].filter(Boolean).join(' · ')),
       ),
       v.day.title ? h('p', { class: 'today__title' }, v.day.title) : '',
+      weather,
       v.meet
         ? h(
             'div',

@@ -138,7 +138,8 @@ service cloud.firestore {
       match /days/{date} {
         allow read: if canSeeDetails(tripId);
         allow create, update: if isOrganizer()
-          && request.resource.data.keys().hasOnly(['date', 'title', 'note', 'timezone', 'baseLocation', 'weatherDependent', 'items', 'revision', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(['date', 'title', 'note', 'timezone', 'baseLocation', 'weatherDependent', 'weatherPlace', 'items', 'revision', 'updatedAt'])
+          && (!('weatherPlace' in request.resource.data) || (request.resource.data.weatherPlace.lat is number && request.resource.data.weatherPlace.lng is number))
           && request.resource.data.date == date
           && request.resource.data.items is list
           && request.resource.data.items.size() <= 100

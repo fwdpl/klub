@@ -261,6 +261,13 @@ describe('warstwa 2 – karty krajów', () => {
 });
 
 describe('warstwa 3 – szczegóły', () => {
+  it('miejsce prognozy pogody przy dniu: zapisuje organizator, liczby lat/lng', async () => {
+    const d = { ...day('2027-03-10'), weatherPlace: { name: 'Vík, Islandia', lat: 63.42, lng: -19.01 } };
+    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-10'), d));
+    await assertFails(setDoc(doc(as('ania'), 'trips/t-open/days/2027-03-10'), d));
+    await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-10'), { ...d, weatherPlace: { name: 'X', lat: '63', lng: -19 } }));
+  });
+
   it('nocleg z nazwą i adresem w lokalnym języku (karta „pokaż kierowcy”) zapisuje organizator, czyta zatwierdzony', async () => {
     const hotel = {
       id: 'h1', name: 'Hotel Sakura', address: '1-2-3 Naha, Okinawa', localName: 'ホテルさくら', localAddress: '沖縄県那覇市1-2-3',

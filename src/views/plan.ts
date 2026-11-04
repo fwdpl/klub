@@ -7,6 +7,7 @@ import { zoneLabel } from '../timezones';
 import { plural } from '../text';
 import { h, present } from '../ui';
 import { calendarExport } from './calendar';
+import { attachDayChip, dayWeather } from './weatherView';
 import { fold, remember } from './fold';
 import { formatLocal } from './tripDetails';
 
@@ -129,10 +130,10 @@ function itemCard(item: PlanItem, day: DayDoc, dayZone: string, trip: Trip, memb
 }
 
 /** Jeden dzień planu – zwijany; nagłówek widać zawsze (data, miejsce, tytuł, liczba punktów). */
-function dayFold(day: DayDoc, trip: Trip, zone: string, body: HTMLElement[], count: number, filtered: boolean): HTMLDetailsElement {
+function dayFold(day: DayDoc, trip: Trip, zone: string, body: HTMLElement[], count: number, filtered: boolean, isOrganizer: boolean): HTMLDetailsElement {
   const isToday = todayIn(zone) === day.date;
   const dateLine = [formatLocal(day.date), day.baseLocation].filter(Boolean).join(' · ');
-  return fold(
+  const el = fold(
     {
       // przy filtrze etykiety dni są rozwinięte i nie nadpisują zapamiętanego stanu
       // dni zawsze startują zwinięte; rozwinięcie pamiętane tylko do zamknięcia aplikacji (uwaga Jacka z 4.11.2026)
@@ -148,6 +149,16 @@ function dayFold(day: DayDoc, trip: Trip, zone: string, body: HTMLElement[], cou
     day.note && h('p', { class: 'plan-day__note multiline' }, richText(day.note)),
     ...body,
   );
+  // pogoda: znaczek w nagłówku (gdy jest prognoza), blok z prognozą i słońcem – przy pierwszym rozwinięciu
+  attachDayChip(trip, day, zone, el.querySelector('.fold__text') as HTMLElement);
+  const bodyEl = el.querySelector(':scope > .fold__body') as HTMLElement;
+  const addWeather = () => {
+    if (!el.open || bodyEl.querySelector('.weather')) return;
+    bodyEl.prepend(dayWeather(trip, day, zone, isOrganizer));
+  };
+  el.addEventListener('toggle', addWeather);
+  addWeather();
+  return el;
 }
 
 /**
@@ -178,7 +189,7 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
       h('button', { type: 'button', 'aria-pressed': String(pressed), onclick }, label);
 
     const dayEls = visible.map(({ day, zone, items }) =>
-      dayFold(day, trip, zone, items.map((i) => itemCard(i, day, zone, trip, members, me, mode)), items.length, tag !== null),
+      dayFold(day, trip, zone, items.map((i) => itemCard(i, day, zone, trip, members, me, mode)), items.length, tag !== null, me.isOrganizer),
     );
     const setAll = (open: boolean) => {
       for (const el of dayEls) el.open = open;
