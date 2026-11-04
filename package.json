@@ -1,7 +1,7 @@
 {
   "name": "klub",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite --mode test",
@@ -14,12 +14,14 @@
   },
   "dependencies": {
     "firebase": "^13.1.0",
+    "sortablejs": "1.15.7",
     "workbox-core": "^7.4.1",
     "workbox-precaching": "^7.4.1",
     "workbox-routing": "^7.4.1"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
+    "@types/sortablejs": "1.15.9",
     "ajv": "^8.20.0",
     "firebase-tools": "^15.34.2",
     "typescript": "^7.0.2",

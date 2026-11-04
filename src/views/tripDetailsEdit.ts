@@ -1,5 +1,6 @@
 import { getInfo, getTrip, listMembers, newId, saveInfo, type Member } from '../data/trips';
 import type { Audience, ChecklistTemplateItem, EmergencyContact, Flight, Hotel, InfoDoc } from '../model/types';
+import { dragHandle, makeSortable, moveItem } from './sortable';
 import { h, render, toast } from '../ui';
 import { proposeNotice } from './notify';
 import { zonePicker } from './zonePicker';
@@ -124,13 +125,14 @@ function templateEditor(t: Partial<ChecklistTemplateItem>): RowEditor<ChecklistT
 }
 
 /** Lista pozycji z przyciskami „Usuń” i „+ Dodaj …”. */
-function listEditor<T>(title: string, addLabel: string, initial: T[], make: (value: Partial<T>) => RowEditor<T>, compact = false) {
+function listEditor<T>(title: string, addLabel: string, initial: T[], make: (value: Partial<T>) => RowEditor<T>, compact = false, sortable = false) {
   const rows: RowEditor<T>[] = [];
   const container = h('div');
   const addRow = (value: Partial<T>) => {
     const editor = make(value);
-    const remove = h('button', { type: 'button', class: compact ? 'row-remove' : 'btn btn--secondary' }, compact ? '×' : 'Usuń');
-    const wrap = h('div', { class: compact ? 'row-compact' : 'row-block' }, editor.el, remove);
+    const remove = h('button', { type: 'button', class: compact ? 'row-remove' : 'btn btn--secondary', 'aria-label': 'Usuń' }, compact ? '×' : 'Usuń');
+    const wrap = h('div', { class: `${compact ? 'row-compact' : 'row-block'}${sortable ? ' row-compact--sortable' : ''}` }, editor.el, remove);
+    if (sortable) wrap.append(dragHandle('punkt'));
     remove.addEventListener('click', () => {
       rows.splice(rows.indexOf(editor), 1);
       wrap.remove();
@@ -139,10 +141,13 @@ function listEditor<T>(title: string, addLabel: string, initial: T[], make: (val
     container.append(wrap);
   };
   initial.forEach(addRow);
+  // Sortable przestawia wiersze na ekranie; tu ta sama zmiana w kolejności zapisu
+  if (sortable) makeSortable(container, (from, to) => rows.splice(0, rows.length, ...moveItem(rows, from, to)));
   const card = h(
     'div',
     { class: 'card' },
     h('h2', {}, title),
+    sortable && initial.length > 1 && h('p', { class: 'muted' }, 'Kolejność zmienisz, przesuwając punkt za uchwyt ⠿.'),
     container,
     h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => addRow({}) }, addLabel),
   );
@@ -163,7 +168,7 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
   const hotels = listEditor('Noclegi', '+ Dodaj nocleg', info.hotels, (x) => hotelEditor(x, approved));
   const contacts = listEditor('Kontakty awaryjne', '+ Dodaj kontakt', info.emergencyContacts, contactEditor);
   const [insuranceEl, insurance] = area('Ubezpieczyciel, numer polisy, numer alarmowy', info.insurance);
-  const template = listEditor('Wspólna checklista', '+ Dodaj punkt', info.checklistTemplate, templateEditor, true);
+  const template = listEditor('Wspólna checklista', '+ Dodaj punkt', info.checklistTemplate, templateEditor, true, true);
 
   const error = h('p', { class: 'error', role: 'alert' });
   const save = h('button', { type: 'submit', class: 'btn' }, 'Zapisz szczegóły');

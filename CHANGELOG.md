@@ -1,5 +1,9 @@
 # Zmiany
 
+## 1.1.0 — kolejność punktów checklisty
+
+- Punkty checklisty można przestawiać: przytrzymaj uchwyt ⠿ z prawej strony punktu i przesuń go w nowe miejsce. Organizator układa w ten sposób wspólną część (w edycji szczegółów), a każdy – swoje własne punkty.
+
 ## 1.0.0 — pierwsza wersja dla uczestników
 
 - Klub działa pod adresem klub.bakutis.pl: osobna, produkcyjna baza z codzienną kopią zapasową. Wersja testowa zostaje pod klub2.bakutis.pl.
