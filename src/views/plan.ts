@@ -135,11 +135,12 @@ function dayFold(day: DayDoc, trip: Trip, zone: string, body: HTMLElement[], cou
   return fold(
     {
       // przy filtrze etykiety dni są rozwinięte i nie nadpisują zapamiętanego stanu
-      id: filtered ? undefined : `${trip.id}:day:${day.date}`,
+      // dni zawsze startują zwinięte; rozwinięcie pamiętane tylko do zamknięcia aplikacji (uwaga Jacka z 4.11.2026)
+      id: filtered ? undefined : `session:${trip.id}:day:${day.date}`,
       title: day.title || dateLine,
       head: [h('span', { class: 'plan-day__date' }, day.title ? dateLine : null, isToday ? h('span', { class: 'badge badge--accent plan-day__today' }, 'dziś') : null)],
       meta: plural(count, 'punkt', 'punkty', 'punktów'),
-      open: filtered || isToday,
+      open: filtered,
       className: `plan-day${isToday ? ' plan-day--today' : ''}`,
       level: 'h3',
     },
@@ -181,7 +182,7 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
     );
     const setAll = (open: boolean) => {
       for (const el of dayEls) el.open = open;
-      if (tag === null) for (const { day } of visible) remember(`${trip.id}:day:${day.date}`, open);
+      if (tag === null) for (const { day } of visible) remember(`session:${trip.id}:day:${day.date}`, open);
     };
 
     wrap.replaceChildren(

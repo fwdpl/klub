@@ -171,7 +171,16 @@ function checklistCard(tripId: string, uid: string, template: InfoDoc['checklist
  * Szczegóły wyjazdu (warstwa 3) dla zatwierdzonych i organizatora.
  * Uczestnik widzi pozycje wspólne i te dla siebie; organizator wszystkie z opisem „dla kogo”.
  */
-export async function detailsSection(trip: Trip, me: Me, members: Member[], showChecklist: boolean): Promise<HTMLElement> {
+export interface DetailsSections {
+  flights: HTMLElement;
+  hotels: HTMLElement;
+  contacts: HTMLElement;
+  insurance: HTMLElement | null;
+  checklist: HTMLElement | null;
+}
+
+/** Sekcje szczegółów osobno – ekran wyjazdu pokazuje każdą pod własną ikoną. */
+export async function detailsSection(trip: Trip, me: Me, members: Member[], showChecklist: boolean): Promise<DetailsSections> {
   const info = await getInfo(trip.id);
   const mine = <T extends { audience: Audience }>(list: T[]) => (me.isOrganizer ? list : list.filter((x) => isFor(x.audience, me.uid)));
   const flights = mine(info.flights).sort((a, b) => a.departure.localeCompare(b.departure));
@@ -181,14 +190,11 @@ export async function detailsSection(trip: Trip, me: Me, members: Member[], show
   const section = (key: string, title: string, rows: HTMLElement[], empty: string) =>
     fold({ id: `${trip.id}:${key}`, title, meta: rows.length ? String(rows.length) : 'brak', open: false }, ...(rows.length ? rows : [h('p', { class: 'muted' }, empty)]));
 
-  return h(
-    'div',
-    {},
-    me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/szczegoly` }, 'Edytuj szczegóły i checklistę'),
-    section('flights', 'Loty', flights.map((f) => flightRow(f, members)), 'Brak lotów.'),
-    section('hotels', 'Noclegi', hotels.map((x) => hotelRow(x, members)), 'Brak noclegów.'),
-    section('contacts', 'Kontakty awaryjne', info.emergencyContacts.map(contactRow), 'Brak kontaktów.'),
-    info.insurance && fold({ id: `${trip.id}:insurance`, title: 'Ubezpieczenie', open: false }, h('p', { class: 'multiline' }, richText(info.insurance))),
-    checklist && checklistCard(trip.id, me.uid, info.checklistTemplate, checklist),
-  );
+  return {
+    flights: section('flights', 'Loty', flights.map((f) => flightRow(f, members)), 'Brak lotów.'),
+    hotels: section('hotels', 'Noclegi', hotels.map((x) => hotelRow(x, members)), 'Brak noclegów.'),
+    contacts: section('contacts', 'Kontakty awaryjne', info.emergencyContacts.map(contactRow), 'Brak kontaktów.'),
+    insurance: info.insurance ? fold({ id: `${trip.id}:insurance`, title: 'Ubezpieczenie', open: false }, h('p', { class: 'multiline' }, richText(info.insurance))) : null,
+    checklist: checklist ? checklistCard(trip.id, me.uid, info.checklistTemplate, checklist) : null,
+  };
 }

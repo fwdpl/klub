@@ -1223,6 +1223,74 @@ body.driver-open {
   margin-top: 8px;
 }
 
+/* Karta „Dziś” */
+.card--today {
+  border: 2px solid var(--accent);
+}
+
+.today__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.today__head h2 {
+  margin: 0;
+}
+
+.today__title {
+  margin: 4px 0 8px;
+  font-weight: 600;
+}
+
+.today__row {
+  margin: 8px 0 4px;
+}
+
+.today__label {
+  display: inline-block;
+  min-width: 64px;
+  margin-right: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+}
+
+.today__countdown {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.today__meet {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.today__next,
+.today__hotel {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 4px;
+}
+
+.today__next p,
+.today__hotel p {
+  margin-top: 4px;
+}
+
 /* Eksport do kalendarza */
 .calendar-export {
   margin: 8px 0 12px;
@@ -1285,4 +1353,129 @@ body.driver-open {
   overflow-wrap: normal;
   word-break: normal;
   hyphens: none;
+}
+
+/* Ekran wyjazdu: rząd ikon sekcji (prośba Jacka z 4.11.2026) */
+.trip-head__tools {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  flex: none;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--accent);
+  border: 0;
+  padding: 0;
+}
+
+.icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.trip-desc {
+  margin: 0 0 4px;
+}
+
+.trip-desc--short {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0 0 12px;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  min-height: 0;
+}
+
+.tabs__bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 64px;
+  padding: 8px 2px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tab--on {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.tab__icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.tab__icon svg {
+  display: block;
+}
+
+.tab__icon--mask {
+  background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+.tab__label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: inherit;
+}
+
+.tab__badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--danger);
+  color: var(--bg);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.tabs__title {
+  margin: 0 0 12px;
+}
+
+.tabs__panel .card--today {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
 }
