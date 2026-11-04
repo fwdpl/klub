@@ -27,7 +27,7 @@ export function isValidDate(date: string): boolean {
 }
 
 /** Przesunięcie strefy względem UTC (minuty) w danej chwili. */
-function offsetMinutes(zone: string, utcMs: number): number {
+export function offsetMinutes(zone: string, utcMs: number): number {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: zone,
     hourCycle: 'h23',

@@ -77,6 +77,7 @@ beforeEach(async () => {
       await setDoc(doc(db, `trips/${t}/members/ania`), member('ania', 'Ania', 'approved'));
       await setDoc(doc(db, `trips/${t}/members/bartek`), member('bartek', 'Bartek', 'interested'));
       await setDoc(doc(db, `trips/${t}/overview/main`), { planSummary: 'plan', costEstimate: '5000 zł' });
+      await setDoc(doc(db, `trips/${t}/overview/countries`), { countries: [{ code: 'JP' }] });
       await setDoc(doc(db, `trips/${t}/info/main`), info());
       await setDoc(doc(db, `trips/${t}/days/2027-03-10`), day('2027-03-10'));
       await setDoc(doc(db, `trips/${t}/checklists/ania`), { items: [{ id: '1', text: 'paszport', done: false }] });
@@ -232,6 +233,30 @@ describe('warstwa 2 – ogólny plan i koszty', () => {
   it('zmienia tylko organizator', async () => {
     await assertFails(updateDoc(doc(as('ania'), 'trips/t-open/overview/main'), { costEstimate: '1 zł' }));
     await assertSucceeds(updateDoc(doc(as('jacek'), 'trips/t-open/overview/main'), { costEstimate: '6000 zł' }));
+  });
+});
+
+describe('warstwa 2 – karty krajów', () => {
+  const card = (code: string) => ({ code, visa: 'ESTA przed wylotem' });
+
+  it('widzą zainteresowani i zatwierdzeni, nie widzą pozostali', async () => {
+    await assertSucceeds(getDoc(doc(as('bartek'), 'trips/t-open/overview/countries')));
+    await assertSucceeds(getDoc(doc(as('ania'), 'trips/t-open/overview/countries')));
+    await assertFails(getDoc(doc(as('celina'), 'trips/t-open/overview/countries')));
+    await assertFails(getDoc(doc(as('darek'), 'trips/t-open/overview/countries')));
+    await assertFails(getDoc(doc(as('bartek'), 'trips/t-archived/overview/countries')));
+  });
+
+  it('zapisuje tylko organizator, lista do 10 krajów', async () => {
+    await assertFails(setDoc(doc(as('ania'), 'trips/t-open/overview/countries'), { countries: [card('US')], updatedAt: serverTimestamp() }));
+    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/overview/countries'), { countries: [card('US'), card('CA')], updatedAt: serverTimestamp() }));
+    const eleven = Array.from({ length: 11 }, () => card('JP'));
+    await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/overview/countries'), { countries: eleven }));
+  });
+
+  it('tylko pola countries i updatedAt, countries jako lista', async () => {
+    await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/overview/countries'), { countries: [card('US')], extra: 1 }));
+    await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/overview/countries'), { countries: 'US' }));
   });
 });
 

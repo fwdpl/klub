@@ -95,6 +95,7 @@ export function showGuide(): void {
         { class: 'steps' },
         h('li', {}, b('Też tam chcę'), ' – zgłaszasz chęć udziału. Widzisz wtedy plan w skrócie, koszty, termin decyzji i kto jedzie.'),
         h('li', {}, b('Po zatwierdzeniu'), ' przez Jacka (gdy udział jest potwierdzony poza aplikacją) – plan dni, loty, noclegi, kontakty awaryjne i Twoja checklista.'),
+        h('li', {}, b('Karta kraju'), ' – waluta, gniazdka, numer alarmowy, napiwki, różnica czasu i notatka o wizie; widać ją po zgłoszeniu.'),
         h('li', {}, b('Mój plan / Wszyscy'), ' – Twoje punkty i wspólne albo plan całej grupy. Godziny zawsze w czasie miejsca.'),
         h('li', {}, b('Przed wyjazdem'), ', z internetem: otwórz wyjazd i stuknij ikonę pobierania obok tytułu. Bez sieci wszystko działa, a odhaczenia wyślą się po połączeniu.'),
         h('li', {}, 'Sekcje i dni planu rozwijasz stuknięciem w nagłówek; dzisiejszy dzień jest oznaczony „dziś”.'),

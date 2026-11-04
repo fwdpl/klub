@@ -125,6 +125,7 @@ trips/{tripId}/members/{uid}      # status uczestnika
 
 trips/{tripId}/overview/main      # WARSTWA 2 — interested + approved + organizer
   planSummary, costEstimate, decisionDeadline?
+trips/{tripId}/overview/countries # WARSTWA 2 — karty krajów { countries: CountryCard[] } (1.2.0, §5)
 
 trips/{tripId}/info/main          # WARSTWA 3 — approved + organizer
   flights[]: { id, number, airline, from, to, departure, departureTz, arrival, arrivalTz, notes, audience }
@@ -199,6 +200,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Import planu z JSON** (format „klub-plan”, §4) z walidacją (wszystkie błędy naraz, po polsku, z miejscem) i podglądem przed zapisem; zastępuje tylko dni z pliku (decyzja I).
 - **Ręczna edycja punktu** planu przez organizatora: dodanie, zmiana, usunięcie (decyzja H).
 - **Widok planu**: „Mój plan” / „Wszyscy” (decyzja J; kolumny dla osób – układ tabletowy v2), filtr etykiet (np. #foto), kolizje ⚠, nawigacja do miejsc i propozycji.
+- **Karta kraju (1.2.0, decyzje Jacka z 4.11.2026)**: przy wyjeździe kilka krajów (do 10), każdy jako zwijana karta pod „Plan i koszty”; widzą zgłoszeni i zatwierdzeni (warstwa 2, dokument `trips/{id}/overview/countries`: `{ countries: CountryCard[], updatedAt }`, `CountryCard = { code, name?, zone?, currency?, plugs?, emergency?, tipping?, visa?, notes? }`). Dane wbudowane dla ok. 55 krajów (`src/data/countries.ts`: waluta, gniazdka + napięcie z oceną „polska wtyczka pasuje / potrzebna przejściówka”, numer alarmowy, napiwki, główna strefa) – organizator może każde pole poprawić; puste pole = dane wbudowane. Kraj spoza listy: kod `ZZ` + nazwa, pola wpisuje organizator. Różnica czasu względem Polski liczona ze strefy – teraz i w miesiącu wyjazdu (z „Orientacyjnych dat”). **Wiza/ESTA: aplikacja sama nic nie twierdzi** – notatka organizatora + link do informacji MSZ dla podróżujących. Edycja: `#/wyjazd/{id}/kraje`. Pobierane do trybu offline razem z wyjazdem.
 - **Zwijane sekcje ekranu wyjazdu** (uwaga Jacka z 1.11.2026): każdą sekcję (plan, loty, noclegi, kontakty, ubezpieczenie, checklista, plan i koszty, kto jedzie / zgłoszenia) zwija się i rozwija stuknięciem w nagłówek; w nagłówku zostaje krótka informacja (liczba dni, punktów, pozycji, stan checklisty). Plan dwustopniowo: sekcja → lista dni → każdy dzień osobno, z „Rozwiń/Zwiń wszystkie dni”; dzisiejszy dzień (w strefie miejsca) oznaczony „dziś” i rozwinięty; filtr etykiety rozwija pasujące dni. Stan zapamiętany na urządzeniu. Domyślnie rozwinięte: plan (sama lista dni), „Plan i koszty” dla zgłoszonych, „Zgłoszenia”, gdy ktoś czeka na decyzję albo lista jest pusta.
 - **Tryb offline**: pobranie na telefon przy konkretnym wyjeździe – ikona pobierania obok tytułu (warstwy widoczne dla osoby + własna checklista + lista wyjazdów), pod ikoną „Na telefonie: …” albo „Nie pobrano na telefon” (uwaga Jacka z 1.11.2026: pobieranie per wyjazd, ikona zamiast napisu); pasek „Bez internetu”. Bez sieci odczyt od razu z pamięci telefonu; zmiany (np. checklista) czekają w kolejce i wysyłają się po połączeniu. „Nawiguj” wymaga internetu (albo map pobranych w Google Maps) – adresy są widoczne zawsze.
 - **Powiadomienia** (Cloud Functions, plan Blaze) + przycisk „Włącz powiadomienia” + globalne „Wycisz” w ustawieniach.
@@ -230,7 +232,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 ### Szybko po v1 (tanie, wysoka wartość)
 - Eksport osobistego planu do kalendarza (.ics) — kalendarz telefonu przypomina natywnie, w tle, z dźwiękiem.
 - Ekran „Dziś”: następny punkt, zbiórka z odliczaniem, adres hotelu, pogoda.
-- Karta kraju: waluta, napiwki, gniazdka, numer alarmowy, różnica czasu, wiza/ESTA.
+- ~~Karta kraju~~ – zrobiona w 1.2.0 (opis w §5).
 - Karta „pokaż kierowcy”: adres hotelu dużą czcionką, w lokalnym języku.
 
 ### Później / opcjonalnie

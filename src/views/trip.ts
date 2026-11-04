@@ -2,6 +2,7 @@ import {
   MEMBER_STATUS_LABEL,
   TRIP_STATUS_LABEL,
   addApprovedMember,
+  getCountries,
   getInfo,
   getMyStatus,
   getOverview,
@@ -18,6 +19,8 @@ import {
 import type { MemberStatus, OverviewDoc } from '../model/types';
 import { h, render, toast } from '../ui';
 import { downloadTrip, formatSync, lastSync } from '../offline';
+import { richText } from '../plan/richText';
+import { countrySection } from './country';
 import { fold } from './fold';
 import { noticeCard, takeNotice } from './notify';
 import { planSection } from './plan';
@@ -36,7 +39,7 @@ function formatDate(isoDate: string): string {
 }
 
 function multiline(text: string): HTMLElement {
-  return h('p', { class: 'multiline' }, text);
+  return h('p', { class: 'multiline' }, richText(text));
 }
 
 /** Plan w skrócie i koszty – rozwinięte domyślnie dla zgłoszonych (to dla nich najważniejsze), zwinięte dla zatwierdzonych. */
@@ -266,6 +269,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
     const mine = members?.find((m) => m.uid === viewer.uid)?.status ?? (preview ? undefined : await getMyStatus(tripId, me.uid));
     const seesOverview = viewer.isOrganizer || mine === 'interested' || mine === 'approved';
     const overview = seesOverview ? await getOverview(tripId).catch(() => null) : null;
+    const countries = seesOverview ? await getCountries(tripId).catch(() => []) : [];
     const seesDetails = viewer.isOrganizer || mine === 'approved';
     const details = seesDetails
       ? await detailsSection(trip, viewer, members ?? [], !preview && mine === 'approved').catch(() =>
@@ -331,6 +335,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
         plan,
         details,
         seesOverview && overviewCard(trip.id, overview, !viewer.isOrganizer && mine !== 'approved'),
+        ...(seesOverview ? countrySection(trip, countries, !preview && me.isOrganizer) : []),
         seesOverview && members && (viewer.isOrganizer ? organizerMembersCard(trip, members, reload) : peopleCard(trip.id, members)),
         preview && h('button', { type: 'button', class: 'btn', onclick: stopPreview }, 'Zakończ podgląd'),
       ),

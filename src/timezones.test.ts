@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { POPULAR, ZONES, fold, searchZones, utcOffset, zoneLabel } from './timezones';
 
+const first = (q: string) => searchZones(q)[0]?.zone;
 const ALL = ['Atlantic/Reykjavik', 'Europe/Warsaw', 'Pacific/Fiji', 'America/Argentina/Ushuaia'];
 
 describe('wyszukiwanie strefy po polsku', () => {
@@ -19,6 +20,16 @@ describe('wyszukiwanie strefy po polsku', () => {
     expect(searchZones('teneryfa')[0].zone).toBe('Atlantic/Canary');
     expect(searchZones('nowy jork')[0].zone).toBe('America/New_York');
     expect(searchZones('reykjavik')[0].zone).toBe('Atlantic/Reykjavik');
+  });
+
+  it('kierunki Jacka: Hongkong, Tajwan, Okinawa, Australia', () => {
+    expect(first('hongk')).toBe('Asia/Hong_Kong');
+    expect(first('hong kong')).toBe('Asia/Hong_Kong');
+    expect(first('tajw')).toBe('Asia/Taipei');
+    expect(first('tajpej')).toBe('Asia/Taipei');
+    expect(first('okinawa')).toBe('Asia/Tokyo');
+    expect(first('brisbane')).toBe('Australia/Brisbane');
+    expect(first('uluru')).toBe('Australia/Darwin');
   });
 
   it('nazwa spoza polskiej listy – zapas z pełnej listy stref', () => {

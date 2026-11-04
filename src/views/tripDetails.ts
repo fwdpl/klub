@@ -1,5 +1,6 @@
 import { getChecklist, getInfo, isFor, newId, saveChecklist, type Member, type Trip } from '../data/trips';
 import type { Audience, ChecklistDoc, EmergencyContact, Flight, Hotel, InfoDoc } from '../model/types';
+import { richText } from '../plan/richText';
 import { zoneLabel } from '../timezones';
 import { h, present, toast } from '../ui';
 import { fold } from './fold';
@@ -42,7 +43,7 @@ function flightRow(f: Flight, members: Member[]): HTMLElement {
     h('div', {}, `${f.from} → ${f.to}`),
     h('div', {}, h('b', {}, 'Wylot: '), `${formatLocal(f.departure)} `, h('span', { class: 'muted' }, `(czas: ${zoneLabel(f.departureTz)})`)),
     h('div', {}, h('b', {}, 'Przylot: '), `${formatLocal(f.arrival)} `, h('span', { class: 'muted' }, `(czas: ${zoneLabel(f.arrivalTz)})`)),
-    f.notes && h('p', { class: 'multiline muted' }, f.notes),
+    f.notes && h('p', { class: 'multiline muted' }, richText(f.notes)),
     audienceNote(f.audience, members),
   );
 }
@@ -55,7 +56,7 @@ function hotelRow(hotel: Hotel, members: Member[]): HTMLElement {
     hotel.address && h('div', {}, hotel.address),
     hotel.checkIn && h('div', {}, h('b', {}, 'Zameldowanie: '), formatLocal(hotel.checkIn)),
     hotel.checkOut && h('div', {}, h('b', {}, 'Wymeldowanie: '), formatLocal(hotel.checkOut)),
-    hotel.notes && h('p', { class: 'multiline muted' }, hotel.notes),
+    hotel.notes && h('p', { class: 'multiline muted' }, richText(hotel.notes)),
     audienceNote(hotel.audience, members),
     h(
       'div',
@@ -184,7 +185,7 @@ export async function detailsSection(trip: Trip, me: Me, members: Member[], show
     section('flights', 'Loty', flights.map((f) => flightRow(f, members)), 'Brak lotów.'),
     section('hotels', 'Noclegi', hotels.map((x) => hotelRow(x, members)), 'Brak noclegów.'),
     section('contacts', 'Kontakty awaryjne', info.emergencyContacts.map(contactRow), 'Brak kontaktów.'),
-    info.insurance && fold({ id: `${trip.id}:insurance`, title: 'Ubezpieczenie', open: false }, h('p', { class: 'multiline' }, info.insurance)),
+    info.insurance && fold({ id: `${trip.id}:insurance`, title: 'Ubezpieczenie', open: false }, h('p', { class: 'multiline' }, richText(info.insurance))),
     checklist && checklistCard(trip.id, me.uid, info.checklistTemplate, checklist),
   );
 }

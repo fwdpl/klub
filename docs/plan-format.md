@@ -12,7 +12,7 @@ Kontrakt jest sprawdzany testami – przykład i walidator w aplikacji muszą si
   `"for": "all"` = wszyscy. Rozdzielenie grupy = dwa punkty w tym samym czasie, każdy dla innych osób (+ `meet`, `nearby`).
 - **Import zastępuje tylko dni z pliku** (decyzja I). Poprawiony jeden dzień = plik z tym jednym dniem i wyższym `revision`.
 - **Krótki tytuł, szczegóły w `notes`.** Tytuł widać na osi czasu; powyżej 120 znaków import ostrzega, powyżej 500 – odrzuca.
-- **Pogrubienie** w `note`, `notes`, `route` i `notes` planu: `**tekst**`. Inny HTML/Markdown nie jest interpretowany.
+- **Pogrubienie** w `note`, `notes`, `route` i `notes` planu: `**tekst**`. Adresy zaczynające się od `http://` lub `https://` są klikalne. Inny HTML/Markdown nie jest interpretowany.
 - Pola nieznane w wersji 1.x są ignorowane (nowsza wersja 1.y nie psuje importu). Zmiana znaczenia pola = wersja 2.0.
 
 ## Plik

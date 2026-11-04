@@ -115,7 +115,12 @@ service cloud.firestore {
       // WARSTWA 2
       match /overview/{docId} {
         allow read: if canSeeOverview(tripId);
-        allow write: if isOrganizer();
+        // Karty krajów (overview/countries): lista do 10 krajów; pozostałe dokumenty warstwy 2 bez zmian
+        allow write: if isOrganizer()
+          && (docId != 'countries'
+            || (request.resource.data.keys().hasOnly(['countries', 'updatedAt'])
+              && request.resource.data.countries is list
+              && request.resource.data.countries.size() <= 10));
       }
 
       // WARSTWA 3
