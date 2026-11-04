@@ -22,7 +22,9 @@ import { downloadTrip, formatSync, lastSync } from '../offline';
 import { richText } from '../plan/richText';
 import { countrySection } from './country';
 import { todayCard } from './today';
-import { fold } from './fold';
+import { fold, foldBody } from './fold';
+import { ICONS } from './icons';
+import { tabbedSections, type Tab } from './tabs';
 import { noticeCard, takeNotice } from './notify';
 import { planSection } from './plan';
 import { detailsSection } from './tripDetails';
@@ -117,9 +119,8 @@ function actionCard(trip: Trip, myStatus: MemberStatus | undefined, me: Me, relo
       leave,
     );
   }
-  if (myStatus === 'approved') {
-    return h('div', { class: 'card card--ok' }, h('p', {}, 'Jesteś na liście uczestników.'));
-  }
+  // zatwierdzony: zamiast okienka mały znaczek „✓ jedziesz” przy tytule (uwaga Jacka z 4.11.2026)
+  if (myStatus === 'approved') return null;
   return h('div', { class: 'card' }, h('p', {}, 'Wpisano rezygnację z tego wyjazdu. Jeśli chcesz wrócić, napisz do organizatora.'));
 }
 
@@ -272,17 +273,9 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
     const overview = seesOverview ? await getOverview(tripId).catch(() => null) : null;
     const countries = seesOverview ? await getCountries(tripId).catch(() => []) : [];
     const seesDetails = viewer.isOrganizer || mine === 'approved';
-    const details = seesDetails
-      ? await detailsSection(trip, viewer, members ?? [], !preview && mine === 'approved').catch(() =>
-          h('p', { class: 'error' }, 'Nie udało się wczytać szczegółów. Sprawdź połączenie.'),
-        )
-      : null;
+    const details = seesDetails ? await detailsSection(trip, viewer, members ?? [], !preview && mine === 'approved').catch(() => null) : null;
     const planData = seesDetails ? await Promise.all([listDays(tripId), getInfo(tripId)]).catch(() => null) : null;
-    const plan = !seesDetails
-      ? null
-      : planData
-        ? planSection(trip, viewer, members ?? [], planData[0], planData[1].planNotes ?? [], mine === 'approved')
-        : h('p', { class: 'error' }, 'Nie udało się wczytać planu. Sprawdź połączenie.');
+    const loadError = (what: string) => h('p', { class: 'error' }, `Nie udało się wczytać: ${what}. Sprawdź połączenie.`);
     // „Dziś” – tylko w dniach z planu; uczestnik widzi swój plan, organizator spoza listy – cały
     const today = planData ? todayCard(trip, viewer, planData[0], planData[1].hotels, mine === 'approved') : null;
 
@@ -311,6 +304,85 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
 
     const action = actionCard(trip, mine, viewer, reload);
     if (preview) action?.querySelectorAll('button').forEach((b) => (b.disabled = true));
+    const organizer = !preview && me.isOrganizer;
+    const notice = organizer ? noticeCard(trip.id, takeNotice(trip.id)) : null;
+    const editDetails = () =>
+      organizer ? h('a', { class: 'btn btn--link btn--secondary btn--spaced', href: `#/wyjazd/${trip.id}/szczegoly` }, 'Edytuj szczegóły i checklistę') : null;
+    const withEdit = (el: HTMLElement) => h('div', {}, el, editDetails());
+    const iconLink = (icon: 'edit' | 'bell', label: string, attrs: Record<string, string | EventListener>) => {
+      const el = h(attrs.href ? 'a' : 'button', { class: 'icon-btn', 'aria-label': label, title: label, ...(attrs.href ? {} : { type: 'button' }), ...attrs });
+      el.innerHTML = ICONS[icon]; // stała ikona
+      return el;
+    };
+
+    // Sekcje pod ikonami – tylko te, które ta osoba może zobaczyć
+    const waiting = (members ?? []).filter((m) => m.status === 'interested').length;
+    const tabs: Tab[] = [];
+    if (today) tabs.push({ key: 'today', icon: 'today', label: 'Dziś', title: 'Dziś', content: () => today });
+    if (seesDetails) {
+      const plan = planData ? planSection(trip, viewer, members ?? [], planData[0], planData[1].planNotes ?? [], mine === 'approved') : null;
+      tabs.push({ key: 'plan', icon: 'plan', label: 'Plan', title: 'Plan', content: () => (plan ? foldBody(plan) : loadError('plan')) });
+      tabs.push({ key: 'flights', icon: 'flights', label: 'Loty', title: 'Loty', content: () => (details ? withEdit(foldBody(details.flights)) : loadError('loty')) });
+      tabs.push({ key: 'hotels', icon: 'hotels', label: 'Noclegi', title: 'Noclegi', content: () => (details ? withEdit(foldBody(details.hotels)) : loadError('noclegi')) });
+      if (details?.checklist) tabs.push({ key: 'checklist', icon: 'checklist', label: 'Lista', title: 'Moja checklista', content: () => foldBody(details.checklist!) });
+    }
+    if (seesOverview) {
+      tabs.push({ key: 'country', icon: 'country', label: 'Kraj', title: countries.length > 1 ? 'Karty krajów' : 'Karta kraju', content: () => h('div', {}, ...countrySection(trip, countries, organizer)) });
+    }
+    if (seesDetails) {
+      tabs.push({ key: 'contacts', icon: 'contacts', label: 'Kontakty', title: 'Kontakty awaryjne', content: () => (details ? withEdit(foldBody(details.contacts)) : loadError('kontakty')) });
+      if (details?.insurance || organizer) {
+        tabs.push({
+          key: 'insurance',
+          icon: 'insurance',
+          label: 'Polisa',
+          title: 'Ubezpieczenie',
+          content: () => withEdit(details?.insurance ? foldBody(details.insurance) : h('p', { class: 'muted' }, 'Brak informacji o ubezpieczeniu.')),
+        });
+      }
+    }
+    if (seesOverview) {
+      tabs.push({ key: 'costs', icon: 'costs', label: 'Koszty', title: 'Plan i koszty', content: () => foldBody(overviewCard(trip.id, overview, true)) });
+      if (members) {
+        tabs.push({
+          key: 'people',
+          icon: 'people',
+          label: 'Kto',
+          title: viewer.isOrganizer ? 'Zgłoszenia' : 'Kto jedzie',
+          badge: viewer.isOrganizer ? waiting : 0,
+          content: () =>
+            viewer.isOrganizer
+              ? h(
+                  'div',
+                  {},
+                  organizer &&
+                    previewPicker(members, me.uid, (m) => {
+                      previewOf = m;
+                      void reload().then(() => window.scrollTo(0, 0));
+                    }),
+                  foldBody(organizerMembersCard(trip, members, reload)),
+                )
+              : foldBody(peopleCard(trip.id, members)),
+        });
+      }
+    }
+    const fallback = seesDetails ? 'plan' : 'costs';
+
+    // Opis wyjazdu: krótko, z „więcej”, żeby nie spychał ikon w dół
+    const description =
+      trip.description &&
+      (() => {
+        const text = h('p', { class: 'multiline trip-desc' }, richText(trip.description));
+        const long = trip.description.length > 180 || trip.description.split('\n').length > 3;
+        if (!long) return text;
+        text.classList.add('trip-desc--short');
+        const more = h('button', { type: 'button', class: 'link-btn' }, 'więcej');
+        more.addEventListener('click', () => {
+          const short = text.classList.toggle('trip-desc--short');
+          more.textContent = short ? 'więcej' : 'mniej';
+        });
+        return h('div', {}, text, more);
+      })();
 
     body.replaceChildren(
       h(
@@ -320,28 +392,30 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
         h(
           'div',
           { class: 'trip-head' },
-          h('div', {}, h('h1', {}, trip.title), h('p', { class: 'muted' }, [trip.destination, trip.approxDates].filter(Boolean).join(' · '))),
-          !preview && downloadButton(trip.id, me),
+          h(
+            'div',
+            {},
+            h('h1', {}, trip.title),
+            h('p', { class: 'muted' }, [trip.destination, trip.approxDates].filter(Boolean).join(' · ')),
+            h(
+              'div',
+              { class: 'badges badges--top' },
+              mine === 'approved' && h('span', { class: 'badge badge--approved' }, '✓ jedziesz'),
+              (trip.status !== 'open' || viewer.isOrganizer) && h('span', { class: `badge badge--trip-${trip.status}` }, TRIP_STATUS_LABEL[trip.status]),
+            ),
+          ),
+          h(
+            'div',
+            { class: 'trip-head__tools' },
+            organizer && iconLink('edit', 'Edytuj wyjazd', { href: `#/wyjazd/${trip.id}/edycja` }),
+            organizer && notice && iconLink('bell', 'Wyślij powiadomienie', { onclick: () => notice.openManual() }),
+            !preview && downloadButton(trip.id, me),
+          ),
         ),
-        (trip.status !== 'open' || viewer.isOrganizer) &&
-          h('div', { class: 'badges badges--top' }, h('span', { class: `badge badge--trip-${trip.status}` }, TRIP_STATUS_LABEL[trip.status])),
-        !preview && me.isOrganizer && h('a', { class: 'btn btn--link btn--secondary', href: `#/wyjazd/${trip.id}/edycja` }, 'Edytuj wyjazd'),
-        !preview && me.isOrganizer && noticeCard(trip.id, takeNotice(trip.id)),
-        !preview &&
-          me.isOrganizer &&
-          members &&
-          previewPicker(members, me.uid, (m) => {
-            previewOf = m;
-            void reload().then(() => window.scrollTo(0, 0));
-          }),
-        trip.description && h('div', { class: 'card' }, multiline(trip.description)),
+        notice,
+        description,
         action,
-        today,
-        plan,
-        details,
-        seesOverview && overviewCard(trip.id, overview, !viewer.isOrganizer && mine !== 'approved'),
-        ...(seesOverview ? countrySection(trip, countries, !preview && me.isOrganizer) : []),
-        seesOverview && members && (viewer.isOrganizer ? organizerMembersCard(trip, members, reload) : peopleCard(trip.id, members)),
+        tabbedSections(trip.id, tabs, fallback),
         preview && h('button', { type: 'button', class: 'btn', onclick: stopPreview }, 'Zakończ podgląd'),
       ),
     );

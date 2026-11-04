@@ -36,7 +36,7 @@ const AUDIENCE_LABEL: Record<NotifyAudience, string> = {
 };
 
 /** Karta wysyłki: z propozycją po zapisie albo pusta (przycisk „Wyślij powiadomienie”). */
-export function noticeCard(tripId: string, draft: NoticeDraft | null): HTMLElement {
+export function noticeCard(tripId: string, draft: NoticeDraft | null): HTMLElement & { openManual: () => void } {
   const wrap = h('div');
 
   const open = (d: NoticeDraft, proposed: boolean) => {
@@ -105,16 +105,11 @@ export function noticeCard(tripId: string, draft: NoticeDraft | null): HTMLEleme
     );
   };
 
-  const closed = () =>
-    wrap.replaceChildren(
-      h(
-        'button',
-        { type: 'button', class: 'btn btn--secondary btn--spaced', onclick: () => open({ audience: 'approved', title: '', body: '' }, false) },
-        'Wyślij powiadomienie',
-      ),
-    );
+  // Zamknięta karta nie zajmuje miejsca – ręczną wysyłkę otwiera ikona 🔔 przy tytule wyjazdu
+  const closed = () => wrap.replaceChildren();
+  const openManual = () => open({ audience: 'approved', title: '', body: '' }, false);
 
   if (draft) open(draft, true);
   else closed();
-  return wrap;
+  return Object.assign(wrap, { openManual });
 }

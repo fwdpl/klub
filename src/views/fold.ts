@@ -61,3 +61,8 @@ export function fold(opts: FoldOptions, ...children: Child[]): HTMLDetailsElemen
   }
   return details;
 }
+
+/** Zawartość sekcji bez nagłówka – do pokazania w panelu wybranym ikoną (ekran wyjazdu). */
+export function foldBody(el: HTMLElement): HTMLElement {
+  return el.matches('details.fold') ? ((el.querySelector(':scope > .fold__body') as HTMLElement | null) ?? el) : el;
+}

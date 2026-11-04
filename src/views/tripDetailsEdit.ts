@@ -266,6 +266,8 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
             emergencyContacts: contacts.read().filter((c) => c.name || c.phone),
             insurance: insurance(),
             checklistTemplate: template.read().filter((t) => t.text),
+            // uwagi do planu przychodzą z importu planu – zapis szczegółów nie może ich skasować
+            ...(info.planNotes ? { planNotes: info.planNotes } : {}),
           };
           const badFlight = next.flights.find((f) => !f.departure || !f.arrival || !f.departureTz || !f.arrivalTz);
           if (badFlight) {

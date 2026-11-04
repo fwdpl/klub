@@ -1354,3 +1354,128 @@ body.driver-open {
   word-break: normal;
   hyphens: none;
 }
+
+/* Ekran wyjazdu: rząd ikon sekcji (prośba Jacka z 4.11.2026) */
+.trip-head__tools {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  flex: none;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--accent);
+  border: 0;
+  padding: 0;
+}
+
+.icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.trip-desc {
+  margin: 0 0 4px;
+}
+
+.trip-desc--short {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0 0 12px;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  min-height: 0;
+}
+
+.tabs__bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 64px;
+  padding: 8px 2px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tab--on {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.tab__icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.tab__icon svg {
+  display: block;
+}
+
+.tab__icon--mask {
+  background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+.tab__label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: inherit;
+}
+
+.tab__badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--danger);
+  color: var(--bg);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.tabs__title {
+  margin: 0 0 12px;
+}
+
+.tabs__panel .card--today {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+}

@@ -68,7 +68,7 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Czy aplikacja działa bez internetu?** Tak. Przed wyjazdem, z internetem, otwórz wyjazd i stuknij ikonę pobierania (strzałka w dół) obok tytułu – pod nią zobaczysz „Na telefonie: …”. Bez sieci u góry pojawi się czerwony pasek „Bez internetu”; plan, szczegóły i checklista działają, a odhaczenia wyślą się same po odzyskaniu połączenia. Przycisk „Nawiguj” otwiera Google Maps – bez internetu działa tylko z mapami pobranymi wcześniej w Google Maps.
 
-**Jak znaleźć dany dzień planu?** Na ekranie wyjazdu każdą sekcję zwijasz i rozwijasz stuknięciem w nagłówek. W planie najpierw widać listę dni – stuknij dzień, żeby zobaczyć jego punkty. Dzisiejszy dzień jest oznaczony „dziś” i rozwija się sam.
+**Jak poruszać się po wyjeździe?** Pod tytułem są ikony: Plan, Loty, Noclegi, Lista, Kraj, Kontakty, Koszty, Kto jedzie (w czasie wyjazdu na początku także „Dziś”). Stuknij ikonę, a pod spodem pokaże się tylko ta część. W planie najpierw widać listę dni – stuknij dzień, żeby zobaczyć jego punkty. Aplikacja pamięta, co ostatnio oglądałeś.
 
 **Czy plan może przypominać o punktach?** Tak – w planie stuknij **📅 Dodaj do kalendarza telefonu**, wybierz przypomnienie i pobierz plik. Na iPhonie wybierz „Kalendarz” (albo „Zachowaj w Plikach”, otwórz plik i „Dodaj wszystkie”), na Androidzie otwórz pobrany plik w Kalendarzu Google. Po zmianach w planie dodaj plik jeszcze raz.
 
