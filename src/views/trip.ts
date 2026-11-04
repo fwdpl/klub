@@ -19,6 +19,7 @@ import {
 import type { MemberStatus, OverviewDoc } from '../model/types';
 import { h, render, toast } from '../ui';
 import { downloadTrip, formatSync, lastSync } from '../offline';
+import { richText } from '../plan/richText';
 import { countrySection } from './country';
 import { fold } from './fold';
 import { noticeCard, takeNotice } from './notify';
@@ -38,7 +39,7 @@ function formatDate(isoDate: string): string {
 }
 
 function multiline(text: string): HTMLElement {
-  return h('p', { class: 'multiline' }, text);
+  return h('p', { class: 'multiline' }, richText(text));
 }
 
 /** Plan w skrócie i koszty – rozwinięte domyślnie dla zgłoszonych (to dla nich najważniejsze), zwinięte dla zatwierdzonych. */

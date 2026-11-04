@@ -12,6 +12,7 @@ import {
   timeDiff,
 } from '../data/countries';
 import type { CountryCard } from '../model/types';
+import { richText } from '../plan/richText';
 import { zoneLabel } from '../timezones';
 import { h, render, toast } from '../ui';
 import { fold } from './fold';
@@ -65,10 +66,10 @@ function countryFold(card: CountryCard, trip: Trip): HTMLElement {
       'div',
       { class: 'country-visa' },
       h('b', {}, 'Wiza / ESTA: '),
-      card.visa ? h('span', { class: 'multiline' }, card.visa) : h('span', { class: 'muted' }, 'organizator nic nie dopisał.'),
+      card.visa ? h('span', { class: 'multiline' }, richText(card.visa)) : h('span', { class: 'muted' }, 'organizator nic nie dopisał.'),
       h('p', {}, h('a', { href: MSZ_TRAVEL_URL, target: '_blank', rel: 'noopener' }, 'Informacje MSZ dla podróżujących – sprawdź przed wyjazdem →')),
     ),
-    card.notes && h('p', { class: 'multiline' }, card.notes),
+    card.notes && h('p', { class: 'multiline' }, richText(card.notes)),
     h('p', { class: 'muted' }, 'Dane praktyczne, bez gwarancji aktualności – w razie wątpliwości sprawdź.'),
   );
 }
@@ -116,7 +117,7 @@ export async function showCountriesEdit(tripId: string): Promise<void> {
     const plugs = text(card.plugs, info ? plugsLabel(info.plugs, info.voltage) : 'np. C, F · 230 V', 'Gniazdka');
     const emergency = text(card.emergency, info?.emergency ?? 'np. 112', 'Numer alarmowy');
     const tipping = area(card.tipping, info?.tipping ?? 'np. około 10%', 'Napiwki');
-    const visa = area(card.visa, 'np. Bez wizy do 90 dni. Paszport ważny 6 miesięcy.', 'Wiza / ESTA');
+    const visa = area(card.visa, 'np. Bez wizy do 90 dni. ESTA: https://esta.cbp.dhs.gov', 'Wiza / ESTA');
     const notes = area(card.notes, 'Inne praktyczne uwagi', 'Uwagi');
     const showZone = custom || !!info?.manyZones || !!card.zone;
     const zone = showZone ? zonePicker(card.zone ?? '', info ? `Domyślnie: ${zoneLabel(info.zone)}` : 'Wpisz kraj lub miasto') : null;
@@ -132,7 +133,7 @@ export async function showCountriesEdit(tripId: string): Promise<void> {
       field('Numer alarmowy', emergency),
       field('Napiwki', tipping),
       zone && h('div', { class: 'field' }, h('span', {}, info?.manyZones ? 'Strefa do różnicy czasu (kraj ma kilka stref)' : 'Strefa do różnicy czasu'), zone.el),
-      field('Wiza / ESTA – Twoja notatka', visa, 'Aplikacja sama nie podaje, czy wiza jest potrzebna. Uczestnik zobaczy też link do informacji MSZ.'),
+      field('Wiza / ESTA – Twoja notatka', visa, 'Aplikacja sama nie podaje, czy wiza jest potrzebna. Uczestnik zobaczy też link do informacji MSZ. Adresy zaczynające się od https:// będą klikalne.'),
       field('Uwagi', notes),
     );
     const editor: Editor = {

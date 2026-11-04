@@ -5,6 +5,7 @@
 - Przy wyjeździe karty krajów: waluta, gniazdka (czy pasuje polska wtyczka i jakie napięcie), numer alarmowy, napiwki i różnica czasu względem Polski – także w miesiącu wyjazdu. Widzą je zgłoszeni i zatwierdzeni, działają bez internetu.
 - Wiza i ESTA: notatka organizatora i link do informacji MSZ dla podróżujących.
 - Organizator wybiera kraje wyjazdu (także kilka) i może poprawić każde pole; puste pola wypełnia aplikacja.
+- Adresy stron (zaczynające się od https://) są klikalne: w notatce o wizie, uwagach, opisie wyjazdu, planie w skrócie, uwagach do lotów i noclegów, ubezpieczeniu i w planie dni.
 - Wyszukiwarka strefy czasowej zna Hongkong, Tajwan, Makau, Okinawę, Malediwy, Laos, Mongolię, Uzbekistan i więcej stref Australii.
 
 ## 1.1.0 — kolejność punktów checklisty
