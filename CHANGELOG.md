@@ -1,5 +1,11 @@
 # Zmiany
 
+## 1.10.0 — jestem na miejscu
+
+- Przycisk „📍 Jestem na miejscu” przy wyjeździe (w „Dziś” i w „Kto”): po stuknięciu wybierasz „Do wszystkich” albo „Do organizatora”, możesz dopisać np. „jestem w hotelu”. Odbiorcy dostają powiadomienie „Ania jest na miejscu”.
+- Pod przyciskiem ostatnie zgłoszenia z godziną; zgłoszenia „do organizatora” widzi tylko organizator i nadawca.
+- Bez internetu zgłoszenie wyśle się po połączeniu.
+
 ## 1.9.0 — wspólne wydatki i wpłaty
 
 - Nowa ikona „Wydatki” przy wyjeździe: każdy zatwierdzony wpisuje, kto płacił, ile i w jakiej walucie, oraz za kogo – po równo albo kwotami (aplikacja pilnuje, żeby kwoty się zgadzały).

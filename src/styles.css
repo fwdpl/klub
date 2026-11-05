@@ -1828,3 +1828,40 @@ body.driver-open {
 .today__weather p {
   margin: 0;
 }
+
+/* Jestem na miejscu */
+.arrival {
+  margin: 0 0 12px;
+}
+
+.arrival__btn {
+  width: 100%;
+}
+
+.arrival__choose p {
+  margin: 0 0 8px;
+}
+
+.arrival__choose input {
+  margin-bottom: 8px;
+}
+
+.arrival__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.arrival__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+}
+
+.arrival__list li > span:last-child {
+  flex: none;
+  font-size: 14px;
+}

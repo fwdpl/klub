@@ -3,7 +3,7 @@ import { getAuth, type UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { defineString } from 'firebase-functions/params';
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { onDocumentWrittenWithAuthContext } from 'firebase-functions/v2/firestore';
+import { onDocumentCreated, onDocumentWrittenWithAuthContext } from 'firebase-functions/v2/firestore';
 import { HttpsError, onCall, type CallableRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
 import {
@@ -21,6 +21,7 @@ import {
   type AttemptState,
   type LoginCodeDoc,
 } from './codes.js';
+import { arrivalMessage, arrivalRecipients, type ArrivalAudience } from './arrivals.js';
 import { memberNotifications } from './memberEvents.js';
 import { sendToUser } from './push.js';
 
@@ -326,4 +327,30 @@ export const notifyTrip = onCall(async (request) => {
     muted: users.length - recipients.length,
     reached: results.filter((r) => r.sent > 0).length,
   };
+});
+
+/**
+ * „Jestem na miejscu” (decyzja Jacka z 5.11.2026): wpis w trips/{id}/arrivals (reguły pilnują nadawcy i imienia)
+ * → powiadomienie do wszystkich zatwierdzonych i organizatora albo tylko do organizatora. Wyciszeni są pomijani.
+ */
+export const onArrival = onDocumentCreated('trips/{tripId}/arrivals/{arrivalId}', async (event) => {
+  const data = event.data?.data();
+  if (!data) return;
+  const { tripId } = event.params;
+  const to: ArrivalAudience = data.to === 'all' ? 'all' : 'organizer';
+  const [trip, members, organizers] = await Promise.all([
+    db.doc(`trips/${tripId}`).get(),
+    db.collection(`trips/${tripId}/members`).get(),
+    db.collection('users').where('role', '==', 'organizer').where('active', '==', true).get(),
+  ]);
+  const people = [
+    ...members.docs.map((d) => ({ uid: d.id, status: d.get('status') as string | undefined, isOrganizer: false })),
+    ...organizers.docs.map((d) => ({ uid: d.id, isOrganizer: true })),
+  ];
+  const uids = arrivalRecipients(people, String(data.uid ?? ''), to);
+  const users = await Promise.all(uids.map((uid) => db.doc(`users/${uid}`).get()));
+  const recipients = users.filter((u) => u.get('active') === true && u.get('prefs.muted') !== true);
+  const message = { ...arrivalMessage(String(data.name ?? ''), trip.get('title') ?? 'wyjazd', typeof data.note === 'string' ? data.note : undefined), link: `/#/wyjazd/${tripId}` };
+  await Promise.all(recipients.map((u) => sendToUser(u.ref, message)));
+  logger.info('Jestem na miejscu', { tripId, to, people: recipients.length });
 });
