@@ -177,6 +177,47 @@ service cloud.firestore {
             && resource.data.votes.keys().hasOnly([request.auth.uid]));
       }
 
+      // Wspólne wydatki (v2): widzą i dodają zatwierdzeni (i organizator); poprawia i usuwa wpisujący albo organizator.
+      // Suma udziałów = kwota sprawdza aplikacja (reguły nie sumują map).
+      match /expenses/{expenseId} {
+        function validExpense(d) {
+          return d.keys().hasOnly(['kind', 'title', 'amount', 'currency', 'date', 'category', 'paidBy', 'split', 'shares', 'names', 'note', 'viaPln', 'createdBy', 'createdAt', 'updatedAt'])
+            && d.kind in ['expense', 'transfer']
+            && d.title is string && d.title.size() > 0 && d.title.size() <= 120
+            && d.amount is number && d.amount > 0
+            && d.currency is string && d.currency.size() == 3
+            && d.date is string && d.date.size() == 10
+            && d.paidBy is string
+            && d.split in ['equal', 'amounts']
+            && d.shares is map && d.shares.size() > 0 && d.shares.size() <= 50
+            && d.names is map
+            && (!('note' in d) || (d.note is string && d.note.size() <= 500))
+            && (!('viaPln' in d) || d.viaPln is bool);
+        }
+        allow read: if canSeeDetails(tripId);
+        allow create: if canSeeDetails(tripId)
+          && validExpense(request.resource.data)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdAt == request.time;
+        allow update: if canSeeDetails(tripId)
+          && (resource.data.createdBy == request.auth.uid || isOrganizer())
+          && validExpense(request.resource.data)
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if canSeeDetails(tripId)
+          && (resource.data.createdBy == request.auth.uid || isOrganizer());
+      }
+
+      // Wpłaty na wyjazd (v2): dokument na osobę; wpisuje i odhacza tylko organizator, osoba widzi tylko swoje
+      match /payments/{uid} {
+        allow read: if isOrganizer() || (request.auth.uid == uid && canSeeTrip(tripId));
+        allow create, update: if isOrganizer()
+          && request.resource.data.keys().hasOnly(['name', 'items', 'updatedAt'])
+          && request.resource.data.items is list
+          && request.resource.data.items.size() <= 50;
+        allow delete: if isOrganizer();
+      }
+
       // Checklista osobista: właściciel (zatwierdzony) odhacza punkty wspólne (templateDone)
       // i dopisuje własne (items); organizator widzi i zmienia wszystko (decyzja F)
       match /checklists/{uid} {
