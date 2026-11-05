@@ -241,6 +241,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Zamiana dni**: podmiana treści dwóch dni razem z planami indywidualnymi. Punkty `pinnedToDate` zostają. Ostrzeżenie przy dniach w różnych bazach noclegowych. „Cofnij”. Po zamianie push z wymaganym potwierdzeniem.
 - **Dni zależne od pogody**: oznaczenie dnia; wieczorem alert tylko do Jacka, gdy prognoza na jutro jest zła, z propozycją zamiany.
 - **Układ tabletowy**: plan + mapa, plany uczestników w kolumnach, panel organizatora.
+  - Zrobione w 1.12.0 (zgoda Jacka z 5.11.2026): od 768 px ekran wyjazdu i lista osób na całą szerokość (do 1180 px), ikony sekcji w jednym rzędzie; w „Wszyscy” rozwinięty dzień w kolumnach: „Wszyscy” + osoby z własnymi punktami; od 1000 px obok planu mapa (Leaflet + OpenStreetMap, ładowana tylko na szerokim ekranie) z ponumerowanymi punktami rozwiniętych dni (albo całego planu), w ciemnym motywie przyciemniona; lista osób w dwóch kolumnach. Telefon bez zmian.
 - **Zestawy kolorów**: akcent per osoba lub kolor per wyjazd.
 - ~~Wspólna lista „kto co bierze”~~ – nie robimy (decyzja Jacka z 5.11.2026). Szablony checklist kopiowane z poprzedniego wyjazdu – bez decyzji.
 - ~~Przydział aut i pokoi~~ – odpuszczone (decyzja Jacka z 5.11.2026).

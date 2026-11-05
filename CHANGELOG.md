@@ -1,5 +1,12 @@
 # Zmiany
 
+## 1.12.0 — tablet
+
+- Na tablecie (także w pionie) ekran wyjazdu wykorzystuje całą szerokość, a ikony sekcji mieszczą się w jednym, dwóch rzędach.
+- Plan w widoku „Wszyscy”: rozwinięty dzień w kolumnach – wspólne punkty i osobno każda osoba ze swoimi punktami.
+- Na szerokim ekranie (tablet w poziomie, komputer) obok planu mapa z ponumerowanymi punktami: rozwiń dzień, a mapa pokaże tylko jego punkty. Mapa wymaga internetu.
+- Lista osób u organizatora w dwóch kolumnach. Na telefonie wszystko po staremu.
+
 ## 1.11.0 — plan na mapie
 
 - W planie przycisk „🗺️ Pobierz na mapę”: plan (Twój albo cały), noclegi i lista życzeń jako plik do map.

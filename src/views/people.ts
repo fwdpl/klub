@@ -184,7 +184,7 @@ function addForm(onAdded: () => Promise<void>): HTMLElement {
 
 /** Panel organizatora: lista osób, które mogą się logować (SPEC §3). */
 export async function showPeople(myUid: string): Promise<void> {
-  const list = h('div', { class: 'card' });
+  const list = h('div', { class: 'card people-list wide' });
   const counter = h('h2', {});
 
   const reload = async () => {

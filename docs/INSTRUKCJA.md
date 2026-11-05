@@ -84,6 +84,8 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Jak dać znać, że jestem na miejscu?** W karcie **Dziś** albo w **Kto** stuknij **📍 Jestem na miejscu** i wybierz **Do wszystkich** albo **Do organizatora** (możesz dopisać np. „jestem w hotelu”). Odbiorcy dostaną powiadomienie.
 
+**Mam tablet – co się zmienia?** Plan w widoku „Wszyscy” pokazuje rozwinięty dzień w kolumnach (wspólne punkty i każda osoba osobno), a przy tablecie w poziomie obok planu jest mapa z ponumerowanymi punktami rozwiniętego dnia (wymaga internetu).
+
 **Za dużo powiadomień?** Ustawienia (⚙) → **Wycisz wszystkie powiadomienia z Klubu**.
 
 **Komunikat „Jest nowa wersja aplikacji”.** Stuknij **Odśwież** – aplikacja wczyta poprawki.
