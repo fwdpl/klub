@@ -1681,12 +1681,20 @@ body.driver-open {
   padding: 6px 0;
 }
 
-.expense-split__row--amount span {
+.expense-split__row--amount > span {
   flex: 1;
 }
 
-.expense-split__row--amount input {
-  width: 40%;
+.expense-split__row--amount .amount-field {
+  width: 62%;
+}
+
+.expense-split__row--amount > span {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.expense-split__row--amount .amount-field input {
   margin: 0;
 }
 
@@ -2091,4 +2099,50 @@ body.driver-open {
   display: flex;
   justify-content: center;
   color: var(--accent);
+}
+
+/* Pole kwoty z działaniem: [kwota][+][−], pod spodem suma */
+.amount-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px 36px;
+  gap: 4px;
+  align-items: center;
+}
+
+.amount-field input {
+  width: 100%;
+  min-width: 0;
+}
+
+.expense-form .amount-field input {
+  margin-bottom: 0;
+}
+
+.amount-field__op {
+  min-height: 40px;
+  height: 40px;
+  width: 36px;
+  padding: 0;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.amount-field__sum {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-field__sum:empty {
+  display: none;
+}
+
+.two-col.expense-amount {
+  grid-template-columns: minmax(0, 1fr) 92px;
+  align-items: start;
+  margin-bottom: 8px;
 }

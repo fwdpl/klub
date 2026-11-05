@@ -67,15 +67,46 @@ export function formatMoney(amount: number, currency: string): string {
   return `${text} ${currency === 'PLN' ? 'zł' : currency}`;
 }
 
-/** Kwota wpisana przez człowieka: „12 300”, „45,5”, „1.234,50” → liczba albo null. */
-export function parseAmount(text: string): number | null {
-  let t = text.replace(/[\s ]/g, '');
+/** Jedna liczba wpisana przez człowieka: „12 300”, „45,5”, „1.234,50” → liczba (może być 0) albo null. */
+function parseNumber(text: string): number | null {
+  let t = text;
   if (!t) return null;
   if (t.includes(',') && t.includes('.')) t = t.lastIndexOf(',') > t.lastIndexOf('.') ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '');
   else t = t.replace(',', '.');
   if (!/^\d+(\.\d+)?$/.test(t)) return null;
   const n = Number(t);
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return Number.isFinite(n) ? n : null;
+}
+
+const clean = (text: string) => text.replace(/[\s\u00a0]/g, '').replace(/[−–]/g, '-');
+
+/** Czy wpis to działanie (np. „35+2,50+5,50” albo „100-11,50”), a nie jedna liczba. */
+export function isSum(text: string): boolean {
+  return /\d[+-]/.test(clean(text));
+}
+
+/**
+ * Kwota: jedna liczba albo działanie z + i − (decyzja Jacka z 5.11.2026 – zakupy bez liczenia poza aplikacją).
+ * „35+2,50+5,50+7” → 50, „100-11,50-5” → 83,5. Znak na końcu (w trakcie pisania) jest pomijany.
+ * Wynik musi być dodatni, inaczej null.
+ */
+export function parseAmount(text: string): number | null {
+  const t = clean(text).replace(/[+-]+$/, '');
+  if (!t) return null;
+  if (!isSum(t)) {
+    const n = parseNumber(t);
+    return n !== null && n > 0 ? n : null;
+  }
+  const terms = t.match(/[+-]?[^+-]+/g) ?? [];
+  if (terms.join('') !== t) return null;
+  let cents = 0;
+  for (const term of terms) {
+    const sign = term.startsWith('-') ? -1 : 1;
+    const n = parseNumber(term.replace(/^[+-]/, ''));
+    if (n === null) return null;
+    cents += sign * Math.round(n * 100);
+  }
+  return cents > 0 ? cents / 100 : null;
 }
 
 // ---------- podział ----------

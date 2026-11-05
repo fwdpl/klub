@@ -8,6 +8,7 @@ import {
   fetchNbpRates,
   formatMoney,
   fromMinor,
+  isSum,
   parseAmount,
   perCurrency,
   settle,
@@ -99,6 +100,47 @@ async function copyText(text: string): Promise<boolean> {
 
 const signed = (minor: number, currency: string) => `${minor > 0 ? '+' : minor < 0 ? '−' : ''}${formatMoney(Math.abs(fromMinor(minor, currency)), currency)}`;
 
+/**
+ * Pole kwoty: jedna liczba albo działanie z + i − (np. paragon „35+2,50+5,50”), suma pokazuje się pod spodem.
+ * Przyciski + i − – bo klawiatura numeryczna iPhone'a ich nie ma.
+ */
+function amountField(attrs: { placeholder: string; label: string; value?: string }, currency: () => string, onInput: () => void): { el: HTMLElement; input: HTMLInputElement } {
+  const input = h('input', { type: 'text', inputmode: 'decimal', placeholder: attrs.placeholder, 'aria-label': attrs.label, autocomplete: 'off' });
+  input.value = attrs.value ?? '';
+  const sum = h('span', { class: 'amount-field__sum', 'aria-live': 'polite' });
+  const update = () => {
+    if (!isSum(input.value)) return void (sum.textContent = '');
+    const v = parseAmount(input.value);
+    sum.textContent = v === null ? '= ?' : `= ${formatMoney(v, currency())}`;
+  };
+  const insert = (ch: string) => {
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    input.value = input.value.slice(0, start) + ch + input.value.slice(end);
+    input.setSelectionRange(start + 1, start + 1);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  const op = (ch: string, label: string) =>
+    h('button', {
+      type: 'button',
+      class: 'amount-field__op',
+      tabindex: '-1',
+      'aria-label': label,
+      // nie zabieraj fokusu polu – klawiatura zostaje otwarta
+      onpointerdown: (e: Event) => e.preventDefault(),
+      onclick: () => {
+        input.focus();
+        insert(ch);
+      },
+    }, ch === '-' ? '−' : ch);
+  input.addEventListener('input', () => {
+    update();
+    onInput();
+  });
+  update();
+  return { el: h('div', { class: 'amount-field' }, input, op('+', 'Dodaj (plus)'), op('-', 'Odejmij (minus)'), sum), input };
+}
+
 export function expensesSection(trip: Trip, me: Me, people: Person[], currencies: string[], readOnly: boolean): HTMLElement {
   const wrap = h('div', { class: 'expenses' }, h('p', { class: 'muted' }, 'Wczytuję…'));
   let list: Expense[] = [];
@@ -163,13 +205,8 @@ export function expensesSection(trip: Trip, me: Me, people: Person[], currencies
       'aria-label': 'Co',
     });
     title.value = initial?.title ?? '';
-    const amount = h('input', {
-      type: 'text',
-      inputmode: 'decimal',
-      placeholder: 'Kwota',
-      'aria-label': 'Kwota',
-    });
-    amount.value = initial ? String(initial.amount).replace('.', ',') : '';
+    const amountBox = amountField({ placeholder: 'Kwota, np. 45,50 albo 35+2,50', label: 'Kwota', value: initial ? String(initial.amount).replace('.', ',') : '' }, () => currency.value, () => refresh());
+    const amount = amountBox.input;
     const lastCurrency = list.length ? [...list].sort((a, b) => a.date.localeCompare(b.date)).at(-1)!.currency : undefined;
     const startCurrency = initial?.currency ?? lastCurrency ?? currencies[0] ?? 'PLN';
     const options = [...new Set([startCurrency, ...currencies, 'PLN', 'EUR', 'USD'])];
@@ -269,18 +306,11 @@ export function expensesSection(trip: Trip, me: Me, people: Person[], currencies
             });
             return h('label', { class: 'check expense-split__row' }, box2, h('span', {}, p.displayName));
           }
-          const input = h('input', {
-            type: 'text',
-            inputmode: 'decimal',
-            placeholder: '0',
-            'aria-label': `Kwota – ${p.displayName}`,
-          });
-          input.value = amounts.get(p.uid) ?? '';
-          input.addEventListener('input', () => {
-            amounts.set(p.uid, input.value);
+          const field = amountField({ placeholder: '0', label: `Kwota – ${p.displayName}`, value: amounts.get(p.uid) ?? '' }, () => currency.value, () => {
+            amounts.set(p.uid, field.input.value);
             refresh();
           });
-          return h('label', { class: 'expense-split__row expense-split__row--amount' }, h('span', {}, p.displayName), input);
+          return h('div', { class: 'expense-split__row expense-split__row--amount' }, h('span', {}, p.displayName), field.el);
         }),
       );
       refresh();
@@ -309,7 +339,6 @@ export function expensesSection(trip: Trip, me: Me, people: Person[], currencies
           left === 0 ? '✓ rozdzielone' : left > 0 ? `Zostało do rozdzielenia: ${formatMoney(left, currency.value)}` : `Za dużo o ${formatMoney(-left, currency.value)}`;
       }
     };
-    amount.addEventListener('input', refresh);
 
     const error = h('p', { class: 'error', role: 'alert' });
     const save = h('button', { type: 'button', class: 'btn' }, initial ? 'Zapisz' : 'Dodaj wydatek');
@@ -352,7 +381,7 @@ export function expensesSection(trip: Trip, me: Me, people: Person[], currencies
       ...present(
         h('h3', {}, initial ? 'Popraw wydatek' : 'Nowy wydatek'),
         title,
-        h('div', { class: 'two-col expense-amount' }, amount, currency),
+        h('div', { class: 'two-col expense-amount' }, amountBox.el, currency),
         h('label', { class: 'field' }, h('span', {}, 'Kto płacił'), paidBy),
         h('div', { class: 'two-col' }, date, category),
         h('p', { class: 'field-label' }, 'Za kogo'),

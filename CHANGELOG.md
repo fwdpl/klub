@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.16.0 — liczenie w kwotach
+
+- W wydatkach w polu kwoty (i w kwotach osób) można wpisać działanie z plusem i minusem, np. z paragonu „35+2,50+5,50+7” albo „100-11,50-5” – pod polem od razu widać sumę i to ona się zapisuje.
+- Przy polach przyciski + i − (klawiatura liczbowa iPhone'a nie ma tych znaków).
+
 ## 1.15.0 — pomoc pod „?”
 
 - U góry każdego ekranu (nie tylko na liście wyjazdów) ikony „?” – pomoc – i ⚙ – ustawienia.
