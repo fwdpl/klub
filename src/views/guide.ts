@@ -98,6 +98,7 @@ export function showGuide(): void {
         h('li', {}, b('📅 Do kalendarza'), ' – w planie: pobierz swój plan do kalendarza telefonu, z przypomnieniem przed każdym punktem.'),
         h('li', {}, b('Pogoda'), ' – w planie przy dniach na najbliższy tydzień; w każdym dniu wschód, zachód słońca i faza księżyca.'),
         h('li', {}, b('Dziś'), ' – w czasie wyjazdu na górze: co teraz, co dalej (z odliczaniem), zbiórka i nocleg na dziś.'),
+        h('li', {}, b('🗺️ Pobierz na mapę'), ' – w planie: plan, noclegi i lista życzeń do Google Moje Mapy (KML) albo map offline (GPX).'),
         h('li', {}, b('🚕 Pokaż kierowcy'), ' – przy noclegu: adres dużą czcionką, w lokalnym języku, do pokazania taksówkarzowi.'),
         h('li', {}, b('Karta kraju'), ' – waluta, gniazdka, numer alarmowy, napiwki, różnica czasu i notatka o wizie; widać ją po zgłoszeniu.'),
         h('li', {}, b('Życzenia'), ' – po zatwierdzeniu: dodaj miejsce (z podpowiedzi albo link z Google Maps) albo dopisz się do cudzego: ❤️ Muszę / 👍 Fajnie. Z tej listy powstaje plan.'),

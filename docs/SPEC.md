@@ -245,7 +245,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - ~~Wspólna lista „kto co bierze”~~ – nie robimy (decyzja Jacka z 5.11.2026). Szablony checklist kopiowane z poprzedniego wyjazdu – bez decyzji.
 - ~~Przydział aut i pokoi~~ – odpuszczone (decyzja Jacka z 5.11.2026).
 - Głosowanie nad terminem na etapie „zainteresowany”.
-- Eksport listy życzeń i planu do KML/GPX – robimy (5.11.2026).
+- Eksport listy życzeń i planu do KML/GPX – robimy (5.11.2026). **Zrobione w 1.11.0**: w planie „🗺️ Pobierz na mapę” – wybór: plan (uczestnik: „Mój plan”), noclegi, lista życzeń; KML (foldery = dni, „Noclegi”, „Lista życzeń”; kolorowe pinezki) dla Google Moje Mapy / Earth, GPX (punkty z typem = dzień) dla Organic Maps / OsmAnd. Brakujące współrzędne – wyszukiwarka OpenStreetMap (Photon) po nazwie i adresie, z dopiskiem „położenie przybliżone”; bez internetu tylko miejsca ze współrzędnymi.
 - Przycisk „dotarłem” – robimy (5.11.2026). **Zrobione w 1.10.0**: jeden ogólny przycisk „📍 Jestem na miejscu” (w „Dziś” i w „Kto”), po stuknięciu wybór „Do wszystkich” (zatwierdzeni + organizator) albo „Do organizatora”, opcjonalny dopisek; powiadomienie wysyła funkcja `onArrival` (wyciszeni pominięci), tekst neutralny („Ania jest na miejscu”). Pod przyciskiem ostatnie zgłoszenia widoczne dla danej osoby.
 - Kolejność po wydatkach i wpłatach (5.11.2026): „dotarłem”, eksport KML/GPX, układ tabletowy, zestawy kolorów.
 

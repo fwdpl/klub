@@ -1,5 +1,12 @@
 # Zmiany
 
+## 1.11.0 — plan na mapie
+
+- W planie przycisk „🗺️ Pobierz na mapę”: plan (Twój albo cały), noclegi i lista życzeń jako plik do map.
+- „KML (Google)” – do Google Moje Mapy i Google Earth; każdy dzień to osobna warstwa, noclegi i lista życzeń osobno, w różnych kolorach.
+- „GPX (mapy offline)” – do Organic Maps, OsmAnd i innych map działających bez internetu.
+- Miejsca bez współrzędnych aplikacja próbuje znaleźć w OpenStreetMap po nazwie i adresie (oznaczone jako przybliżone).
+
 ## 1.10.0 — jestem na miejscu
 
 - Przycisk „📍 Jestem na miejscu” przy wyjeździe (w „Dziś” i w „Kto”): po stuknięciu wybierasz „Do wszystkich” albo „Do organizatora”, możesz dopisać np. „jestem w hotelu”. Odbiorcy dostają powiadomienie „Ania jest na miejscu”.
