@@ -1553,3 +1553,70 @@ body.driver-open {
 .wish__count {
   margin-top: 8px;
 }
+
+/* Pogoda */
+.weather {
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.weather p {
+  margin: 0 0 4px;
+}
+
+.weather__main {
+  font-weight: 600;
+}
+
+.weather__source {
+  font-size: 13px;
+}
+
+.weather__change {
+  padding: 4px 0 0;
+  font-size: 14px;
+}
+
+.weather-chip {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.clouds {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 44px;
+  margin: 6px 0;
+}
+
+.clouds__cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.clouds__fill {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--text-2);
+  opacity: 0.55;
+}
+
+.clouds__cell small {
+  font-size: 10px;
+  color: var(--text-2);
+}
+
+.today__weather {
+  margin: 0 0 8px;
+}

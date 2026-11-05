@@ -227,7 +227,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Wspólne wydatki**: kto płacił, kwota, waluta, podział (po równo / kwotami), kategorie. Salda i minimalna liczba przelewów. Przeliczenie na walutę bazową kursem NBP. Wpis offline wysyła się po odzyskaniu sieci. Oznaczanie przelewu jako wykonanego.
 - **Wpłaty na wyjazd**: zaliczki/raty za loty i hotele opłacone z góry przez Jacka.
 - **Potwierdzenia odczytu**: automatyczny zapis „zobaczył zmianę” przy każdej zmianie; przycisk „Przyjąłem” tylko przy zmianach „wymaga potwierdzenia”. Panel: kto zobaczył i kiedy, kto potwierdził, przypomnienie do brakujących. Grupa wie, że odczyty są widoczne. (Statystyki FCM są zbiorcze — odczyty logować w aplikacji.)
-- **Pogoda**: prognoza dla lokalizacji dnia (temperatura, opady, zachmurzenie godzinowe, wiatr) tylko 5–7 dni do przodu, z datą pobrania. Słońce/Księżyc z SunCalc bez ograniczenia dni.
+- **Pogoda**: prognoza dla lokalizacji dnia (temperatura, opady, zachmurzenie godzinowe, wiatr) tylko 5–7 dni do przodu, z datą pobrania. Słońce/Księżyc z SunCalc bez ograniczenia dni. **Zrobione w 1.7.0 (decyzje Jacka z 4.11.2026)**: Open-Meteo bez klucza (`src/weather/weather.ts`), miejsce dnia automatycznie: `weatherPlace` dnia (poprawka organizatora) → baza dnia (geokodowanie Open-Meteo, pełna nazwa, potem pierwsze słowo) → kierunek wyjazdu; prognoza 7 dni (`timezone=auto`, daty = daty planu), w pamięci urządzenia 3 h, bez sieci – ostatnia z godziną pobrania; znaczek w nagłówku dnia, blok w rozwiniętym dniu (opis, max/min, opady mm i %, wiatr, zachmurzenie co 3 h 6–21), linia na karcie „Dziś”; wschód/zachód i faza księżyca z SunCalc dla każdego dnia. Model: `days/{date}.weatherPlace?: {name, lat, lng}` (reguły + testy), zachowywane przy ponownym imporcie dnia. Alert pogodowy do Jacka – później, razem z zamianą dni.
 - **Zamiana dni**: podmiana treści dwóch dni razem z planami indywidualnymi. Punkty `pinnedToDate` zostają. Ostrzeżenie przy dniach w różnych bazach noclegowych. „Cofnij”. Po zamianie push z wymaganym potwierdzeniem.
 - **Dni zależne od pogody**: oznaczenie dnia; wieczorem alert tylko do Jacka, gdy prognoza na jutro jest zła, z propozycją zamiany.
 - **Układ tabletowy**: plan + mapa, plany uczestników w kolumnach, panel organizatora.
@@ -392,7 +392,7 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 Blokujące v1: brak.
 
 Do v2 (nie blokują):
-- [x] Wyszukiwarka miejsc: OpenStreetMap (Photon) + wklejony link Google Maps (4.11.2026).
+- [x] Wyszukiwarka miejsc: **OpenStreetMap (Photon) + wklejony link z Google Maps** (decyzja Jacka z 4.11.2026); bez ocen gwiazdkowych. Lista życzeń: widzą i dodają zatwierdzeni (i organizator).
 - [ ] Waluta bazowa rozliczeń (domyślnie PLN).
 - [ ] Czy wprowadzać termin decyzji i limit miejsc.
 - [ ] Która aplikacja (PWA czy FrameTrails) dostaje pushe grupowe Jacka.
