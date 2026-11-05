@@ -9,6 +9,11 @@
 - Swój wpis poprawisz albo usuniesz stuknięciem; organizator może poprawić każdy. Bez internetu wpis zapisuje się na telefonie i wysyła po połączeniu.
 - W „Koszty” wpłaty na wyjazd: organizator wpisuje raty (np. lot, hotel) z terminem i odhacza wpłaty; każdy widzi tylko swoje – ile zostało i do kiedy.
 
+## 1.8.1 — zachmurzenie w procentach
+
+- Nad każdym słupkiem zachmurzenia procent (np. „81%”), a wysokość słupka odpowiada teraz dokładnie zachmurzeniu – wcześniej słupki od ok. 70% wyglądały tak samo.
+- Słupki zachmurzenia także na karcie „Dziś”.
+
 ## 1.8.0 — lista życzeń
 
 - Nowa ikona „Życzenia” przy wyjeździe (dla zatwierdzonych): wspólna lista miejsc, które chcemy zobaczyć.
