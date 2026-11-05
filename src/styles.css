@@ -146,6 +146,15 @@ button {
   margin-top: 8px;
 }
 
+/* przyciski obok siebie w rzędzie – bez odstępu „pod spodem”, równo w linii */
+.actions .btn + .btn {
+  margin-top: 0;
+}
+
+.actions .btn {
+  align-self: stretch;
+}
+
 button:disabled {
   opacity: 0.55;
   cursor: default;

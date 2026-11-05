@@ -1,5 +1,13 @@
 # Zmiany
 
+## 1.11.0 — plan na mapie
+
+- W planie przycisk „🗺️ Pobierz na mapę”: plan (Twój albo cały), noclegi i lista życzeń jako plik do map.
+- „KML (Google)” – do Google Moje Mapy i Google Earth; każdy dzień to osobna warstwa, noclegi i lista życzeń osobno, w różnych kolorach.
+- „GPX (mapy offline)” – do Organic Maps, OsmAnd i innych map działających bez internetu.
+- Miejsca bez współrzędnych aplikacja próbuje znaleźć w OpenStreetMap po nazwie i adresie (oznaczone jako przybliżone).
+- Poprawka: przyciski stojące obok siebie są równo w jednej linii.
+
 ## 1.9.0 — wspólne wydatki i wpłaty
 
 - Nowa ikona „Wydatki” przy wyjeździe: każdy zatwierdzony wpisuje, kto płacił, ile i w jakiej walucie, oraz za kogo – po równo albo kwotami (aplikacja pilnuje, żeby kwoty się zgadzały).

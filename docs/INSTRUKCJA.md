@@ -80,6 +80,8 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Jak wpisać wspólny wydatek?** Przy wyjeździe stuknij **Wydatki** → **+ Dodaj wydatek**: za co, kwota, waluta, kto płacił i za kogo (po równo albo kwotami). Pod spodem „Rozliczenie” pokazuje, kto komu ile oddaje; po oddaniu pieniędzy stuknij **✓ Oddane**. **Przelicz całość na PLN** liczy wszystko w złotych po kursie NBP, a **📋 Kopiuj** daje gotowy tekst do wysłania. Swoje wpłaty na wyjazd (lot, hotel) i terminy widzisz w **Koszty**.
 
+**Jak mieć plan na mapie?** W planie stuknij **🗺️ Pobierz na mapę**, zaznacz, co ma się znaleźć (plan, noclegi, lista życzeń) i wybierz **KML (Google)** – do Google Moje Mapy – albo **GPX (mapy offline)** – do Organic Maps czy OsmAnd, które działają bez internetu.
+
 **Za dużo powiadomień?** Ustawienia (⚙) → **Wycisz wszystkie powiadomienia z Klubu**.
 
 **Komunikat „Jest nowa wersja aplikacji”.** Stuknij **Odśwież** – aplikacja wczyta poprawki.

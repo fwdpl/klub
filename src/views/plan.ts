@@ -7,6 +7,7 @@ import { zoneLabel } from '../timezones';
 import { plural } from '../text';
 import { h, present } from '../ui';
 import { calendarExport } from './calendar';
+import { mapExport } from './mapExport';
 import { attachDayChip, dayWeather } from './weatherView';
 import { fold, remember } from './fold';
 import { formatLocal } from './tripDetails';
@@ -173,6 +174,7 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
 
   // Eksport do kalendarza: „Mój plan” dla uczestnika, cały plan dla organizatora spoza listy
   const calendar = calendarExport(trip, days, me.uid, amApproved);
+  const map = mapExport(trip, days, me.uid, amApproved);
 
   const draw = () => {
     const visible = days
@@ -220,6 +222,7 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
             ...tags.map((t) => button(`#${t}`, tag === t, () => setTag(t))),
           ),
         days.length > 0 && calendar,
+        days.length > 0 && map,
         planNotes.length > 0 &&
           h('div', { class: 'plan-notes' }, h('b', {}, 'Uwagi do planu'), h('ul', {}, ...planNotes.map((n) => h('li', {}, richText(n))))),
         days.length === 0 && h('p', { class: 'muted' }, me.isOrganizer ? 'Plan jest pusty – zaimportuj plik albo dodaj punkt.' : 'Plan pojawi się tutaj, gdy organizator go doda.'),

@@ -25,9 +25,9 @@ function savedReminder(): number {
   }
 }
 
-/** iPhone: arkusz udostępniania (Kalendarz / Zachowaj w Plikach); gdzie indziej – pobranie pliku. */
-async function deliver(name: string, ics: string): Promise<void> {
-  const file = new File([ics], name, { type: 'text/calendar' });
+/** iPhone: arkusz udostępniania (Kalendarz / Zachowaj w Plikach / aplikacja map); gdzie indziej – pobranie pliku. */
+export async function deliverFile(name: string, content: string, type: string): Promise<void> {
+  const file = new File([content], name, { type });
   if (isIOS() && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: name });
@@ -71,7 +71,7 @@ export function calendarExport(trip: Trip, days: DayDoc[], uid: string, mineOnly
     }
     const { ics, count: n } = buildIcs({ tripId: trip.id, tripTitle: trip.title, tripZone: trip.timezone, days, include, reminderMinutes });
     if (!n) return toast('Brak punktów do dodania.');
-    await deliver(icsFileName(trip.title), ics);
+    await deliverFile(icsFileName(trip.title), ics, 'text/calendar');
   });
 
   const how = isIOS()
