@@ -1,5 +1,12 @@
 # Zmiany
 
+## 1.7.0 — pogoda
+
+- W planie przy dniach w zasięgu prognozy (7 dni) znaczek pogody, np. „🌧️ 4°/-1°”. W rozwiniętym dniu: opis, temperatura, opady, wiatr i zachmurzenie w ciągu dnia, z miejscem i godziną pobrania prognozy.
+- Dla każdego dnia (także dalekich) wschód i zachód słońca oraz faza księżyca.
+- Na karcie „Dziś” krótka pogoda na dziś i godzina zachodu słońca.
+- Miejsce prognozy aplikacja dobiera sama z bazy dnia; organizator może je poprawić („Zmień miejsce prognozy”). Bez internetu widać ostatnio pobraną prognozę.
+
 ## 1.6.0 — ikony sekcji i ekran „Dziś”
 
 - Ekran wyjazdu bez długiej listy: pod tytułem rząd ikon (Plan, Loty, Noclegi, Lista, Kraj, Kontakty, Polisa, Koszty, Kto jedzie) – stuknięcie pokazuje tylko tę część. Aplikacja pamięta ostatnio oglądaną.

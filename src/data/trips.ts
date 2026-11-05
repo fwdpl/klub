@@ -216,9 +216,13 @@ export async function listDays(tripId: string): Promise<DayDoc[]> {
 
 /** Import: zastępuje tylko dni z pliku (decyzja I) i uwagi do planu. */
 export async function saveImportedPlan(tripId: string, days: DayDoc[], planNotes: string[]): Promise<void> {
-  const info = await getInfo(tripId);
+  const [info, existing] = await Promise.all([getInfo(tripId), listDays(tripId).catch(() => [] as DayDoc[])]);
   const batch = writeBatch(db);
-  for (const day of days) batch.set(doc(db, 'trips', tripId, 'days', day.date), { ...day, updatedAt: serverTimestamp() });
+  for (const day of days) {
+    // miejsce pogody wskazane przez organizatora zostaje po ponownym imporcie dnia
+    const place = existing.find((d) => d.date === day.date)?.weatherPlace;
+    batch.set(doc(db, 'trips', tripId, 'days', day.date), { ...day, ...(place && !day.weatherPlace ? { weatherPlace: place } : {}), updatedAt: serverTimestamp() });
+  }
   batch.set(doc(db, 'trips', tripId, 'info', 'main'), { ...info, planNotes, updatedAt: serverTimestamp() });
   await batch.commit();
 }

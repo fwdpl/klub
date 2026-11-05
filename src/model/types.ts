@@ -212,6 +212,8 @@ export interface DayDoc {
   timezone?: string;
   baseLocation: string;
   weatherDependent?: WeatherDependency;
+  /** Miejsce prognozy pogody wskazane przez organizatora (inaczej: z bazy dnia albo kierunku wyjazdu). */
+  weatherPlace?: { name: string; lat: number; lng: number };
   items: PlanItem[];
   /** Rewizja pliku planu, z którego pochodzi dzień (import). */
   revision: number;
