@@ -28,6 +28,7 @@ import { tabbedSections, type Tab } from './tabs';
 import { wishlistSection } from './wishlist';
 import { expensesSection } from './expenses';
 import { arrivalCard } from './arrival';
+import { changesBanner } from './changes';
 import { myPaymentsCard, organizerPaymentsCard } from './payments';
 import { countryInfo } from '../data/countries';
 import { noticeCard, takeNotice } from './notify';
@@ -439,6 +440,8 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
           ),
         ),
         notice,
+        // nowe zmiany od organizatora (potwierdzenia odczytu); w podglądzie tylko do oglądania
+        !viewer.isOrganizer && (mine === 'approved' || mine === 'interested') && changesBanner(trip, viewer, mine, !!preview),
         description,
         action,
         tabbedSections(trip.id, tabs, fallback),

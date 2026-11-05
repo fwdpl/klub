@@ -14,7 +14,10 @@ const TOP: Row[] = [
   ['download', 'Pobierz na telefon', 'Przy tytule wyjazdu – zapisuje wyjazd, żeby działał bez internetu.'],
 ];
 
+const TOP_ALL: Row[] = [['destinations', 'Kierunki', 'Miejsca, które organizator rozważa – zaznacz, co Cię interesuje.']];
+
 const ORGANIZER: Row[] = [
+  ['reads', 'Kto przeczytał', 'Kto zobaczył Twoje powiadomienia o zmianach i kto potwierdził „Przyjąłem”; przypomnienie brakującym.'],
   ['edit', 'Edytuj wyjazd', 'Tytuł, opis, terminy, stan zapisów.'],
   ['bell', 'Powiadomienie', 'Wyślij grupie wiadomość o zmianie planu lub kosztów.'],
 ];
@@ -48,7 +51,7 @@ export function showHelp(isOrganizer: boolean): void {
   render(
     h('a', { class: 'back', href: '#/' }, '← Wyjazdy'),
     h('h1', {}, 'Co oznaczają ikony'),
-    h('div', { class: 'card' }, h('h2', {}, 'U góry'), rows(isOrganizer ? [...TOP, ...ORGANIZER] : TOP)),
+    h('div', { class: 'card' }, h('h2', {}, 'U góry'), rows(isOrganizer ? [...TOP_ALL, ...TOP, ...ORGANIZER] : [...TOP_ALL, ...TOP])),
     h(
       'div',
       { class: 'card' },

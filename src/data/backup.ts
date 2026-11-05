@@ -25,7 +25,7 @@ async function docsOf(...path: [string, ...string[]]): Promise<Record<string, un
   return Object.fromEntries(snap.docs.map((d) => [d.id, toPlain(d.data())]));
 }
 
-const TRIP_COLLECTIONS = ['overview', 'members', 'info', 'days', 'checklists', 'wishes', 'expenses', 'payments'] as const;
+const TRIP_COLLECTIONS = ['overview', 'members', 'info', 'days', 'checklists', 'wishes', 'expenses', 'payments', 'arrivals', 'changes'] as const;
 
 export async function buildBackup(appVersion: string): Promise<Plain> {
   const users = await docsOf('users');
@@ -45,6 +45,7 @@ export async function buildBackup(appVersion: string): Promise<Plain> {
     createdAt: new Date().toISOString(),
     appVersion,
     users,
+    destinations: await docsOf('destinations'),
     trips: Object.fromEntries(withParts),
   };
 }

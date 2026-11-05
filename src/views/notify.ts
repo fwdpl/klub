@@ -48,6 +48,8 @@ export function noticeCard(tripId: string, draft: NoticeDraft | null): HTMLEleme
     const title = h('input', { type: 'text', value: d.title, maxlength: '60', 'aria-label': 'Tytuł powiadomienia' });
     const body = h('textarea', { rows: '2', maxlength: '200', 'aria-label': 'Treść powiadomienia' });
     body.value = d.body;
+    // potwierdzenia odczytu: przy ważnej zmianie uczestnik stuka „Przyjąłem” (widać to pod 🔭)
+    const ack = h('input', { type: 'checkbox' });
     const error = h('p', { class: 'error', role: 'alert' });
     const send = h('button', { type: 'submit', class: 'btn' }, 'Wyślij powiadomienie');
     const skip = h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => closed() }, proposed ? 'Nie teraz' : 'Anuluj');
@@ -63,7 +65,7 @@ export function noticeCard(tripId: string, draft: NoticeDraft | null): HTMLEleme
             if (!title.value.trim()) return void (error.textContent = 'Podaj tytuł.');
             send.disabled = true;
             try {
-              const { data } = await notifyTrip({ tripId, audience: audience.value as NotifyAudience, title: title.value, body: body.value });
+              const { data } = await notifyTrip({ tripId, audience: audience.value as NotifyAudience, title: title.value, body: body.value, requireAck: ack.checked });
               summary(data);
             } catch {
               error.textContent = navigator.onLine ? 'Nie udało się wysłać.' : 'Brak połączenia z internetem.';
@@ -76,6 +78,8 @@ export function noticeCard(tripId: string, draft: NoticeDraft | null): HTMLEleme
         h('label', { class: 'field' }, h('span', {}, 'Do kogo'), audience),
         h('label', { class: 'field' }, h('span', {}, 'Tytuł'), title),
         h('label', { class: 'field' }, h('span', {}, 'Treść'), body),
+        h('label', { class: 'check' }, ack, h('span', {}, 'Ważna zmiana – poproś o „✓ Przyjąłem”')),
+        h('p', { class: 'muted' }, 'Kto przeczytał (i potwierdził) – pod ikoną lornetki u góry.'),
         error,
         send,
         skip,

@@ -1,5 +1,11 @@
 # Zmiany
 
+## 1.17.0 — kto przeczytał i kierunki
+
+- Powiadomienie o zmianie (🔔) można oznaczyć jako „Ważna zmiana” – uczestnicy zobaczą je kartą na ekranie wyjazdu z przyciskiem „✓ Przyjąłem”. Zwykłe zmiany też pokazują się kartą, a „zobaczone” zapisuje się samo.
+- Organizator ma u góry lornetkę: przy każdej zmianie widać, kto ją zobaczył i kiedy, kto potwierdził, oraz przycisk „Przypomnij brakującym”.
+- Nowy globus u góry – „Kierunki”: miejsca, które organizator chce odwiedzić. Każdy zaznacza „⭐ Interesuje mnie” i widzi tylko swoje zaznaczenia; organizator widzi, kto co zaznaczył. Sortowanie alfabetyczne albo wg terminu.
+
 ## 1.16.0 — liczenie w kwotach
 
 - W wydatkach w polu kwoty (i w kwotach osób) można wpisać działanie z plusem i minusem, np. z paragonu „35+2,50+5,50+7” albo „100-11,50-5” – pod polem od razu widać sumę i to ona się zapisuje.

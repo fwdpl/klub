@@ -2146,3 +2146,87 @@ body.driver-open {
   align-items: start;
   margin-bottom: 8px;
 }
+
+/* Zmiany od organizatora (potwierdzenia odczytu) */
+.change {
+  border-left: 4px solid var(--accent);
+}
+
+.change h2 {
+  margin: 4px 0 8px;
+}
+
+.change__when {
+  margin: 0;
+  font-size: 14px;
+}
+
+.change__note {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.reads-trip {
+  margin: 20px 0 8px;
+}
+
+.reads-change .fold__text .muted {
+  display: block;
+  font-size: 13px;
+}
+
+.reads-missing {
+  color: var(--text-2);
+}
+
+/* Kierunki (globus) */
+.dest-sort {
+  margin: 12px 0;
+}
+
+.dest {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.dest:last-child {
+  border-bottom: 0;
+}
+
+.dest__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.dest__name {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.dest__dates {
+  flex: none;
+  font-size: 14px;
+}
+
+.dest p {
+  margin: 4px 0;
+}
+
+.dest__who {
+  font-size: 15px;
+}
+
+.dest-form input {
+  margin-bottom: 8px;
+}
+
+.nav-icons {
+  gap: 0;
+}
+
+.nav-icons .icon-link {
+  width: 44px;
+}

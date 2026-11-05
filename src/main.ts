@@ -10,6 +10,8 @@ import { watchConnection } from './offline';
 import { initTheme } from './theme';
 import { h, hideSplash, setNavIcons, toast } from './ui';
 import { showHelp } from './views/help';
+import { showReads } from './views/changes';
+import { showDestinations } from './views/destinations';
 import { ICONS } from './views/icons';
 import { showCountriesEdit } from './views/country';
 import { isGuidePath, showGuide } from './views/guide';
@@ -37,14 +39,22 @@ if (import.meta.env.PROD) {
 let currentUser: User | null = null;
 
 /** ? pomoc i ⚙ ustawienia – u góry każdego ekranu po zalogowaniu (prośba Jacka z 5.11.2026). */
-function navIcons(): HTMLElement {
-  const link = (href: string, label: string, icon: 'help' | 'settings') => {
+function navIcons(isOrganizer: boolean): HTMLElement {
+  const link = (href: string, label: string, icon: 'help' | 'settings' | 'destinations' | 'reads') => {
     const a = h('a', { class: 'icon-link', href, 'aria-label': label, title: label });
     a.innerHTML = ICONS[icon]; // stała ikona
     if (location.hash === href) a.setAttribute('aria-current', 'page');
     return a;
   };
-  return h('span', { class: 'nav-icons' }, link('#/pomoc', 'Pomoc – co oznaczają ikony', 'help'), link('#/ustawienia', 'Ustawienia', 'settings'));
+  // 🌐 kierunki – dla wszystkich; 🔭 kto przeczytał – tylko organizator (prośba Jacka z 5.11.2026)
+  return h(
+    'span',
+    { class: 'nav-icons' },
+    link('#/kierunki', 'Kierunki do rozważenia', 'destinations'),
+    isOrganizer && link('#/odczyty', 'Kto przeczytał zmiany', 'reads'),
+    link('#/pomoc', 'Pomoc – co oznaczają ikony', 'help'),
+    link('#/ustawienia', 'Ustawienia', 'settings'),
+  );
 }
 
 /** Trasy w adresie (#/…); bez frameworka. */
@@ -55,8 +65,8 @@ async function route(): Promise<void> {
     return showGuide();
   }
   const user = currentUser;
-  setNavIcons(user ? navIcons : null);
   if (!user) {
+    setNavIcons(null);
     if (isIOS() && !isStandalone()) showInstallIOS();
     else showLogin();
     return;
@@ -67,14 +77,17 @@ async function route(): Promise<void> {
     displayName: (meDoc?.get('displayName') as string | undefined) ?? '',
     isOrganizer: meDoc?.get('role') === 'organizer',
   };
+  setNavIcons(() => navIcons(me.isOrganizer));
   const path = location.hash.replace(/^#/, '') || '/';
   let m: RegExpMatchArray | null;
 
   if (path === '/ustawienia') return showSettings(user);
   if (path === '/pomoc') return showHelp(me.isOrganizer);
+  if (path === '/kierunki') return showDestinations(me);
   if ((m = path.match(/^\/wyjazd\/([\w-]+)$/))) return showTrip(m[1], me);
   if (me.isOrganizer) {
     if (path === '/osoby') return showPeople(user.uid);
+    if (path === '/odczyty') return showReads(user.uid);
     if (path === '/nowy-wyjazd') return showTripEdit(null);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/edycja$/))) return showTripEdit(m[1]);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/szczegoly$/))) return showTripDetailsEdit(m[1]);

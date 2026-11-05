@@ -48,8 +48,10 @@ export interface NotifyResult {
   people: number;
   muted: number;
   reached: number;
+  changeId?: string;
 }
-export const notifyTrip = httpsCallable<{ tripId: string; audience: NotifyAudience; title: string; body: string }, NotifyResult>(functions, 'notifyTrip');
+export const notifyTrip = httpsCallable<{ tripId: string; audience: NotifyAudience; title: string; body: string; requireAck?: boolean }, NotifyResult>(functions, 'notifyTrip');
+export const remindChange = httpsCallable<{ tripId: string; changeId: string }, { people: number; reached: number; missing: number }>(functions, 'remindChange');
 export const sendTestPush = httpsCallable<{ delaySec: number }, { sent: number; failed: number }>(
   functions,
   'sendTestPush',
