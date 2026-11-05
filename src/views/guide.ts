@@ -107,7 +107,7 @@ export function showGuide(): void {
         h('li', {}, b('Mój plan / Wszyscy'), ' – Twoje punkty i wspólne albo plan całej grupy. Godziny zawsze w czasie miejsca.'),
         h('li', {}, b('Przed wyjazdem'), ', z internetem: otwórz wyjazd i stuknij ikonę pobierania obok tytułu. Bez sieci wszystko działa, a odhaczenia wyślą się po połączeniu.'),
         h('li', {}, 'Na ekranie wyjazdu ikony (Plan, Loty, Noclegi, Lista, Życzenia, Wydatki, Kraj…) – stuknij, żeby zobaczyć tę część. W czasie wyjazdu pierwsza jest „Dziś”. Dni planu rozwijasz stuknięciem.'),
-        h('li', {}, b('Ustawienia (⚙)'), ': powiadomienia, motyw jasny/ciemny, „Wycisz wszystkie powiadomienia”.'),
+        h('li', {}, b('Ustawienia (⚙)'), ': powiadomienia, motyw jasny/ciemny i kolor aplikacji, „Wycisz wszystkie powiadomienia”.'),
       ),
     ),
 

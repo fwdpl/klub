@@ -242,6 +242,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Dni zależne od pogody**: oznaczenie dnia; wieczorem alert tylko do Jacka, gdy prognoza na jutro jest zła, z propozycją zamiany.
 - **Układ tabletowy**: plan + mapa, plany uczestników w kolumnach, panel organizatora.
 - **Zestawy kolorów**: akcent per osoba lub kolor per wyjazd.
+  - Zmiana zakresu i zrobione w 1.13.0 (decyzja Jacka z 5.11.2026): chodzi o **kolor aplikacji**, nie planu. Ustawienia → Motyw → „Kolor aplikacji”: 10 gotowych kolorów (każdy z wersją dla motywu jasnego i ciemnego, kontrast ≥ 4,5:1 do tła i kart) albo własny – aplikacja zachowuje odcień i zmienia jasność, aż kolor będzie czytelny w danym motywie (kolorów zlewających się z tłem nie da się ustawić). Napis na przyciskach biały albo ciemny – ten z większym kontrastem. Zapamiętany na urządzeniu (jak motyw), reguły CSS wstrzykiwane przed renderem – bez błysku. Logika: `src/accent.ts` z testami.
 - ~~Wspólna lista „kto co bierze”~~ – nie robimy (decyzja Jacka z 5.11.2026). Szablony checklist kopiowane z poprzedniego wyjazdu – bez decyzji.
 - ~~Przydział aut i pokoi~~ – odpuszczone (decyzja Jacka z 5.11.2026).
 - Głosowanie nad terminem na etapie „zainteresowany”.

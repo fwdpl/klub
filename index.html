@@ -15,6 +15,16 @@
         try { pref = localStorage.getItem('klub.theme') || 'auto'; } catch (e) {}
         var dark = pref === 'dark' || (pref === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        // kolor aplikacji wybrany w ustawieniach (gotowe reguły CSS, zapisane przez src/theme.ts)
+        try {
+          var css = localStorage.getItem('klub.accentCss');
+          if (css) {
+            var style = document.createElement('style');
+            style.id = 'accent-css';
+            style.textContent = css;
+            document.head.appendChild(style);
+          }
+        } catch (e) {}
       })();
     </script>
     <link rel="icon" type="image/png" href="%VITE_ICON_DIR%/favicon-48.png" />

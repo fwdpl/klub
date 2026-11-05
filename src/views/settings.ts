@@ -7,11 +7,12 @@ import { auth, db, sendTestPush } from '../firebase';
 import { appVersion, buildId, isTestEnv } from '../config';
 import { isAndroid, isIOS, isStandalone } from '../platform';
 import { enablePush, pushState, type PushState } from '../push';
-import { getThemePref, setThemePref, type ThemePref } from '../theme';
+import { getAccentChoice, getThemePref, setAccentChoice, setThemePref, type ThemePref } from '../theme';
+import { DEFAULT_ACCENT, PRESETS, parseHex, resolveAccent } from '../accent';
 import { installCard } from '../install';
 import { guideLink } from './guide';
 import { plural } from '../text';
-import { h, render, toast } from '../ui';
+import { h, render, toast, present } from '../ui';
 
 const PUSH_LABEL: Record<PushState, string> = {
   granted: 'włączone',
@@ -47,6 +48,47 @@ function backupCard(): HTMLElement {
     button,
     note,
   );
+}
+
+/** Kolor aplikacji: 10 gotowych albo własny – zawsze w wersji czytelnej dla obu motywów. */
+function accentPicker(): HTMLElement {
+  const wrap = h('div', { class: 'accent-picker' });
+  const draw = () => {
+    const current = getAccentChoice();
+    const custom = parseHex(current) ? current : null;
+    const pick = (choice: string) => {
+      setAccentChoice(choice);
+      draw();
+    };
+    const swatch = (id: string, name: string, light: string, dark: string) =>
+      h(
+        'button',
+        { type: 'button', class: 'swatch', 'aria-pressed': String(current === id), 'aria-label': name, title: name, onclick: () => pick(id), style: `--sw-light:${light};--sw-dark:${dark}` },
+        h('span', { class: 'swatch__dot' }),
+      );
+    const colorInput = h('input', { type: 'color', value: custom ?? '#1c5fb8', 'aria-label': 'Własny kolor' });
+    colorInput.addEventListener('change', () => pick(colorInput.value));
+    const resolved = custom ? resolveAccent(custom) : null;
+    wrap.replaceChildren(
+      ...present(
+      h('div', { class: 'swatches', role: 'group', 'aria-label': 'Gotowe kolory' }, ...PRESETS.map((p) => swatch(p.id, p.name, p.light, p.dark))),
+      h('label', { class: 'accent-custom' }, colorInput, h('span', {}, custom ? 'Własny kolor (wybrany)' : 'Własny kolor…')),
+      resolved &&
+        h(
+          'p',
+          { class: 'muted accent-preview' },
+          'Dopasowany do motywów: ',
+          h('span', { class: 'accent-chip', style: `background:${resolved.light.accent};color:${resolved.light.text}` }, 'jasny'),
+          ' ',
+          h('span', { class: 'accent-chip', style: `background:${resolved.dark.accent};color:${resolved.dark.text}` }, 'ciemny'),
+        ),
+      h('p', { class: 'muted' }, `Teraz: ${PRESETS.find((p) => p.id === current)?.name ?? 'własny'}. Kolory zlewające się z tłem aplikacja sama przyciemnia albo rozjaśnia, żeby wszystko było czytelne. Zapamiętany na tym urządzeniu.`),
+      current !== DEFAULT_ACCENT && h('button', { type: 'button', class: 'link-btn', onclick: () => pick(DEFAULT_ACCENT) }, 'Przywróć domyślny'),
+      ),
+    );
+  };
+  draw();
+  return wrap;
 }
 
 function themeSwitch(): HTMLElement {
@@ -251,7 +293,7 @@ export async function showSettings(user: User): Promise<void> {
     ),
     installCard(),
     h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn, muteToggle(user.uid, snap?.get('prefs.muted') === true)),
-    h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch()),
+    h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch(), h('h3', { class: 'accent-title' }, 'Kolor aplikacji'), accentPicker()),
     role === 'organizer' && backupCard(),
     guideLink('Instrukcja dla uczestników →'),
     h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => signOut(auth) }, 'Wyloguj'),
