@@ -2033,3 +2033,62 @@ body.driver-open {
 .accent-preview {
   margin: 4px 0;
 }
+
+/* Górny pasek: ← powrót po lewej, ? i ⚙ po prawej (na każdym ekranie po zalogowaniu) */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.navbar .back {
+  margin: 0;
+}
+
+.navbar--icons-only {
+  justify-content: flex-end;
+}
+
+.nav-icons {
+  display: inline-flex;
+  gap: 2px;
+  flex: none;
+}
+
+.nav-icons .icon-link svg {
+  width: 26px;
+  height: 26px;
+}
+
+.nav-icons .icon-link[aria-current='page'] {
+  color: var(--accent);
+}
+
+/* Pomoc: lista ikon */
+.help-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.help-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.help-list li:last-child {
+  border-bottom: 0;
+}
+
+.help-list__icon {
+  flex: none;
+  width: 32px;
+  display: flex;
+  justify-content: center;
+  color: var(--accent);
+}

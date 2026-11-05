@@ -8,7 +8,9 @@ import { isIOS, isStandalone } from './platform';
 import { listenForegroundMessages } from './push';
 import { watchConnection } from './offline';
 import { initTheme } from './theme';
-import { hideSplash, toast } from './ui';
+import { h, hideSplash, setNavIcons, toast } from './ui';
+import { showHelp } from './views/help';
+import { ICONS } from './views/icons';
 import { showCountriesEdit } from './views/country';
 import { isGuidePath, showGuide } from './views/guide';
 import { showInstallIOS } from './views/install';
@@ -34,11 +36,26 @@ if (import.meta.env.PROD) {
 
 let currentUser: User | null = null;
 
+/** ? pomoc i ⚙ ustawienia – u góry każdego ekranu po zalogowaniu (prośba Jacka z 5.11.2026). */
+function navIcons(): HTMLElement {
+  const link = (href: string, label: string, icon: 'help' | 'settings') => {
+    const a = h('a', { class: 'icon-link', href, 'aria-label': label, title: label });
+    a.innerHTML = ICONS[icon]; // stała ikona
+    if (location.hash === href) a.setAttribute('aria-current', 'page');
+    return a;
+  };
+  return h('span', { class: 'nav-icons' }, link('#/pomoc', 'Pomoc – co oznaczają ikony', 'help'), link('#/ustawienia', 'Ustawienia', 'settings'));
+}
+
 /** Trasy w adresie (#/…); bez frameworka. */
 async function route(): Promise<void> {
   // Instrukcja dla uczestników – bez logowania, pod stałym adresem /instrukcja
-  if (isGuidePath()) return showGuide();
+  if (isGuidePath()) {
+    setNavIcons(null);
+    return showGuide();
+  }
   const user = currentUser;
+  setNavIcons(user ? navIcons : null);
   if (!user) {
     if (isIOS() && !isStandalone()) showInstallIOS();
     else showLogin();
@@ -54,6 +71,7 @@ async function route(): Promise<void> {
   let m: RegExpMatchArray | null;
 
   if (path === '/ustawienia') return showSettings(user);
+  if (path === '/pomoc') return showHelp(me.isOrganizer);
   if ((m = path.match(/^\/wyjazd\/([\w-]+)$/))) return showTrip(m[1], me);
   if (me.isOrganizer) {
     if (path === '/osoby') return showPeople(user.uid);

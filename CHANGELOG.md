@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.15.0 — pomoc pod „?”
+
+- U góry każdego ekranu (nie tylko na liście wyjazdów) ikony „?” – pomoc – i ⚙ – ustawienia.
+- Pod „?” krótka lista ikon: co oznaczają i co pod nimi można zrobić; na dole link do pełnej instrukcji (instalacja, logowanie, powiadomienia).
+
 ## 1.14.0 — tablet
 
 - Na tablecie (także w pionie) ekran wyjazdu wykorzystuje całą szerokość, a ikony sekcji mieszczą się w jednym, dwóch rzędach.

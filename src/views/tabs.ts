@@ -17,7 +17,7 @@ export interface Tab {
 
 const storeKey = (tripId: string) => `klub.tab.${tripId}`;
 
-function iconEl(name: IconName): HTMLElement {
+export function iconEl(name: IconName): HTMLElement {
   if ((SHEET_ICONS as readonly string[]).includes(name)) {
     // maska z planszy – kolor bierze z currentColor (żółty / granatowy)
     return h('span', { class: 'tab__icon tab__icon--mask', style: `--icon: url("/sections/${name}.png")`, 'aria-hidden': 'true' });
