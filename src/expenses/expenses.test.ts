@@ -5,6 +5,7 @@ import {
   decimals,
   fetchNbpRates,
   formatMoney,
+  isSum,
   parseAmount,
   parseNbp,
   perCurrency,
@@ -47,6 +48,19 @@ describe('wspólne wydatki', () => {
     expect(parseAmount('1,234.50')).toBe(1234.5);
     expect(parseAmount('abc')).toBeNull();
     expect(parseAmount('0')).toBeNull();
+  });
+
+  it('działanie z + i − zamiast jednej kwoty (zakupy)', () => {
+    expect(parseAmount('35+2,50+5,50+7')).toBe(50);
+    expect(parseAmount('100-11,50-5')).toBe(83.5);
+    expect(parseAmount('100 − 11,50 – 5')).toBe(83.5);
+    expect(parseAmount('0,1+0,2')).toBe(0.3);
+    expect(parseAmount('35+2,50+')).toBe(37.5); // w trakcie pisania
+    expect(parseAmount('10-20')).toBeNull(); // wynik ujemny
+    expect(parseAmount('10+abc')).toBeNull();
+    expect(parseAmount('1.234,50')).toBe(1234.5);
+    expect(isSum('35+2,50')).toBe(true);
+    expect(isSum('35')).toBe(false);
   });
 
   it('po równo: reszta dla pierwszych osób, suma się zgadza', () => {

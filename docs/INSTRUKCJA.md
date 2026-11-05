@@ -80,7 +80,7 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Jak dodać miejsce do listy życzeń?** Po zatwierdzeniu, przy wyjeździe stuknij ikonę **Życzenia**, potem **Dodaj miejsce**: wpisz nazwę i wybierz z podpowiedzi albo wklej link z Google Maps. Zaznacz „muszę” albo „fajnie by było”. Jeśli ktoś już dodał to miejsce, wystarczy stuknąć **❤️ Muszę** albo **👍 Fajnie** – drugie stuknięcie wycofuje głos. Z tej listy Jacek układa plan.
 
-**Jak wpisać wspólny wydatek?** Przy wyjeździe stuknij **Wydatki** → **+ Dodaj wydatek**: za co, kwota, waluta, kto płacił i za kogo (po równo albo kwotami). Pod spodem „Rozliczenie” pokazuje, kto komu ile oddaje; po oddaniu pieniędzy stuknij **✓ Oddane**. **Przelicz całość na PLN** liczy wszystko w złotych po kursie NBP, a **📋 Kopiuj** daje gotowy tekst do wysłania. Swoje wpłaty na wyjazd (lot, hotel) i terminy widzisz w **Koszty**.
+**Jak wpisać wspólny wydatek?** Przy wyjeździe stuknij **Wydatki** → **+ Dodaj wydatek**: za co, kwota, waluta, kto płacił i za kogo (po równo albo kwotami). Pod spodem „Rozliczenie” pokazuje, kto komu ile oddaje; po oddaniu pieniędzy stuknij **✓ Oddane**. W kwocie możesz wpisać działanie, np. z paragonu „35+2,50+5,50” – suma pokaże się pod polem (przyciski **+** i **−** są obok). **Przelicz całość na PLN** liczy wszystko w złotych po kursie NBP, a **📋 Kopiuj** daje gotowy tekst do wysłania. Swoje wpłaty na wyjazd (lot, hotel) i terminy widzisz w **Koszty**.
 
 **Jak mieć plan na mapie?** W planie stuknij **🗺️ Pobierz na mapę**, zaznacz, co ma się znaleźć (plan, noclegi, lista życzeń) i wybierz **KML (Google)** – do Google Moje Mapy – albo **GPX (mapy offline)** – do Organic Maps czy OsmAnd, które działają bez internetu.
 
