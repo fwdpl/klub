@@ -147,6 +147,36 @@ service cloud.firestore {
         allow delete: if isOrganizer();
       }
 
+      // Lista życzeń (v2): miejsca widzą i dodają zatwierdzeni; każdy zmienia tylko swój głos;
+      // szczegóły miejsca – ten, kto je dodał, albo organizator
+      match /wishes/{wishId} {
+        allow read: if canSeeDetails(tripId);
+        allow create: if canSeeDetails(tripId)
+          && request.resource.data.keys().hasOnly(['name', 'place', 'link', 'preferredTime', 'durationMin', 'fixedTime', 'note', 'addedBy', 'addedByName', 'createdAt', 'votes'])
+          && request.resource.data.addedBy == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+          && request.resource.data.votes is map
+          && request.resource.data.votes.keys().hasOnly([request.auth.uid]);
+        allow update: if canSeeDetails(tripId)
+          && request.resource.data.addedBy == resource.data.addedBy
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+          && request.resource.data.votes is map
+          && (
+            // głos: tylko własny wpis w votes
+            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+              && request.resource.data.votes.diff(resource.data.votes).affectedKeys().hasOnly([request.auth.uid]))
+            // szczegóły miejsca: autor albo organizator (bez cudzych głosów)
+            || ((resource.data.addedBy == request.auth.uid || isOrganizer())
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'place', 'link', 'preferredTime', 'durationMin', 'fixedTime', 'note'])));
+        allow delete: if isOrganizer()
+          || (canSeeDetails(tripId) && resource.data.addedBy == request.auth.uid
+            && resource.data.votes.keys().hasOnly([request.auth.uid]));
+      }
+
       // Checklista osobista: właściciel (zatwierdzony) odhacza punkty wspólne (templateDone)
       // i dopisuje własne (items); organizator widzi i zmienia wszystko (decyzja F)
       match /checklists/{uid} {

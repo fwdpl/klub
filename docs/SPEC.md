@@ -152,7 +152,10 @@ loginCodes/{codeId}               # tylko Cloud Functions (klient: brak dostępu
 loginAttempts/{sha256(email)}     # tylko Cloud Functions: failures, lockedUntilMs?
 
 # v2
-trips/{tripId}/wishlist/{placeId}
+trips/{tripId}/wishes/{wishId}    # lista życzeń (4.11.2026); id: osm-{N|W|R}{id} albo n-{nazwa}-{lat}_{lng}
+  name, place?: { lat?, lng?, address?, osm? }, link?, preferredTime?: 'rano'|'południe'|'wieczór'|'dowolna'
+  durationMin?, fixedTime?: 'HH:MM', note?, addedBy, addedByName, createdAt
+  votes: { [uid]: { name, priority: 'must'|'nice' } }   # „też chcę”; każdy zmienia tylko swój klucz
 trips/{tripId}/expenses/{expenseId}
 trips/{tripId}/changes/{changeId} + reads/{uid}
 ```
@@ -220,6 +223,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 
 ### v2
 - **Wspólna lista życzeń**: miejsce istnieje raz (wyszukiwarka miejsc, unikalny identyfikator, bez duplikatów). Inni klikają „też chcę” z własnym priorytetem. Pola: link/miejsce, priorytet („muszę” / „fajnie by było”), preferowana pora, szacowany czas pobytu, ewentualna stała godzina. Eksport do JSON jednym przyciskiem.
+  - Zrobione (4.11.2026): miejsca z OpenStreetMap (wyszukiwarka Photon, bez klucza) albo z wklejonego linku Google Maps (nazwa i współrzędne z pełnego linku; krótki link tylko jako link). Widzą i dodają zatwierdzeni oraz organizator. Kolejność: punkty popularności („muszę” = 2, „fajnie” = 1). Edycja: autor albo organizator; usunięcie: organizator albo autor, gdy nikt inny się nie dopisał. Eksport (organizator): plik `klub-wishlist` 1.0 – miejsca od najpopularniejszych, z głosami i preferencjami, do ułożenia planu z Claude.
 - **Wspólne wydatki**: kto płacił, kwota, waluta, podział (po równo / kwotami), kategorie. Salda i minimalna liczba przelewów. Przeliczenie na walutę bazową kursem NBP. Wpis offline wysyła się po odzyskaniu sieci. Oznaczanie przelewu jako wykonanego.
 - **Wpłaty na wyjazd**: zaliczki/raty za loty i hotele opłacone z góry przez Jacka.
 - **Potwierdzenia odczytu**: automatyczny zapis „zobaczył zmianę” przy każdej zmianie; przycisk „Przyjąłem” tylko przy zmianach „wymaga potwierdzenia”. Panel: kto zobaczył i kiedy, kto potwierdził, przypomnienie do brakujących. Grupa wie, że odczyty są widoczne. (Statystyki FCM są zbiorcze — odczyty logować w aplikacji.)
@@ -388,7 +392,7 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 Blokujące v1: brak.
 
 Do v2 (nie blokują):
-- [x] Wyszukiwarka miejsc: **OpenStreetMap + wklejony link z Google Maps** (decyzja Jacka z 4.11.2026); bez ocen gwiazdkowych. Lista życzeń: widzą i dodają zatwierdzeni (i organizator).
+- [x] Wyszukiwarka miejsc: **OpenStreetMap (Photon) + wklejony link z Google Maps** (decyzja Jacka z 4.11.2026); bez ocen gwiazdkowych. Lista życzeń: widzą i dodają zatwierdzeni (i organizator).
 - [ ] Waluta bazowa rozliczeń (domyślnie PLN).
 - [ ] Czy wprowadzać termin decyzji i limit miejsc.
 - [ ] Która aplikacja (PWA czy FrameTrails) dostaje pushe grupowe Jacka.

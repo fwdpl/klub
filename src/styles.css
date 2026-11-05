@@ -1480,6 +1480,80 @@ body.driver-open {
   background: none;
 }
 
+/* Lista życzeń */
+.wish {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.wish__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.wish__name {
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.wish__score {
+  flex: none;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.wish p {
+  margin: 4px 0;
+}
+
+.wish__facts {
+  font-size: 15px;
+}
+
+.wish__tools {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.wish__tools .link-btn,
+.wish--edit .link-btn {
+  padding: 4px 0;
+}
+
+.badge--must {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.chip-btn.chip-btn--on,
+.actions .chip-btn.chip-btn--on {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.wish-add h3 {
+  margin: 0 0 8px;
+}
+
+.wish-add input,
+.wish-fields select,
+.wish-fields textarea {
+  margin-bottom: 8px;
+}
+
+.field-label {
+  margin: 8px 0 4px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+.wish__count {
+  margin-top: 8px;
+}
+
 /* Pogoda */
 .weather {
   margin: 4px 0 12px;

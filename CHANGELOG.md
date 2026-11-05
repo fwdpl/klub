@@ -1,5 +1,12 @@
 # Zmiany
 
+## 1.8.0 — lista życzeń
+
+- Nowa ikona „Życzenia” przy wyjeździe (dla zatwierdzonych): wspólna lista miejsc, które chcemy zobaczyć.
+- Miejsce dodajesz z podpowiedzi (mapa OpenStreetMap) albo wklejając link z Google Maps. Możesz dopisać porę dnia, czas pobytu, stałą godzinę (bilet, rezerwacja) i notatkę.
+- Każde miejsce jest na liście raz – jeśli ktoś już je dodał, dopisujesz się przyciskiem „❤️ Muszę” albo „👍 Fajnie”. Drugie stuknięcie wycofuje głos. Najpopularniejsze miejsca są na górze.
+- Jacek pobiera listę jednym przyciskiem jako plik do ułożenia planu.
+
 ## 1.7.0 — pogoda
 
 - W planie przy dniach w zasięgu prognozy (7 dni) znaczek pogody, np. „🌧️ 4°/-1°”. W rozwiniętym dniu: opis, temperatura, opady, wiatr i zachmurzenie w ciągu dnia, z miejscem i godziną pobrania prognozy.
