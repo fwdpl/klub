@@ -1620,3 +1620,187 @@ body.driver-open {
 .today__weather {
   margin: 0 0 8px;
 }
+
+/* Wspólne wydatki */
+.expense-mine {
+  margin: 0 0 12px;
+  font-size: 17px;
+}
+
+.expense-form h3,
+.settle h3 {
+  margin: 0 0 8px;
+}
+
+.expense-form input,
+.expense-form select {
+  margin-bottom: 8px;
+}
+
+.expense-amount {
+  grid-template-columns: 2fr 1fr;
+}
+
+.expense-split {
+  margin: 8px 0 4px;
+}
+
+.expense-split__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.expense-split__row--amount span {
+  flex: 1;
+}
+
+.expense-split__row--amount input {
+  width: 40%;
+  margin: 0;
+}
+
+.settle {
+  margin-bottom: 12px;
+}
+
+.settle--pln {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.settle__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.settle__list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.settle__list .chip-btn {
+  flex: none;
+}
+
+.expense-day h4 {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.expense {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.expense--editable {
+  cursor: pointer;
+}
+
+.expense__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.expense__title {
+  font-weight: 600;
+}
+
+.expense__amount {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.expense p {
+  margin: 2px 0 0;
+}
+
+.expense__meta {
+  font-size: 14px;
+}
+
+.expense--transfer .expense__title,
+.expense--transfer .expense__amount {
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+.link-btn--danger {
+  color: var(--danger);
+  margin-top: 8px;
+}
+
+/* Wpłaty na wyjazd */
+.pay__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  flex: 1;
+  padding: 6px 0;
+}
+
+.pay__title {
+  flex: 1 1 40%;
+}
+
+.pay__state {
+  flex-basis: 100%;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.pay__state--ok {
+  color: var(--ok);
+}
+
+.pay__state--late {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.pay__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pay__row input[type='checkbox'] {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.pay__edit {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pay__edit input {
+  margin-bottom: 8px;
+}
+
+.pay-person {
+  border-top: 1px solid var(--border);
+}
+
+.pay-person > .fold__head {
+  padding: 10px 0;
+}
+
+.pay-person .fold__title {
+  font-size: 17px;
+}
+
+.pay__summary {
+  margin-bottom: 12px;
+}

@@ -26,6 +26,9 @@ import { fold, foldBody } from './fold';
 import { ICONS } from './icons';
 import { tabbedSections, type Tab } from './tabs';
 import { wishlistSection } from './wishlist';
+import { expensesSection } from './expenses';
+import { myPaymentsCard, organizerPaymentsCard } from './payments';
+import { countryInfo } from '../data/countries';
 import { noticeCard, takeNotice } from './notify';
 import { planSection } from './plan';
 import { detailsSection } from './tripDetails';
@@ -319,6 +322,9 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
     // Sekcje pod ikonami – tylko te, które ta osoba może zobaczyć
     const waiting = (members ?? []).filter((m) => m.status === 'interested').length;
     const tabs: Tab[] = [];
+    const approvedPeople = (members ?? []).filter((m) => m.status === 'approved').map((m) => ({ uid: m.uid, displayName: m.displayName }));
+    // waluty krajów wyjazdu – na początek listy przy wydatkach
+    const tripCurrencies = [...new Set(countries.map((c) => (c.currency && /^[A-Z]{3}$/.test(c.currency) ? c.currency : countryInfo(c.code)?.currency)).filter((c): c is string => !!c))];
     if (today) tabs.push({ key: 'today', icon: 'today', label: 'Dziś', title: 'Dziś', content: () => today });
     if (seesDetails) {
       const plan = planData ? planSection(trip, viewer, members ?? [], planData[0], planData[1].planNotes ?? [], mine === 'approved') : null;
@@ -327,6 +333,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
       tabs.push({ key: 'hotels', icon: 'hotels', label: 'Noclegi', title: 'Noclegi', content: () => (details ? withEdit(foldBody(details.hotels)) : loadError('noclegi')) });
       if (details?.checklist) tabs.push({ key: 'checklist', icon: 'checklist', label: 'Lista', title: 'Moja checklista', content: () => foldBody(details.checklist!) });
       tabs.push({ key: 'wishes', icon: 'wishes', label: 'Życzenia', title: 'Lista życzeń', content: () => wishlistSection(trip, viewer.isOrganizer ? viewer : { ...viewer, isOrganizer: false }) });
+      tabs.push({ key: 'expenses', icon: 'expenses', label: 'Wydatki', title: 'Wspólne wydatki', content: () => expensesSection(trip, viewer, approvedPeople, tripCurrencies, !!preview) });
     }
     if (seesOverview) {
       tabs.push({ key: 'country', icon: 'country', label: 'Kraj', title: countries.length > 1 ? 'Karty krajów' : 'Karta kraju', content: () => h('div', {}, ...countrySection(trip, countries, organizer)) });
@@ -344,7 +351,19 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
       }
     }
     if (seesOverview) {
-      tabs.push({ key: 'costs', icon: 'costs', label: 'Koszty', title: 'Plan i koszty', content: () => foldBody(overviewCard(trip.id, overview, true)) });
+      tabs.push({
+        key: 'costs',
+        icon: 'costs',
+        label: 'Koszty',
+        title: 'Plan i koszty',
+        content: () =>
+          h(
+            'div',
+            {},
+            foldBody(overviewCard(trip.id, overview, true)),
+            organizer ? organizerPaymentsCard(trip, approvedPeople.filter((p) => p.uid !== me.uid)) : mine === 'approved' ? myPaymentsCard(trip, viewer.uid) : null,
+          ),
+      });
       if (members) {
         tabs.push({
           key: 'people',

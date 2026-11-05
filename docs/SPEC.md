@@ -156,7 +156,13 @@ trips/{tripId}/wishes/{wishId}    # lista życzeń (4.11.2026); id: osm-{N|W|R}{
   name, place?: { lat?, lng?, address?, osm? }, link?, preferredTime?: 'rano'|'południe'|'wieczór'|'dowolna'
   durationMin?, fixedTime?: 'HH:MM', note?, addedBy, addedByName, createdAt
   votes: { [uid]: { name, priority: 'must'|'nice' } }   # „też chcę”; każdy zmienia tylko swój klucz
-trips/{tripId}/expenses/{expenseId}
+trips/{tripId}/expenses/{expenseId}   # wspólne wydatki (5.11.2026); czytają i dodają zatwierdzeni + organizator
+  kind: 'expense'|'transfer', title, amount, currency (ISO 4217), date 'YYYY-MM-DD', category?
+  paidBy: uid, split: 'equal'|'amounts', shares: { [uid]: kwota }   # suma udziałów = amount (sprawdza aplikacja)
+  names: { [uid]: imię }, note?, viaPln?: bool (zwrot z rozliczenia w PLN), createdBy, createdAt, updatedAt
+  # poprawia i usuwa: createdBy albo organizator
+trips/{tripId}/payments/{uid}         # wpłaty na wyjazd (5.11.2026); czyta osoba (swoje) i organizator, pisze organizator
+  name, items: { id, title, amount, currency, due?: 'YYYY-MM-DD', paidOn?: 'YYYY-MM-DD' }[]
 trips/{tripId}/changes/{changeId} + reads/{uid}
 ```
 
@@ -225,18 +231,21 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Wspólna lista życzeń**: miejsce istnieje raz (wyszukiwarka miejsc, unikalny identyfikator, bez duplikatów). Inni klikają „też chcę” z własnym priorytetem. Pola: link/miejsce, priorytet („muszę” / „fajnie by było”), preferowana pora, szacowany czas pobytu, ewentualna stała godzina. Eksport do JSON jednym przyciskiem.
   - Zrobione (4.11.2026): miejsca z OpenStreetMap (wyszukiwarka Photon, bez klucza) albo z wklejonego linku Google Maps (nazwa i współrzędne z pełnego linku; krótki link tylko jako link). Widzą i dodają zatwierdzeni oraz organizator. Kolejność: punkty popularności („muszę” = 2, „fajnie” = 1). Edycja: autor albo organizator; usunięcie: organizator albo autor, gdy nikt inny się nie dopisał. Eksport (organizator): plik `klub-wishlist` 1.0 – miejsca od najpopularniejszych, z głosami i preferencjami, do ułożenia planu z Claude.
 - **Wspólne wydatki**: kto płacił, kwota, waluta, podział (po równo / kwotami), kategorie. Salda i minimalna liczba przelewów. Przeliczenie na walutę bazową kursem NBP. Wpis offline wysyła się po odzyskaniu sieci. Oznaczanie przelewu jako wykonanego.
+  - Zrobione w 1.9.0 (decyzje Jacka z 5.11.2026): rozliczenie **w walucie, w której płacono** (salda i przelewy osobno dla każdej waluty, kwoty w groszach/jednostkach całkowitych, zachłanne dopasowanie dłużników i wierzycieli – najwyżej n−1 przelewów). Przycisk „Przelicz całość na PLN” – **bieżący** kurs średni NBP (tabela A, uzupełniona tabelą B, np. MAD), kurs w pamięci urządzenia; różnice poniżej 1 zł pomijane. „✓ Oddane” zapisuje zwrot (`kind: 'transfer'`); zwrot zaznaczony w PLN (`viaPln`) przełącza wyjazd na rozliczenie wyłącznie w złotych. „📋 Kopiuj” / „📤 Udostępnij” – tekst rozliczenia do wysłania poza aplikacją. Wydatek dodaje każdy zatwierdzony (także za kogoś, kto płacił); poprawia i usuwa wpisujący albo organizator. Kategorie: jedzenie, transport, nocleg, bilety, zakupy, inne. Bez sieci wpis pokazuje się od razu i wysyła po połączeniu.
 - **Wpłaty na wyjazd**: zaliczki/raty za loty i hotele opłacone z góry przez Jacka.
+  - Zrobione w 1.9.0 (decyzja Jacka z 5.11.2026): **osobno od wydatków**. W „Koszty” organizator dodaje wpłatę (np. „Lot”, kwota na osobę, waluta, termin) wybranym zatwierdzonym, poprawia ją u pojedynczej osoby i odhacza wpłatę (data); zestawienie „wpłaciło X z Y · brakuje …”. Uczestnik widzi tylko swoje: do wpłaty, najbliższy termin (po terminie – na czerwono), co wpłacone.
 - **Potwierdzenia odczytu**: automatyczny zapis „zobaczył zmianę” przy każdej zmianie; przycisk „Przyjąłem” tylko przy zmianach „wymaga potwierdzenia”. Panel: kto zobaczył i kiedy, kto potwierdził, przypomnienie do brakujących. Grupa wie, że odczyty są widoczne. (Statystyki FCM są zbiorcze — odczyty logować w aplikacji.)
 - **Pogoda**: prognoza dla lokalizacji dnia (temperatura, opady, zachmurzenie godzinowe, wiatr) tylko 5–7 dni do przodu, z datą pobrania. Słońce/Księżyc z SunCalc bez ograniczenia dni. **Zrobione w 1.7.0 (decyzje Jacka z 4.11.2026)**: Open-Meteo bez klucza (`src/weather/weather.ts`), miejsce dnia automatycznie: `weatherPlace` dnia (poprawka organizatora) → baza dnia (geokodowanie Open-Meteo, pełna nazwa, potem pierwsze słowo) → kierunek wyjazdu; prognoza 7 dni (`timezone=auto`, daty = daty planu), w pamięci urządzenia 3 h, bez sieci – ostatnia z godziną pobrania; znaczek w nagłówku dnia, blok w rozwiniętym dniu (opis, max/min, opady mm i %, wiatr, zachmurzenie co 3 h 6–21), linia na karcie „Dziś”; wschód/zachód i faza księżyca z SunCalc dla każdego dnia. Model: `days/{date}.weatherPlace?: {name, lat, lng}` (reguły + testy), zachowywane przy ponownym imporcie dnia. Alert pogodowy do Jacka – później, razem z zamianą dni.
 - **Zamiana dni**: podmiana treści dwóch dni razem z planami indywidualnymi. Punkty `pinnedToDate` zostają. Ostrzeżenie przy dniach w różnych bazach noclegowych. „Cofnij”. Po zamianie push z wymaganym potwierdzeniem.
 - **Dni zależne od pogody**: oznaczenie dnia; wieczorem alert tylko do Jacka, gdy prognoza na jutro jest zła, z propozycją zamiany.
 - **Układ tabletowy**: plan + mapa, plany uczestników w kolumnach, panel organizatora.
 - **Zestawy kolorów**: akcent per osoba lub kolor per wyjazd.
-- Wspólna lista „kto co bierze” + szablony checklist kopiowane z poprzedniego wyjazdu.
-- Przydział aut i pokoi (wykorzystuje „dla kogo”).
+- ~~Wspólna lista „kto co bierze”~~ – nie robimy (decyzja Jacka z 5.11.2026). Szablony checklist kopiowane z poprzedniego wyjazdu – bez decyzji.
+- ~~Przydział aut i pokoi~~ – odpuszczone (decyzja Jacka z 5.11.2026).
 - Głosowanie nad terminem na etapie „zainteresowany”.
-- Eksport listy życzeń i planu do KML/GPX.
-- Przycisk „dotarłem”.
+- Eksport listy życzeń i planu do KML/GPX – robimy (5.11.2026).
+- Przycisk „dotarłem” – robimy (5.11.2026).
+- Kolejność po wydatkach i wpłatach (5.11.2026): „dotarłem”, eksport KML/GPX, układ tabletowy, zestawy kolorów.
 
 ### Szybko po v1 (tanie, wysoka wartość)
 - ~~Eksport osobistego planu do kalendarza (.ics)~~ – zrobiony w 1.5.0 (opis w §5).
@@ -393,6 +402,6 @@ Blokujące v1: brak.
 
 Do v2 (nie blokują):
 - [x] Wyszukiwarka miejsc: **OpenStreetMap (Photon) + wklejony link z Google Maps** (decyzja Jacka z 4.11.2026); bez ocen gwiazdkowych. Lista życzeń: widzą i dodają zatwierdzeni (i organizator).
-- [ ] Waluta bazowa rozliczeń (domyślnie PLN).
+- [x] Waluta rozliczeń: w walucie płatności + przycisk „całość w PLN” po bieżącym kursie średnim NBP; tekst rozliczenia do skopiowania (5.11.2026).
 - [ ] Czy wprowadzać termin decyzji i limit miejsc.
 - [ ] Która aplikacja (PWA czy FrameTrails) dostaje pushe grupowe Jacka.

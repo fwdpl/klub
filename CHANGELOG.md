@@ -1,5 +1,14 @@
 # Zmiany
 
+## 1.9.0 — wspólne wydatki i wpłaty
+
+- Nowa ikona „Wydatki” przy wyjeździe: każdy zatwierdzony wpisuje, kto płacił, ile i w jakiej walucie, oraz za kogo – po równo albo kwotami (aplikacja pilnuje, żeby kwoty się zgadzały).
+- Rozliczenie w walucie, w której płaciliście: kto komu ile oddaje, jak najmniej przelewów. Na górze Twoje saldo.
+- „Przelicz całość na PLN” – wszystko w złotych po bieżącym kursie średnim NBP. Gdy zaznaczycie zwrot w złotych, dalej rozliczacie się już tylko w PLN.
+- „✓ Oddane” przy przelewie zapisuje zwrot. „📋 Kopiuj” i „📤 Udostępnij” – rozliczenie jako tekst do wysłania w komunikatorze albo mailem.
+- Swój wpis poprawisz albo usuniesz stuknięciem; organizator może poprawić każdy. Bez internetu wpis zapisuje się na telefonie i wysyła po połączeniu.
+- W „Koszty” wpłaty na wyjazd: organizator wpisuje raty (np. lot, hotel) z terminem i odhacza wpłaty; każdy widzi tylko swoje – ile zostało i do kiedy.
+
 ## 1.8.0 — lista życzeń
 
 - Nowa ikona „Życzenia” przy wyjeździe (dla zatwierdzonych): wspólna lista miejsc, które chcemy zobaczyć.
