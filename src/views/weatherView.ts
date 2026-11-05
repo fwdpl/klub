@@ -48,7 +48,7 @@ function cloudsBar(f: DayForecast): HTMLElement {
       h(
         'span',
         { class: 'clouds__cell', title: `${c.hour}:00 – ${c.value}%` },
-        h('span', { class: 'clouds__fill', style: `height:${Math.max(6, c.value)}%` }),
+        h('span', { class: 'clouds__area' }, h('span', { class: 'clouds__pct' }, `${c.value}%`), h('span', { class: 'clouds__fill', style: `height:${Math.max(6, c.value)}%` })),
         h('small', {}, String(c.hour)),
       ),
     ),

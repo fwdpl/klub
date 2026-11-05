@@ -1591,8 +1591,6 @@ body.driver-open {
 .clouds {
   display: flex;
   gap: 4px;
-  align-items: flex-end;
-  height: 44px;
   margin: 6px 0;
 }
 
@@ -1601,8 +1599,30 @@ body.driver-open {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+/* Słupek: pełna wysokość = 100% zachmurzenia; procent nad słupkiem. */
+.clouds__area {
+  display: flex;
+  flex-direction: column;
   justify-content: flex-end;
-  height: 100%;
+  align-items: center;
+  box-sizing: content-box;
+  width: 100%;
+  height: 38px; /* wysokość słupka 100% */
+  padding-top: 14px; /* miejsce na procent nad pełnym słupkiem */
+}
+
+.clouds__pct,
+.clouds__fill {
+  flex: none;
+}
+
+.clouds__pct {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
 .clouds__fill {
