@@ -2230,3 +2230,8 @@ body.driver-open {
 .nav-icons .icon-link {
   width: 44px;
 }
+
+.change__open {
+  display: inline-block;
+  margin-top: 8px;
+}

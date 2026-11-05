@@ -97,7 +97,7 @@ async function route(): Promise<void> {
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/punkt\/(\d{4}-\d{2}-\d{2})\/([\w-]+)$/))) return showPlanItemEdit(m[1], m[2], m[3]);
   }
   if (path !== '/') history.replaceState(null, '', '#/');
-  await showTrips(user.uid, me.isOrganizer);
+  await showTrips(user.uid, me.isOrganizer, me.displayName);
 }
 
 window.addEventListener('hashchange', () => {

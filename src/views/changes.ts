@@ -11,7 +11,7 @@ const RECENT_DAYS = 45;
 const when = (d: Date | null) => (d ? d.toLocaleString('pl-PL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '…');
 
 /** Karta zmian na ekranie wyjazdu: nowe (niezobaczone) i czekające na „Przyjąłem”. */
-export function changesBanner(trip: Trip, me: { uid: string; displayName: string }, who: 'approved' | 'interested', readOnly: boolean): HTMLElement {
+export function changesBanner(trip: Trip, me: { uid: string; displayName: string }, who: 'approved' | 'interested', readOnly: boolean, withTripName = false): HTMLElement {
   const wrap = h('div', { class: 'changes' });
   void (async () => {
     const since = Date.now() - RECENT_DAYS * 86_400_000;
@@ -30,10 +30,11 @@ export function changesBanner(trip: Trip, me: { uid: string; displayName: string
       const el = h(
         'div',
         { class: `card change${c.requireAck ? ' change--ack' : ''}`, role: 'status' },
-        h('p', { class: 'change__when muted' }, `📣 ${c.requireAck ? 'Ważna zmiana' : 'Zmiana'} · ${when(c.at)}`),
+        h('p', { class: 'change__when muted' }, `📣 ${c.requireAck ? 'Ważna zmiana' : 'Zmiana'}${withTripName ? ` · ${trip.title}` : ''} · ${when(c.at)}`),
         h('h2', {}, c.title),
         c.body && h('p', { class: 'multiline' }, c.body),
         c.requireAck && !readOnly && ack,
+        withTripName && h('a', { class: 'link-btn change__open', href: `#/wyjazd/${trip.id}` }, 'Otwórz wyjazd →'),
         h('p', { class: 'muted change__note' }, c.requireAck ? 'Organizator widzi, kto przeczytał i potwierdził.' : 'Organizator widzi, kto przeczytał.'),
       );
       return el;

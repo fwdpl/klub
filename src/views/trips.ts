@@ -2,6 +2,7 @@ import { isTestEnv } from '../config';
 import { MEMBER_STATUS_LABEL, TRIP_STATUS_LABEL, listTrips, myMemberships, type Trip } from '../data/trips';
 import { installCard } from '../install';
 import type { MemberStatus } from '../model/types';
+import { changesBanner } from './changes';
 import { h, render } from '../ui';
 
 function tripCard(trip: Trip, myStatus: MemberStatus | undefined, isOrganizer: boolean): HTMLElement {
@@ -20,8 +21,10 @@ function tripCard(trip: Trip, myStatus: MemberStatus | undefined, isOrganizer: b
 }
 
 /** Ekran główny: lista wyjazdów. */
-export async function showTrips(uid: string, isOrganizer: boolean): Promise<void> {
+export async function showTrips(uid: string, isOrganizer: boolean, displayName = ''): Promise<void> {
   const list = h('div', {}, h('p', { class: 'muted' }, 'Wczytuję wyjazdy…'));
+  // nowe zmiany od organizatora – także tu, bo powiadomienie albo ikona otwierają aplikację na tym ekranie
+  const changes = h('div');
 
   render(
     h(
@@ -30,6 +33,7 @@ export async function showTrips(uid: string, isOrganizer: boolean): Promise<void
       h('h1', {}, isTestEnv ? 'Klub TEST' : 'Klub'),
     ),
     installCard(),
+    changes,
     isOrganizer &&
       h(
         'div',
@@ -43,6 +47,14 @@ export async function showTrips(uid: string, isOrganizer: boolean): Promise<void
   try {
     const memberships = await myMemberships(uid);
     const trips = await listTrips(isOrganizer, memberships);
+    if (!isOrganizer) {
+      changes.replaceChildren(
+        ...trips.flatMap((t) => {
+          const status = memberships.get(t.id);
+          return status === 'approved' || status === 'interested' ? [changesBanner(t, { uid, displayName }, status, false, true)] : [];
+        }),
+      );
+    }
     list.replaceChildren(
       ...(trips.length > 0
         ? trips.map((t) => tripCard(t, memberships.get(t.id), isOrganizer))

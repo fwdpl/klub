@@ -2,7 +2,8 @@
 
 ## 1.17.0 — kto przeczytał i kierunki
 
-- Powiadomienie o zmianie (🔔) można oznaczyć jako „Ważna zmiana” – uczestnicy zobaczą je kartą na ekranie wyjazdu z przyciskiem „✓ Przyjąłem”. Zwykłe zmiany też pokazują się kartą, a „zobaczone” zapisuje się samo.
+- Powiadomienie o zmianie (🔔) można oznaczyć jako „Ważna zmiana” – uczestnicy zobaczą je kartą na ekranie wyjazdu z przyciskiem „✓ Przyjąłem”. Zwykłe zmiany też pokazują się kartą, a „zobaczone” zapisuje się samo. Karta jest od razu na liście wyjazdów (ekran startowy) i na ekranie wyjazdu.
+- Stuknięcie w powiadomienie otwiera właściwy wyjazd także wtedy, gdy Klub był już otwarty w tle (wcześniej zostawał ostatni ekran).
 - Organizator ma u góry lornetkę: przy każdej zmianie widać, kto ją zobaczył i kiedy, kto potwierdził, oraz przycisk „Przypomnij brakującym”.
 - Nowy globus u góry – „Kierunki”: miejsca, które organizator chce odwiedzić. Każdy zaznacza „⭐ Interesuje mnie” i widzi tylko swoje zaznaczenia; organizator widzi, kto co zaznaczył. Sortowanie alfabetyczne albo wg terminu; termin do sortowania ustawia się sam z opisu „Kiedy” (np. „grudzień 2027”), można go zmienić z list miesiąca i roku.
 
