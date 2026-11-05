@@ -28,7 +28,6 @@ export async function showTrips(uid: string, isOrganizer: boolean): Promise<void
       'div',
       { class: 'topbar' },
       h('h1', {}, isTestEnv ? 'Klub TEST' : 'Klub'),
-      h('a', { class: 'icon-link', href: '#/ustawienia', 'aria-label': 'Ustawienia' }, '⚙'),
     ),
     installCard(),
     isOrganizer &&

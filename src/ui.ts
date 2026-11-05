@@ -33,8 +33,26 @@ export function present(...children: Child[]): (Node | string)[] {
   return children.filter((n): n is Node | string => n !== null && n !== false && n !== undefined && n !== '');
 }
 
+// Ikony u góry każdego ekranu po zalogowaniu (⚙ ustawienia, ? pomoc – prośba Jacka z 5.11.2026).
+// Ustawia je main.ts; bez logowania (logowanie, instrukcja) ich nie ma.
+let navIcons: (() => HTMLElement) | null = null;
+export function setNavIcons(make: (() => HTMLElement) | null): void {
+  navIcons = make;
+}
+
 export function render(...nodes: Child[]): void {
-  appEl.replaceChildren(...present(...nodes));
+  const list = present(...nodes);
+  if (navIcons) {
+    const first = list[0];
+    if (first instanceof HTMLElement && first.classList.contains('topbar')) {
+      first.append(navIcons());
+    } else if (first instanceof HTMLElement && first.matches('a.back')) {
+      list[0] = h('div', { class: 'navbar' }, first, navIcons());
+    } else {
+      list.unshift(h('div', { class: 'navbar navbar--icons-only' }, navIcons()));
+    }
+  }
+  appEl.replaceChildren(...list);
   appEl.hidden = false;
 }
 
