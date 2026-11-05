@@ -1640,3 +1640,7 @@ body.driver-open {
 .today__weather {
   margin: 0 0 8px;
 }
+
+.today__weather p {
+  margin: 0;
+}
