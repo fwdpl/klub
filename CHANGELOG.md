@@ -1,5 +1,11 @@
 # Zmiany
 
+## 1.13.0 — kolor aplikacji
+
+- Ustawienia → Motyw → „Kolor aplikacji”: 10 gotowych kolorów albo własny.
+- Każdy kolor ma wersję dla motywu jasnego i ciemnego. Kolor, który zlewałby się z tłem (np. żółty na białym), aplikacja sama przyciemnia albo rozjaśnia – wszystko zostaje czytelne.
+- Kolor jest zapamiętany na tym telefonie i działa od pierwszej chwili po otwarciu, bez mignięcia; „Przywróć domyślny” wraca do granatu i bursztynu.
+
 ## 1.11.0 — plan na mapie
 
 - W planie przycisk „🗺️ Pobierz na mapę”: plan (Twój albo cały), noclegi i lista życzeń jako plik do map.
