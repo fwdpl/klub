@@ -68,7 +68,7 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Czy aplikacja działa bez internetu?** Tak. Przed wyjazdem, z internetem, otwórz wyjazd i stuknij ikonę pobierania (strzałka w dół) obok tytułu – pod nią zobaczysz „Na telefonie: …”. Bez sieci u góry pojawi się czerwony pasek „Bez internetu”; plan, szczegóły i checklista działają, a odhaczenia wyślą się same po odzyskaniu połączenia. Przycisk „Nawiguj” otwiera Google Maps – bez internetu działa tylko z mapami pobranymi wcześniej w Google Maps.
 
-**Co to jest karta „Zmiana” na wyjeździe?** Gdy Jacek wyśle powiadomienie o zmianie, zobaczysz je na górze ekranu wyjazdu. Przy ważnych zmianach stuknij **✓ Przyjąłem**. Jacek widzi, kto przeczytał.
+**Co to jest karta „Zmiana” na wyjeździe?** Gdy Jacek wyśle powiadomienie o zmianie, zobaczysz je na górze ekranu wyjazdu. Przy ważnych zmianach stuknij **✓ Przyjąłem**. Jacek widzi, kto przeczytał. Jeśli odruchowo odrzucisz powiadomienie w telefonie, znajdziesz je w aplikacji pod ikoną **lornetki** u góry (ostatnie 10).
 
 **Co jest pod globusem?** Kierunki, które Jacek rozważa. Zaznacz **⭐ Interesuje mnie** przy tych, na które chciałbyś pojechać – widzisz tylko swoje zaznaczenia.
 

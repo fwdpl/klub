@@ -10,7 +10,7 @@ import { watchConnection } from './offline';
 import { initTheme } from './theme';
 import { h, hideSplash, setNavIcons, toast } from './ui';
 import { showHelp } from './views/help';
-import { showReads } from './views/changes';
+import { showReads, showRecent } from './views/changes';
 import { showDestinations } from './views/destinations';
 import { ICONS } from './views/icons';
 import { showCountriesEdit } from './views/country';
@@ -46,12 +46,12 @@ function navIcons(isOrganizer: boolean): HTMLElement {
     if (location.hash === href) a.setAttribute('aria-current', 'page');
     return a;
   };
-  // 🌐 kierunki – dla wszystkich; 🔭 kto przeczytał – tylko organizator (prośba Jacka z 5.11.2026)
+  // 🌐 kierunki; 🔭 organizator – kto przeczytał, uczestnik – ostatnie powiadomienia (prośby Jacka z 5.11.2026)
   return h(
     'span',
     { class: 'nav-icons' },
     link('#/kierunki', 'Kierunki do rozważenia', 'destinations'),
-    isOrganizer && link('#/odczyty', 'Kto przeczytał zmiany', 'reads'),
+    link('#/odczyty', isOrganizer ? 'Kto przeczytał zmiany' : 'Ostatnie powiadomienia', 'reads'),
     link('#/pomoc', 'Pomoc – co oznaczają ikony', 'help'),
     link('#/ustawienia', 'Ustawienia', 'settings'),
   );
@@ -84,6 +84,7 @@ async function route(): Promise<void> {
   if (path === '/ustawienia') return showSettings(user);
   if (path === '/pomoc') return showHelp(me.isOrganizer);
   if (path === '/kierunki') return showDestinations(me);
+  if (path === '/odczyty' && !me.isOrganizer) return showRecent(me);
   if ((m = path.match(/^\/wyjazd\/([\w-]+)$/))) return showTrip(m[1], me);
   if (me.isOrganizer) {
     if (path === '/osoby') return showPeople(user.uid);

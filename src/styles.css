@@ -2235,3 +2235,44 @@ body.driver-open {
   display: inline-block;
   margin-top: 8px;
 }
+
+/* Ostatnie powiadomienia (uczestnik) */
+.recent {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.recent:last-child {
+  border-bottom: 0;
+}
+
+.recent p {
+  margin: 4px 0;
+}
+
+.recent__when {
+  font-size: 13px;
+}
+
+.recent--new .recent__when {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.recent__title {
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--text);
+}
+
+.recent__state {
+  font-size: 14px;
+  color: var(--ok);
+}
+
+.recent__footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}

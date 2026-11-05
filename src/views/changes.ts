@@ -124,3 +124,79 @@ export async function showReads(myUid: string): Promise<void> {
     body.replaceChildren(h('p', { class: 'error' }, navigator.onLine ? 'Nie udało się wczytać.' : 'Brak internetu – odczyty widać po połączeniu.'));
   }
 }
+
+// ---------- uczestnik: ostatnie powiadomienia (prośba Jacka z 5.11.2026) ----------
+// Gdy ktoś odruchowo odrzuci powiadomienie w telefonie, znajdzie je tutaj. „Wyczyść” chowa listę na tym urządzeniu.
+
+const CLEARED_KEY = 'klub.changesClearedAt';
+const RECENT_LIMIT = 10;
+
+function clearedAt(): number {
+  try {
+    return Number(localStorage.getItem(CLEARED_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function showRecent(me: { uid: string; displayName: string }): Promise<void> {
+  const body = h('div', {}, h('p', { class: 'muted' }, 'Wczytuję…'));
+  render(h('a', { class: 'back', href: '#/' }, '← Wyjazdy'), h('h1', {}, 'Ostatnie powiadomienia'), body);
+  try {
+    const memberships = await myMemberships(me.uid);
+    const trips = await listTrips(false, memberships);
+    const all: Change[] = [];
+    for (const t of trips) {
+      const status = memberships.get(t.id);
+      if (status !== 'approved' && status !== 'interested') continue;
+      for (const c of await listChanges(t.id, status).catch(() => [] as Change[])) all.push(c);
+    }
+    const titles = new Map(trips.map((t) => [t.id, t.title]));
+    const since = clearedAt();
+    const recent = all
+      .filter((c) => !c.at || c.at.getTime() > since)
+      .sort((a, b) => (b.at?.getTime() ?? Infinity) - (a.at?.getTime() ?? Infinity))
+      .slice(0, RECENT_LIMIT);
+    if (!recent.length) {
+      body.replaceChildren(h('p', { class: 'muted' }, 'Brak powiadomień o zmianach.'));
+      return;
+    }
+    const reads = await Promise.all(recent.map((c) => myRead(c, me.uid)));
+    const rows = recent.map((c, i) => {
+      const r = reads[i];
+      const ack = h('button', { type: 'button', class: 'chip-btn' }, '✓ Przyjąłem');
+      ack.addEventListener('click', () => {
+        ack.replaceWith(h('span', { class: 'recent__state' }, '✓ przyjęte'));
+        markAck(c, me.uid).catch(() => toast('Nie udało się zapisać – spróbuj ponownie.'));
+      });
+      const state = c.requireAck ? (r?.ackAt ? h('span', { class: 'recent__state' }, `✓ przyjęte ${when(r.ackAt)}`) : ack) : null;
+      return h(
+        'div',
+        { class: `recent${!r ? ' recent--new' : ''}` },
+        h('p', { class: 'muted recent__when' }, `${!r ? '● ' : ''}${titles.get(c.tripId) ?? ''} · ${when(c.at)}`),
+        h('a', { class: 'recent__title', href: `#/wyjazd/${c.tripId}` }, c.title),
+        ...present(c.body && h('p', { class: 'multiline' }, c.body), state),
+      );
+    });
+    const clear = h('button', { type: 'button', class: 'icon-btn recent__clear', 'aria-label': 'Wyczyść wszystkie', title: 'Wyczyść wszystkie' });
+    clear.innerHTML = TRASH_ICON; // stała ikona
+    clear.addEventListener('click', () => {
+      try {
+        localStorage.setItem(CLEARED_KEY, String(Date.now()));
+      } catch {
+        // bez pamięci urządzenia – lista wróci po ponownym otwarciu
+      }
+      body.replaceChildren(h('p', { class: 'muted' }, 'Wyczyszczone. Nowe powiadomienia pojawią się tutaj.'));
+    });
+    body.replaceChildren(h('div', { class: 'card' }, ...rows), h('div', { class: 'recent__footer' }, clear, h('span', { class: 'muted' }, 'Wyczyść wszystkie')));
+    // otwarcie listy = przeczytanie
+    recent.forEach((c, i) => {
+      if (!reads[i]) markSeen(c, me).catch(() => undefined);
+    });
+  } catch {
+    body.replaceChildren(h('p', { class: 'error' }, navigator.onLine ? 'Nie udało się wczytać.' : 'Brak internetu – powiadomienia widać po połączeniu.'));
+  }
+}
+
+const TRASH_ICON =
+  '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>';
