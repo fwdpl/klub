@@ -46,9 +46,4 @@ export async function interestedNames(id: string): Promise<string[]> {
   return snap.docs.map((d) => String(d.get('name') ?? '?')).sort((a, b) => a.localeCompare(b, 'pl'));
 }
 
-/** Sortowanie: alfabetycznie albo wg terminu (bez terminu – na końcu, alfabetycznie). */
-export function sortDestinations(list: Destination[], by: 'name' | 'date'): Destination[] {
-  const byName = (a: Destination, b: Destination) => a.name.localeCompare(b.name, 'pl');
-  if (by === 'name') return [...list].sort(byName);
-  return [...list].sort((a, b) => (a.sortDate ?? '9999').localeCompare(b.sortDate ?? '9999') || byName(a, b));
-}
+export { MONTHS, guessSortDate, sortDestinations } from './destinationsLogic';

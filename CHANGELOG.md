@@ -4,7 +4,7 @@
 
 - Powiadomienie o zmianie (🔔) można oznaczyć jako „Ważna zmiana” – uczestnicy zobaczą je kartą na ekranie wyjazdu z przyciskiem „✓ Przyjąłem”. Zwykłe zmiany też pokazują się kartą, a „zobaczone” zapisuje się samo.
 - Organizator ma u góry lornetkę: przy każdej zmianie widać, kto ją zobaczył i kiedy, kto potwierdził, oraz przycisk „Przypomnij brakującym”.
-- Nowy globus u góry – „Kierunki”: miejsca, które organizator chce odwiedzić. Każdy zaznacza „⭐ Interesuje mnie” i widzi tylko swoje zaznaczenia; organizator widzi, kto co zaznaczył. Sortowanie alfabetyczne albo wg terminu.
+- Nowy globus u góry – „Kierunki”: miejsca, które organizator chce odwiedzić. Każdy zaznacza „⭐ Interesuje mnie” i widzi tylko swoje zaznaczenia; organizator widzi, kto co zaznaczył. Sortowanie alfabetyczne albo wg terminu; termin do sortowania ustawia się sam z opisu „Kiedy” (np. „grudzień 2027”), można go zmienić z list miesiąca i roku.
 
 ## 1.16.0 — liczenie w kwotach
 

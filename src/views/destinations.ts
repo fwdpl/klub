@@ -1,4 +1,15 @@
-import { deleteDestination, interestedNames, listDestinations, myInterest, saveDestination, setInterest, sortDestinations, type Destination } from '../data/destinations';
+import {
+  MONTHS,
+  deleteDestination,
+  guessSortDate,
+  interestedNames,
+  listDestinations,
+  myInterest,
+  saveDestination,
+  setInterest,
+  sortDestinations,
+  type Destination,
+} from '../data/destinations';
 import { plural } from '../text';
 import { h, present, render, toast } from '../ui';
 
@@ -56,7 +67,34 @@ export async function showDestinations(me: Me): Promise<void> {
   const form = (d: Destination | null): HTMLElement => {
     const name = h('input', { type: 'text', maxlength: '80', placeholder: 'Np. Patagonia', 'aria-label': 'Kierunek', value: d?.name ?? '' });
     const dates = h('input', { type: 'text', maxlength: '60', placeholder: 'Kiedy, np. jesień 2027', 'aria-label': 'Kiedy (opis)', value: d?.dates ?? '' });
-    const month = h('input', { type: 'month', 'aria-label': 'Miesiąc do sortowania', value: d?.sortDate ?? '' });
+    // miesiąc i rok z list (pole typu „month” nie działa w każdej przeglądarce, np. w Firefoksie)
+    const thisYear = new Date().getFullYear();
+    const [initYear, initMonth] = (d?.sortDate ?? '').split('-');
+    const monthSel = h(
+      'select',
+      { 'aria-label': 'Miesiąc' },
+      h('option', { value: '' }, 'Miesiąc –'),
+      ...MONTHS.map((m, i) => h('option', { value: String(i + 1).padStart(2, '0'), selected: initMonth === String(i + 1).padStart(2, '0') }, m)),
+    );
+    const yearSel = h(
+      'select',
+      { 'aria-label': 'Rok' },
+      h('option', { value: '' }, 'Rok –'),
+      ...Array.from({ length: 8 }, (_, i) => String(thisYear - 1 + i)).map((y) => h('option', { value: y, selected: initYear === y }, y)),
+    );
+    let touched = !!d?.sortDate;
+    monthSel.addEventListener('change', () => (touched = true));
+    yearSel.addEventListener('change', () => (touched = true));
+    // „Kiedy” wpisane słowami (np. „grudzień 2027”) samo ustawia miesiąc i rok, dopóki nie zmienisz ich ręcznie
+    dates.addEventListener('input', () => {
+      if (touched) return;
+      const g = guessSortDate(dates.value);
+      const [gy, gm] = g ? g.split('-') : ['', ''];
+      if (g && ![...yearSel.options].some((o) => o.value === gy)) yearSel.append(h('option', { value: gy }, gy));
+      yearSel.value = gy;
+      monthSel.value = gm;
+    });
+    const sortDate = () => (yearSel.value ? `${yearSel.value}-${monthSel.value || '01'}` : undefined);
     const note = h('input', { type: 'text', maxlength: '200', placeholder: 'Notatka (opcjonalnie)', 'aria-label': 'Notatka', value: d?.note ?? '' });
     const save = h('button', { type: 'button', class: 'btn' }, d ? 'Zapisz' : 'Dodaj');
     save.addEventListener('click', async () => {
@@ -66,13 +104,13 @@ export async function showDestinations(me: Me): Promise<void> {
         await saveDestination(d?.id ?? null, {
           name: name.value.trim(),
           dates: dates.value.trim() || undefined,
-          sortDate: month.value || undefined,
+          sortDate: sortDate(),
           note: note.value.trim() || undefined,
         });
         editing = null;
         await load();
       } catch {
-        toast(navigator.onLine ? 'Nie udało się zapisać.' : 'Brak internetu.');
+        toast(navigator.onLine ? 'Nie udało się zapisać – sprawdź nazwę i termin.' : 'Brak internetu.');
         save.disabled = false;
       }
     });
@@ -82,7 +120,8 @@ export async function showDestinations(me: Me): Promise<void> {
       h('h3', {}, d ? 'Popraw kierunek' : 'Nowy kierunek'),
       name,
       dates,
-      h('label', { class: 'field' }, h('span', {}, 'Miesiąc (do sortowania wg terminu)'), month),
+      h('p', { class: 'field-label' }, 'Termin do sortowania (ustawia się sam z „Kiedy”)'),
+      h('div', { class: 'two-col' }, monthSel, yearSel),
       note,
       h('div', { class: 'actions actions--row' }, save, h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => ((editing = null), draw()) }, 'Anuluj')),
       ...present(
