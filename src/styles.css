@@ -1970,3 +1970,66 @@ body.driver-open {
   color: var(--text-2);
   border-bottom: 2px solid var(--border);
 }
+
+/* Kolor aplikacji (ustawienia) */
+.accent-title {
+  margin: 16px 0 8px;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.swatch {
+  min-height: 48px;
+  padding: 6px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swatch[aria-pressed='true'] {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--bg) inset;
+}
+
+.swatch__dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--sw-light);
+}
+
+:root[data-theme='dark'] .swatch__dot {
+  background: var(--sw-dark);
+}
+
+.accent-custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 4px;
+}
+
+.accent-custom input[type='color'] {
+  width: 48px;
+  height: 40px;
+  padding: 2px;
+  border-radius: 8px;
+}
+
+.accent-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.accent-preview {
+  margin: 4px 0;
+}

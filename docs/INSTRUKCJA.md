@@ -86,6 +86,8 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Mam tablet – co się zmienia?** Plan w widoku „Wszyscy” pokazuje rozwinięty dzień w kolumnach (wspólne punkty i każda osoba osobno), a przy tablecie w poziomie obok planu jest mapa z ponumerowanymi punktami rozwiniętego dnia (wymaga internetu).
 
+**Czy mogę zmienić kolor aplikacji?** Tak: Ustawienia (⚙) → **Motyw** → **Kolor aplikacji** – jeden z 10 gotowych albo własny. Zbyt jasny lub zbyt ciemny kolor aplikacja sama dopasuje, żeby wszystko było czytelne.
+
 **Za dużo powiadomień?** Ustawienia (⚙) → **Wycisz wszystkie powiadomienia z Klubu**.
 
 **Komunikat „Jest nowa wersja aplikacji”.** Stuknij **Odśwież** – aplikacja wczyta poprawki.

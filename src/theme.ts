@@ -1,3 +1,5 @@
+import { DEFAULT_ACCENT, accentCss, resolveAccent } from './accent';
+
 export type ThemePref = 'auto' | 'light' | 'dark';
 
 const KEY = 'klub.theme';
@@ -40,4 +42,42 @@ export function initTheme(): void {
   darkQuery.addEventListener('change', () => {
     if (getThemePref() === 'auto') apply('auto');
   });
+}
+
+// ---------- kolor aplikacji (v2) ----------
+// Wybór (id gotowego koloru albo „#rrggbb”) i gotowe reguły CSS w pamięci urządzenia;
+// index.html wstrzykuje te reguły przed pierwszym renderem, więc nie ma błysku domyślnego koloru.
+
+const ACCENT_KEY = 'klub.accent';
+const ACCENT_CSS_KEY = 'klub.accentCss';
+const STYLE_ID = 'accent-css';
+
+export function getAccentChoice(): string {
+  try {
+    return localStorage.getItem(ACCENT_KEY) ?? DEFAULT_ACCENT;
+  } catch {
+    return DEFAULT_ACCENT;
+  }
+}
+
+export function setAccentChoice(choice: string): void {
+  const css = choice === DEFAULT_ACCENT ? '' : accentCss(resolveAccent(choice));
+  try {
+    if (choice === DEFAULT_ACCENT) {
+      localStorage.removeItem(ACCENT_KEY);
+      localStorage.removeItem(ACCENT_CSS_KEY);
+    } else {
+      localStorage.setItem(ACCENT_KEY, choice);
+      localStorage.setItem(ACCENT_CSS_KEY, css);
+    }
+  } catch {
+    // zapis niemożliwy – kolor działa do końca sesji
+  }
+  let style = document.getElementById(STYLE_ID);
+  if (!style) {
+    style = document.createElement('style');
+    style.id = STYLE_ID;
+    document.head.append(style);
+  }
+  style.textContent = css;
 }
