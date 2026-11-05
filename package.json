@@ -1,7 +1,7 @@
 {
   "name": "klub",
   "private": true,
-  "version": "1.13.0",
+  "version": "1.14.0",
   "type": "module",
   "scripts": {
     "dev": "vite --mode test",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "firebase": "^13.1.0",
+    "leaflet": "1.9.4",
     "sortablejs": "1.15.7",
     "suncalc": "1.9.0",
     "workbox-core": "^7.4.1",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
+    "@types/leaflet": "1.9.20",
     "@types/sortablejs": "1.15.9",
     "@types/suncalc": "1.9.2",
     "ajv": "^8.20.0",

@@ -413,7 +413,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
     body.replaceChildren(
       h(
         'div',
-        { class: preview ? 'previewing' : '' },
+        { class: preview ? 'previewing wide' : 'wide' },
         banner,
         h(
           'div',

@@ -1879,6 +1879,98 @@ body.driver-open {
   font-size: 14px;
 }
 
+/* Układ tabletowy (zgoda Jacka z 5.11.2026): ekran wyjazdu i lista osób szerzej (tablet także w pionie) */
+@media (min-width: 768px) {
+  .app:has(.wide) {
+    max-width: 1180px;
+  }
+
+  .app:has(.wide) .tabs__bar {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  }
+
+  .people-list.wide {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+
+  .people-list.wide > h2,
+  .people-list.wide > p {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Plan obok mapy (od 1000 px) */
+.plan-layout--map {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.plan-map {
+  position: sticky;
+  top: calc(env(safe-area-inset-top) + 12px);
+}
+
+.plan-map__canvas {
+  height: calc(100vh - 160px);
+  min-height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.plan-map__caption {
+  font-size: 14px;
+  margin: 6px 0 0;
+}
+
+.plan-pin span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: 2px solid var(--bg);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+/* ciemny motyw: przyciemnione kafelki mapy, żeby nie oślepiały */
+:root[data-theme='dark'] .plan-map .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.5);
+}
+
+/* „Wszyscy” w kolumnach osób (od 768 px) */
+.plan-cols {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(160px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.plan-col {
+  min-width: 0;
+}
+
+.plan-col__title {
+  position: sticky;
+  top: 0;
+  margin: 0 0 8px;
+  padding: 4px 0;
+  font-size: 15px;
+  color: var(--text-2);
+  border-bottom: 2px solid var(--border);
+}
+
 /* Kolor aplikacji (ustawienia) */
 .accent-title {
   margin: 16px 0 8px;

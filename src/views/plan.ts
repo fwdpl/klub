@@ -8,6 +8,7 @@ import { plural } from '../text';
 import { h, present } from '../ui';
 import { calendarExport } from './calendar';
 import { mapExport } from './mapExport';
+import { planMap, type MapPoint } from './planMap';
 import { attachDayChip, dayWeather } from './weatherView';
 import { fold, remember } from './fold';
 import { formatLocal } from './tripDetails';
@@ -162,12 +163,30 @@ function dayFold(day: DayDoc, trip: Trip, zone: string, body: HTMLElement[], cou
   return el;
 }
 
+// Układ tabletowy (zgoda Jacka z 5.11.2026): od 768 px „Wszyscy” w kolumnach osób, od 1000 px mapa obok planu
+const COLUMNS_QUERY = '(min-width: 768px)';
+const MAP_QUERY = '(min-width: 1000px)';
+const media = (q: string) => (typeof matchMedia === 'function' ? matchMedia(q) : null);
+
+/** Dzień w kolumnach: wspólne punkty + po jednej kolumnie na osobę z jej punktami indywidualnymi. */
+function personColumns(items: PlanItem[], members: Member[], card: (i: PlanItem) => HTMLElement): HTMLElement | null {
+  const people = members.filter((m) => m.status === 'approved' && items.some((i) => i.audience !== 'all' && i.audience.includes(m.uid)));
+  if (!people.length) return null;
+  const column = (title: string, list: PlanItem[]) =>
+    h('div', { class: 'plan-col' }, h('h4', { class: 'plan-col__title' }, title), ...(list.length ? list.map(card) : [h('p', { class: 'muted' }, '—')]));
+  return h(
+    'div',
+    { class: 'plan-cols', style: `--cols:${people.length + 1}` },
+    column('Wszyscy', items.filter((i) => i.audience === 'all')),
+    ...people.map((m) => column(m.displayName, items.filter((i) => i.audience !== 'all' && i.audience.includes(m.uid)))),
+  );
+}
+
 /**
  * Plan dni: oś czasu z „Mój plan” / „Wszyscy” (decyzja J), filtrem etykiet i kolizjami.
  * Dwa poziomy zwijania (uwaga Jacka z 1.11.2026): cała sekcja → lista dni → każdy dzień osobno.
  */
 export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[], planNotes: string[], amApproved: boolean): HTMLElement {
-  const wrap = h('div');
   let mode: Mode = amApproved ? (savedMode() ?? 'mine') : 'all';
   let tag: string | null = null;
   const tags = [...new Set(days.flatMap((d) => d.items.flatMap((i) => i.tags ?? [])))].sort();
@@ -175,6 +194,32 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
   // Eksport do kalendarza: „Mój plan” dla uczestnika, cały plan dla organizatora spoza listy
   const calendar = calendarExport(trip, days, me.uid, amApproved);
   const map = mapExport(trip, days, me.uid, amApproved);
+  const columnsMq = media(COLUMNS_QUERY);
+  const mapMq = media(MAP_QUERY);
+  const side = mapMq?.matches ? planMap() : null;
+  const main = h('div', { class: 'plan-main' });
+  const layout = h('div', { class: side ? 'plan-layout plan-layout--map' : 'plan-layout' }, main, side?.el ?? null);
+  let shown: { day: DayDoc; zone: string; items: PlanItem[]; el: HTMLDetailsElement }[] = [];
+
+  /** Mapa: punkty rozwiniętych dni (albo wszystkich, gdy żaden nie jest rozwinięty). */
+  const updateMap = () => {
+    if (!side) return;
+    const open = shown.filter((d) => d.el.open);
+    const source = open.length ? open : shown;
+    const points: MapPoint[] = [];
+    let missing = 0;
+    for (const { day, items } of source) {
+      items.forEach((i, n) => {
+        const p = i.place;
+        if (p?.lat !== undefined && p?.lng !== undefined) points.push({ lat: p.lat, lng: p.lng, n: n + 1, title: `${timeOf(i.start)} ${i.title}`, day: formatLocal(day.date) });
+        else if (p) missing += 1;
+      });
+    }
+    const what = open.length === 1 ? formatLocal(open[0].day.date) : open.length ? `${open.length} dni` : 'cały plan';
+    side.show(points, `Na mapie: ${what} – ${plural(points.length, 'punkt', 'punkty', 'punktów')}${missing ? ` (bez położenia: ${missing})` : ''}. Rozwiń dzień, żeby zobaczyć tylko jego punkty.`);
+  };
+  // toggle nie „bąbelkuje” – łapiemy go w fazie przechwytywania
+  main.addEventListener('toggle', (e) => (e.target as HTMLElement).matches?.('details.plan-day') && updateMap(), true);
 
   const draw = () => {
     const visible = days
@@ -190,15 +235,18 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
     const button = (label: string, pressed: boolean, onclick: () => void) =>
       h('button', { type: 'button', 'aria-pressed': String(pressed), onclick }, label);
 
-    const dayEls = visible.map(({ day, zone, items }) =>
-      dayFold(day, trip, zone, items.map((i) => itemCard(i, day, zone, trip, members, me, mode)), items.length, tag !== null, me.isOrganizer),
-    );
+    const dayEls = visible.map(({ day, zone, items }) => {
+      const card = (i: PlanItem) => itemCard(i, day, zone, trip, members, me, mode);
+      const cols = mode === 'all' && columnsMq?.matches ? personColumns(items, members, card) : null;
+      return dayFold(day, trip, zone, cols ? [cols] : items.map(card), items.length, tag !== null, me.isOrganizer);
+    });
+    shown = visible.map((v, i) => ({ ...v, el: dayEls[i] }));
     const setAll = (open: boolean) => {
       for (const el of dayEls) el.open = open;
       if (tag === null) for (const { day } of visible) remember(`session:${trip.id}:day:${day.date}`, open);
     };
 
-    wrap.replaceChildren(
+    main.replaceChildren(
       ...present(
         me.isOrganizer &&
           h(
@@ -237,6 +285,7 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
         ...dayEls,
       ),
     );
+    updateMap();
   };
 
   const setMode = (m: Mode) => {
@@ -254,5 +303,7 @@ export function planSection(trip: Trip, me: Me, members: Member[], days: DayDoc[
   };
 
   draw();
-  return fold({ id: `${trip.id}:plan`, title: 'Plan', meta: days.length ? plural(days.length, 'dzień', 'dni', 'dni') : undefined, open: true }, wrap);
+  // obrót tabletu: kolumny osób włączają się i wyłączają bez przeładowania
+  columnsMq?.addEventListener?.('change', () => draw());
+  return fold({ id: `${trip.id}:plan`, title: 'Plan', meta: days.length ? plural(days.length, 'dzień', 'dni', 'dni') : undefined, open: true }, layout);
 }
