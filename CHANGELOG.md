@@ -6,7 +6,13 @@
 - „KML (Google)” – do Google Moje Mapy i Google Earth; każdy dzień to osobna warstwa, noclegi i lista życzeń osobno, w różnych kolorach.
 - „GPX (mapy offline)” – do Organic Maps, OsmAnd i innych map działających bez internetu.
 - Miejsca bez współrzędnych aplikacja próbuje znaleźć w OpenStreetMap po nazwie i adresie (oznaczone jako przybliżone).
-- Poprawka: przyciski stojące obok siebie są równo w jednej linii.
+
+## 1.10.0 — jestem na miejscu
+
+- Przycisk „📍 Jestem na miejscu” przy wyjeździe (w „Dziś” i w „Kto”): po stuknięciu wybierasz „Do wszystkich” albo „Do organizatora”, możesz dopisać np. „jestem w hotelu”. Odbiorcy dostają powiadomienie „Ania jest na miejscu”.
+- Pod przyciskiem ostatnie zgłoszenia z godziną; zgłoszenia „do organizatora” widzi tylko organizator i nadawca.
+- Bez internetu zgłoszenie wyśle się po połączeniu.
+- Poprawka: przyciski stojące obok siebie (np. „Do wszystkich” / „Do organizatora”, „Zapisz” / „Anuluj”) są równo w jednej linii.
 
 ## 1.9.0 — wspólne wydatki i wpłaty
 

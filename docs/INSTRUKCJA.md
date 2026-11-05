@@ -82,6 +82,8 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Jak mieć plan na mapie?** W planie stuknij **🗺️ Pobierz na mapę**, zaznacz, co ma się znaleźć (plan, noclegi, lista życzeń) i wybierz **KML (Google)** – do Google Moje Mapy – albo **GPX (mapy offline)** – do Organic Maps czy OsmAnd, które działają bez internetu.
 
+**Jak dać znać, że jestem na miejscu?** W karcie **Dziś** albo w **Kto** stuknij **📍 Jestem na miejscu** i wybierz **Do wszystkich** albo **Do organizatora** (możesz dopisać np. „jestem w hotelu”). Odbiorcy dostaną powiadomienie.
+
 **Za dużo powiadomień?** Ustawienia (⚙) → **Wycisz wszystkie powiadomienia z Klubu**.
 
 **Komunikat „Jest nowa wersja aplikacji”.** Stuknij **Odśwież** – aplikacja wczyta poprawki.
