@@ -48,7 +48,7 @@ function cloudsBar(f: DayForecast): HTMLElement {
       h(
         'span',
         { class: 'clouds__cell', title: `${c.hour}:00 – ${c.value}%` },
-        h('span', { class: 'clouds__fill', style: `height:${Math.max(6, c.value)}%` }),
+        h('span', { class: 'clouds__area' }, h('span', { class: 'clouds__pct' }, `${c.value}%`), h('span', { class: 'clouds__fill', style: `height:${Math.max(6, c.value)}%` })),
         h('small', {}, String(c.hour)),
       ),
     ),
@@ -159,7 +159,8 @@ export function attachDayChip(trip: Trip, day: DayDoc, zone: string, target: HTM
 
 /** Krótka linia pogody na karcie „Dziś”. */
 export function todayWeather(trip: Trip, day: DayDoc, zone: string): HTMLElement {
-  const line = h('p', { class: 'today__weather muted' });
+  const line = h('p', { class: 'muted' });
+  const wrap = h('div', { class: 'today__weather' }, line);
   void (async () => {
     const found = await placeForDay(trip, day);
     if (!found) return;
@@ -173,6 +174,8 @@ export function todayWeather(trip: Trip, day: DayDoc, zone: string): HTMLElement
       sun.sunset ? `zachód ${sun.sunset}` : '',
     ].filter(Boolean);
     line.textContent = parts.join(' · ');
+    // zachmurzenie w ciągu dnia – tak jak w rozwiniętym dniu planu
+    if (f?.clouds.length) wrap.append(cloudsBar(f));
   })();
-  return line;
+  return wrap;
 }

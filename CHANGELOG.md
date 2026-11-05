@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.8.1 — zachmurzenie w procentach
+
+- Nad każdym słupkiem zachmurzenia procent (np. „81%”), a wysokość słupka odpowiada teraz dokładnie zachmurzeniu – wcześniej słupki od ok. 70% wyglądały tak samo.
+- Słupki zachmurzenia także na karcie „Dziś”.
+
 ## 1.8.0 — lista życzeń
 
 - Nowa ikona „Życzenia” przy wyjeździe (dla zatwierdzonych): wspólna lista miejsc, które chcemy zobaczyć.
