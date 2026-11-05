@@ -163,6 +163,8 @@ trips/{tripId}/expenses/{expenseId}   # wspólne wydatki (5.11.2026); czytają i
   # poprawia i usuwa: createdBy albo organizator
 trips/{tripId}/payments/{uid}         # wpłaty na wyjazd (5.11.2026); czyta osoba (swoje) i organizator, pisze organizator
   name, items: { id, title, amount, currency, due?: 'YYYY-MM-DD', paidOn?: 'YYYY-MM-DD' }[]
+trips/{tripId}/arrivals/{arrivalId}   # „Jestem na miejscu” (5.11.2026): uid, name (= imię z konta), to: 'all'|'organizer', note? (≤ 80), createdAt
+  # tworzy zatwierdzony (sam za siebie); „organizer” widzą nadawca i organizator; bez zmian, usuwa organizator
 trips/{tripId}/changes/{changeId} + reads/{uid}
 ```
 
@@ -244,7 +246,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - ~~Przydział aut i pokoi~~ – odpuszczone (decyzja Jacka z 5.11.2026).
 - Głosowanie nad terminem na etapie „zainteresowany”.
 - Eksport listy życzeń i planu do KML/GPX – robimy (5.11.2026).
-- Przycisk „dotarłem” – robimy (5.11.2026).
+- Przycisk „dotarłem” – robimy (5.11.2026). **Zrobione w 1.10.0**: jeden ogólny przycisk „📍 Jestem na miejscu” (w „Dziś” i w „Kto”), po stuknięciu wybór „Do wszystkich” (zatwierdzeni + organizator) albo „Do organizatora”, opcjonalny dopisek; powiadomienie wysyła funkcja `onArrival` (wyciszeni pominięci), tekst neutralny („Ania jest na miejscu”). Pod przyciskiem ostatnie zgłoszenia widoczne dla danej osoby.
 - Kolejność po wydatkach i wpłatach (5.11.2026): „dotarłem”, eksport KML/GPX, układ tabletowy, zestawy kolorów.
 
 ### Szybko po v1 (tanie, wysoka wartość)

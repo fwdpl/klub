@@ -218,6 +218,22 @@ service cloud.firestore {
         allow delete: if isOrganizer();
       }
 
+      // „Jestem na miejscu” (v2): zatwierdzony zgłasza tylko siebie (z imieniem z konta); „do organizatora” widzą tylko
+      // nadawca i organizator. Wpisów się nie zmienia; usuwa organizator. Powiadomienia wysyła funkcja onArrival.
+      match /arrivals/{arrivalId} {
+        allow read: if isOrganizer()
+          || (canSeeDetails(tripId) && (resource.data.uid == request.auth.uid || resource.data.to == 'all'));
+        allow create: if canSeeDetails(tripId)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'to', 'note', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.name == get(userPath()).data.displayName
+          && request.resource.data.to in ['all', 'organizer']
+          && (!('note' in request.resource.data) || (request.resource.data.note is string && request.resource.data.note.size() <= 80))
+          && request.resource.data.createdAt == request.time;
+        allow update: if false;
+        allow delete: if isOrganizer();
+      }
+
       // Checklista osobista: właściciel (zatwierdzony) odhacza punkty wspólne (templateDone)
       // i dopisuje własne (items); organizator widzi i zmienia wszystko (decyzja F)
       match /checklists/{uid} {

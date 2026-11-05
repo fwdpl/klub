@@ -27,6 +27,7 @@ import { ICONS } from './icons';
 import { tabbedSections, type Tab } from './tabs';
 import { wishlistSection } from './wishlist';
 import { expensesSection } from './expenses';
+import { arrivalCard } from './arrival';
 import { myPaymentsCard, organizerPaymentsCard } from './payments';
 import { countryInfo } from '../data/countries';
 import { noticeCard, takeNotice } from './notify';
@@ -325,7 +326,10 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
     const approvedPeople = (members ?? []).filter((m) => m.status === 'approved').map((m) => ({ uid: m.uid, displayName: m.displayName }));
     // waluty krajów wyjazdu – na początek listy przy wydatkach
     const tripCurrencies = [...new Set(countries.map((c) => (c.currency && /^[A-Z]{3}$/.test(c.currency) ? c.currency : countryInfo(c.code)?.currency)).filter((c): c is string => !!c))];
-    if (today) tabs.push({ key: 'today', icon: 'today', label: 'Dziś', title: 'Dziś', content: () => today });
+    // „Jestem na miejscu”: wysyłają zatwierdzeni i organizator (nie w podglądzie); widzą wszyscy z dostępem do szczegółów
+    const canArrive = !preview && (me.isOrganizer || mine === 'approved');
+    const arrival = () => (seesDetails ? arrivalCard(trip, viewer, canArrive) : null);
+    if (today) tabs.push({ key: 'today', icon: 'today', label: 'Dziś', title: 'Dziś', content: () => h('div', {}, arrival(), today) });
     if (seesDetails) {
       const plan = planData ? planSection(trip, viewer, members ?? [], planData[0], planData[1].planNotes ?? [], mine === 'approved') : null;
       tabs.push({ key: 'plan', icon: 'plan', label: 'Plan', title: 'Plan', content: () => (plan ? foldBody(plan) : loadError('plan')) });
@@ -376,6 +380,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
               ? h(
                   'div',
                   {},
+                  arrival(),
                   organizer &&
                     previewPicker(members, me.uid, (m) => {
                       previewOf = m;
@@ -383,7 +388,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
                     }),
                   foldBody(organizerMembersCard(trip, members, reload)),
                 )
-              : foldBody(peopleCard(trip.id, members)),
+              : h('div', {}, arrival(), foldBody(peopleCard(trip.id, members))),
         });
       }
     }

@@ -102,6 +102,7 @@ export function showGuide(): void {
         h('li', {}, b('Karta kraju'), ' – waluta, gniazdka, numer alarmowy, napiwki, różnica czasu i notatka o wizie; widać ją po zgłoszeniu.'),
         h('li', {}, b('Życzenia'), ' – po zatwierdzeniu: dodaj miejsce (z podpowiedzi albo link z Google Maps) albo dopisz się do cudzego: ❤️ Muszę / 👍 Fajnie. Z tej listy powstaje plan.'),
         h('li', {}, b('Wydatki'), ' – kto płacił i za kogo; rozliczenie w walucie płatności albo całość w PLN (kurs NBP), „✓ Oddane” i „📋 Kopiuj”. Twoje wpłaty na wyjazd – w „Koszty”.'),
+        h('li', {}, b('📍 Jestem na miejscu'), ' – w „Dziś” i „Kto”: daj znać wszystkim albo tylko organizatorowi.'),
         h('li', {}, b('Mój plan / Wszyscy'), ' – Twoje punkty i wspólne albo plan całej grupy. Godziny zawsze w czasie miejsca.'),
         h('li', {}, b('Przed wyjazdem'), ', z internetem: otwórz wyjazd i stuknij ikonę pobierania obok tytułu. Bez sieci wszystko działa, a odhaczenia wyślą się po połączeniu.'),
         h('li', {}, 'Na ekranie wyjazdu ikony (Plan, Loty, Noclegi, Lista, Życzenia, Wydatki, Kraj…) – stuknij, żeby zobaczyć tę część. W czasie wyjazdu pierwsza jest „Dziś”. Dni planu rozwijasz stuknięciem.'),
