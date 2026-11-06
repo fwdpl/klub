@@ -68,7 +68,15 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Czy aplikacja działa bez internetu?** Tak. Przed wyjazdem, z internetem, otwórz wyjazd i stuknij ikonę pobierania (strzałka w dół) obok tytułu – pod nią zobaczysz „Na telefonie: …”. Bez sieci u góry pojawi się czerwony pasek „Bez internetu”; plan, szczegóły i checklista działają, a odhaczenia wyślą się same po odzyskaniu połączenia. Przycisk „Nawiguj” otwiera Google Maps – bez internetu działa tylko z mapami pobranymi wcześniej w Google Maps.
 
-**Co oznaczają ikony?** Stuknij **?** u góry ekranu (obok ⚙) – zobaczysz listę ikon z krótkim opisem.
+**Co to jest karta „Zmiana” na wyjeździe?** Gdy Jacek wyśle powiadomienie o zmianie, zobaczysz je na górze ekranu wyjazdu. Przy ważnych zmianach stuknij **✓ Przyjąłem**. Jacek widzi, kto przeczytał. Jeśli odruchowo odrzucisz powiadomienie w telefonie, znajdziesz je w aplikacji pod ikoną **lornetki** u góry (ostatnie 10).
+
+**Co jest pod globusem?** Kierunki, które Jacek rozważa. Zaznacz **⭐ Interesuje mnie** przy tych, na które chciałbyś pojechać – widzisz tylko swoje zaznaczenia.
+
+**Co oznaczają ikony u góry?** Po zalogowaniu na każdym ekranie, od lewej:
+- 🌐 **Kierunki (globus)** – miejsca, które Jacek rozważa; zaznacz **⭐ Interesuje mnie** (widzisz tylko swoje zaznaczenia).
+- 🔭 **Powiadomienia (lornetka)** – ostatnie 10 powiadomień o zmianach, gdy odruchowo odrzucisz je w telefonie; przy ważnych **✓ Przyjąłem**, kosz czyści listę.
+- **?** **Pomoc** – co oznaczają wszystkie ikony (także te na ekranie wyjazdu).
+- ⚙ **Ustawienia** – powiadomienia, wyciszenie, motyw jasny/ciemny, kolor aplikacji.
 
 **Jak poruszać się po wyjeździe?** Pod tytułem są ikony: Plan, Loty, Noclegi, Lista, Życzenia, Wydatki, Kraj, Kontakty, Koszty, Kto jedzie (w czasie wyjazdu na początku także „Dziś”). Stuknij ikonę, a pod spodem pokaże się tylko ta część. W planie najpierw widać listę dni – stuknij dzień, żeby zobaczyć jego punkty. Aplikacja pamięta, co ostatnio oglądałeś.
 

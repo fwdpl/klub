@@ -308,6 +308,7 @@ export const notifyTrip = onCall(async (request) => {
   const audience = request.data?.audience as keyof typeof NOTIFY_AUDIENCES;
   const title = typeof request.data?.title === 'string' ? request.data.title.trim() : '';
   const body = typeof request.data?.body === 'string' ? request.data.body.trim() : '';
+  const requireAck = request.data?.requireAck === true;
   if (!(audience in NOTIFY_AUDIENCES)) throw new HttpsError('invalid-argument', 'Nieznana grupa odbiorców.');
   if (!title || title.length > MAX_NOTIFY_TITLE) throw new HttpsError('invalid-argument', `Tytuł: od 1 do ${MAX_NOTIFY_TITLE} znaków.`);
   if (body.length > MAX_NOTIFY_BODY) throw new HttpsError('invalid-argument', `Treść: do ${MAX_NOTIFY_BODY} znaków.`);
@@ -320,12 +321,22 @@ export const notifyTrip = onCall(async (request) => {
   const users = await Promise.all(uids.map((uid) => db.doc(`users/${uid}`).get()));
   const recipients = users.filter((u) => u.get('active') === true && u.get('prefs.muted') !== true);
 
+  // Zmiana do potwierdzeń odczytu (v2): uczestnik widzi ją w aplikacji, a jego odczyt zapisuje się w reads/{uid}
+  const change = await db.collection(`trips/${tripId}/changes`).add({
+    title,
+    body,
+    audience,
+    requireAck,
+    createdAt: FieldValue.serverTimestamp(),
+    createdBy: organizerUid,
+  });
   const results = await Promise.all(recipients.map((u) => sendToUser(u.ref, { title, body, link: `/#/wyjazd/${tripId}` })));
   logger.info('Powiadomienie organizatora', { tripId, audience, people: recipients.length });
   return {
     people: recipients.length,
     muted: users.length - recipients.length,
     reached: results.filter((r) => r.sent > 0).length,
+    changeId: change.id,
   };
 });
 
@@ -353,4 +364,28 @@ export const onArrival = onDocumentCreated('trips/{tripId}/arrivals/{arrivalId}'
   const message = { ...arrivalMessage(String(data.name ?? ''), trip.get('title') ?? 'wyjazd', typeof data.note === 'string' ? data.note : undefined), link: `/#/wyjazd/${tripId}` };
   await Promise.all(recipients.map((u) => sendToUser(u.ref, message)));
   logger.info('Jestem na miejscu', { tripId, to, people: recipients.length });
+});
+
+/**
+ * Przypomnienie do osób, które nie zobaczyły zmiany (albo nie potwierdziły, gdy zmiana wymaga „Przyjąłem”).
+ * Tylko organizator; wyciszeni pominięci.
+ */
+export const remindChange = onCall(async (request) => {
+  const organizerUid = await requireOrganizer(request);
+  const tripId = typeof request.data?.tripId === 'string' ? request.data.tripId : '';
+  const changeId = typeof request.data?.changeId === 'string' ? request.data.changeId : '';
+  const change = tripId && changeId ? await db.doc(`trips/${tripId}/changes/${changeId}`).get() : null;
+  if (!change?.exists) throw new HttpsError('not-found', 'Nie ma takiej zmiany.');
+  const statuses: readonly string[] = NOTIFY_AUDIENCES[(change.get('audience') as keyof typeof NOTIFY_AUDIENCES) ?? 'approved'] ?? ['approved'];
+  const requireAck = change.get('requireAck') === true;
+  const [members, reads] = await Promise.all([db.collection(`trips/${tripId}/members`).get(), change.ref.collection('reads').get()]);
+  const done = new Set(reads.docs.filter((r) => (requireAck ? r.get('ackAt') : r.get('seenAt'))).map((r) => r.id));
+  const uids = members.docs.filter((d) => statuses.includes(d.get('status')) && d.id !== organizerUid && !done.has(d.id)).map((d) => d.id);
+  const users = await Promise.all(uids.map((uid) => db.doc(`users/${uid}`).get()));
+  const recipients = users.filter((u) => u.get('active') === true && u.get('prefs.muted') !== true);
+  const title = `Przypomnienie: ${String(change.get('title') ?? '')}`.slice(0, 80);
+  const body = requireAck ? 'Otwórz Klub i potwierdź „Przyjąłem”.' : String(change.get('body') ?? '') || 'Otwórz Klub, żeby zobaczyć zmianę.';
+  const results = await Promise.all(recipients.map((u) => sendToUser(u.ref, { title, body, link: `/#/wyjazd/${tripId}` })));
+  logger.info('Przypomnienie o zmianie', { tripId, people: recipients.length });
+  return { people: recipients.length, reached: results.filter((r) => r.sent > 0).length, missing: uids.length };
 });

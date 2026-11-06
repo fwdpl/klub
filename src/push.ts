@@ -25,6 +25,11 @@ export async function enablePush(uid: string): Promise<void> {
 
 /** Gdy aplikacja jest na ekranie, system nie pokazuje powiadomienia – pokazujemy je w aplikacji. */
 export async function listenForegroundMessages(): Promise<void> {
+  // Stuknięcie w powiadomienie, gdy aplikacja działa w tle: service worker podaje, dokąd przejść
+  navigator.serviceWorker?.addEventListener('message', (event) => {
+    const msg = event.data as { type?: string; hash?: string } | undefined;
+    if (msg?.type === 'open' && msg.hash && msg.hash !== location.hash) location.hash = msg.hash;
+  });
   if ((await pushState()) === 'unsupported') return;
   onMessage(getMessaging(app), (payload) => {
     const title = payload.notification?.title ?? 'Klub';
