@@ -72,7 +72,11 @@ Po zmianie wróć do karty z Klubem – powiadomienia włączą się same albo s
 
 **Co jest pod globusem?** Kierunki, które Jacek rozważa. Zaznacz **⭐ Interesuje mnie** przy tych, na które chciałbyś pojechać – widzisz tylko swoje zaznaczenia.
 
-**Co oznaczają ikony?** Stuknij **?** u góry ekranu (obok ⚙) – zobaczysz listę ikon z krótkim opisem.
+**Co oznaczają ikony u góry?** Po zalogowaniu na każdym ekranie, od lewej:
+- 🌐 **Kierunki (globus)** – miejsca, które Jacek rozważa; zaznacz **⭐ Interesuje mnie** (widzisz tylko swoje zaznaczenia).
+- 🔭 **Powiadomienia (lornetka)** – ostatnie 10 powiadomień o zmianach, gdy odruchowo odrzucisz je w telefonie; przy ważnych **✓ Przyjąłem**, kosz czyści listę.
+- **?** **Pomoc** – co oznaczają wszystkie ikony (także te na ekranie wyjazdu).
+- ⚙ **Ustawienia** – powiadomienia, wyciszenie, motyw jasny/ciemny, kolor aplikacji.
 
 **Jak poruszać się po wyjeździe?** Pod tytułem są ikony: Plan, Loty, Noclegi, Lista, Życzenia, Wydatki, Kraj, Kontakty, Koszty, Kto jedzie (w czasie wyjazdu na początku także „Dziś”). Stuknij ikonę, a pod spodem pokaże się tylko ta część. W planie najpierw widać listę dni – stuknij dzień, żeby zobaczyć jego punkty. Aplikacja pamięta, co ostatnio oglądałeś.
 

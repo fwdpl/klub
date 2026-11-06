@@ -8,20 +8,25 @@ import { iconEl } from './tabs';
 
 type Row = [IconName, string, string];
 
-const TOP: Row[] = [
+// Ikony u góry – w tej samej kolejności co na ekranie: 🌐, lornetka, ?, ⚙
+const topRows = (isOrganizer: boolean): Row[] => [
+  ['destinations', 'Kierunki', 'Miejsca, które organizator rozważa – zaznacz „⭐ Interesuje mnie”; widzisz tylko swoje zaznaczenia.'],
+  isOrganizer
+    ? ['reads', 'Kto przeczytał', 'Kto zobaczył Twoje powiadomienia o zmianach i kto potwierdził „Przyjąłem”; przypomnienie brakującym.']
+    : ['reads', 'Powiadomienia', 'Ostatnie 10 powiadomień o zmianach – gdy przypadkiem odrzucisz je w telefonie; „✓ Przyjąłem”, kosz czyści listę.'],
   ['help', 'Pomoc', 'Ta lista.'],
   ['settings', 'Ustawienia', 'Powiadomienia, wyciszenie, motyw jasny/ciemny, kolor aplikacji.'],
-  ['download', 'Pobierz na telefon', 'Przy tytule wyjazdu – zapisuje wyjazd, żeby działał bez internetu.'],
 ];
 
-const TOP_ALL: Row[] = [['destinations', 'Kierunki', 'Miejsca, które organizator rozważa – zaznacz, co Cię interesuje.']];
-
-const PARTICIPANT: Row[] = [['reads', 'Ostatnie powiadomienia', 'Ostatnie 10 powiadomień o zmianach – gdy przypadkiem odrzucisz je w telefonie; „✓ Przyjąłem”, kosz czyści listę.']];
-
-const ORGANIZER: Row[] = [
-  ['reads', 'Kto przeczytał', 'Kto zobaczył Twoje powiadomienia o zmianach i kto potwierdził „Przyjąłem”; przypomnienie brakującym.'],
-  ['edit', 'Edytuj wyjazd', 'Tytuł, opis, terminy, stan zapisów.'],
-  ['bell', 'Powiadomienie', 'Wyślij grupie wiadomość o zmianie planu lub kosztów.'],
+// Przy tytule wyjazdu
+const tripHeadRows = (isOrganizer: boolean): Row[] => [
+  ['download', 'Pobierz na telefon', 'Zapisuje wyjazd, żeby działał bez internetu.'],
+  ...(isOrganizer
+    ? ([
+        ['edit', 'Edytuj wyjazd', 'Tytuł, opis, terminy, stan zapisów.'],
+        ['bell', 'Powiadomienie', 'Wyślij grupie wiadomość o zmianie; „Ważna zmiana” prosi o „✓ Przyjąłem”.'],
+      ] as Row[])
+    : []),
 ];
 
 const TRIP: Row[] = [
@@ -53,7 +58,8 @@ export function showHelp(isOrganizer: boolean): void {
   render(
     h('a', { class: 'back', href: '#/' }, '← Wyjazdy'),
     h('h1', {}, 'Co oznaczają ikony'),
-    h('div', { class: 'card' }, h('h2', {}, 'U góry'), rows(isOrganizer ? [...TOP_ALL, ...TOP, ...ORGANIZER] : [...TOP_ALL, ...PARTICIPANT, ...TOP])),
+    h('div', { class: 'card' }, h('h2', {}, 'U góry'), rows(topRows(isOrganizer))),
+    h('div', { class: 'card' }, h('h2', {}, 'Przy tytule wyjazdu'), rows(tripHeadRows(isOrganizer))),
     h(
       'div',
       { class: 'card' },

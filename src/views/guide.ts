@@ -2,6 +2,16 @@ import { isTestEnv } from '../config';
 import { isAndroid, isIOS } from '../platform';
 import { h, render } from '../ui';
 import { fold } from './fold';
+import type { IconName } from './icons';
+import { iconEl } from './tabs';
+
+// Ikony u góry każdego ekranu (po zalogowaniu) – kolejność jak w aplikacji
+const TOP_ICONS: [IconName, string, string][] = [
+  ['destinations', 'Kierunki (globus)', 'miejsca, które Jacek rozważa; zaznacz „⭐ Interesuje mnie” – widzisz tylko swoje zaznaczenia.'],
+  ['reads', 'Powiadomienia (lornetka)', 'ostatnie 10 powiadomień o zmianach, gdy odruchowo odrzucisz je w telefonie; „✓ Przyjąłem”, kosz czyści listę.'],
+  ['help', 'Pomoc (?)', 'co oznaczają wszystkie ikony.'],
+  ['settings', 'Ustawienia (⚙)', 'powiadomienia, „Wycisz wszystkie powiadomienia”, motyw jasny/ciemny, kolor aplikacji.'],
+];
 
 // Instrukcja dla uczestników pod stałym adresem /instrukcja – otwiera się bez logowania,
 // żeby Jacek mógł wysłać link razem z kodem. Tekst krótki, bez zrzutów (decyzja Jacka z 3.11.2026).
@@ -108,10 +118,16 @@ export function showGuide(): void {
         h('li', {}, b('Przed wyjazdem'), ', z internetem: otwórz wyjazd i stuknij ikonę pobierania obok tytułu. Bez sieci wszystko działa, a odhaczenia wyślą się po połączeniu.'),
         h('li', {}, 'Na ekranie wyjazdu ikony (Plan, Loty, Noclegi, Lista, Życzenia, Wydatki, Kraj…) – stuknij, żeby zobaczyć tę część. W czasie wyjazdu pierwsza jest „Dziś”. Dni planu rozwijasz stuknięciem.'),
         h('li', {}, b('Tablet'), ' – plan „Wszyscy” w kolumnach osób, a w poziomie obok planu mapa z punktami rozwiniętego dnia.'),
-        h('li', {}, b('Kierunki (🌐)'), ' – miejsca, które organizator rozważa: zaznacz, co Cię interesuje.'),
         h('li', {}, b('Zmiana na ekranie wyjazdu'), ' – przy ważnej stuknij „✓ Przyjąłem”; organizator widzi, kto przeczytał.'),
-        h('li', {}, b('Pomoc (?)'), ' – u góry każdego ekranu: co oznaczają ikony.'),
-        h('li', {}, b('Ustawienia (⚙)'), ': powiadomienia, motyw jasny/ciemny i kolor aplikacji, „Wycisz wszystkie powiadomienia”.'),
+      ),
+    ),
+
+    fold(
+      { title: 'Ikony u góry ekranu', open: true },
+      h(
+        'ul',
+        { class: 'help-list' },
+        ...TOP_ICONS.map(([icon, name, what]) => h('li', {}, h('span', { class: 'help-list__icon' }, iconEl(icon)), h('span', {}, b(name), ' – ', what))),
       ),
     ),
 
