@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.17.1 — trwała pamięć
+
+- Po zalogowaniu aplikacja prosi telefon o „trwałą pamięć”: przy braku miejsca (np. podczas aktualizacji systemu) system nie powinien już kasować logowania ani pobranych wyjazdów. Najlepiej działa na Androidzie z zainstalowaną aplikacją.
+- W Ustawieniach nowa pozycja „Pamięć na telefonie”: trwała ✓ albo zwykła.
+
 ## 1.17.0 — kto przeczytał i kierunki
 
 - Powiadomienie o zmianie (🔔) można oznaczyć jako „Ważna zmiana” – uczestnicy zobaczą je kartą na ekranie wyjazdu z przyciskiem „✓ Przyjąłem”. Zwykłe zmiany też pokazują się kartą, a „zobaczone” zapisuje się samo. Karta jest od razu na liście wyjazdów (ekran startowy) i na ekranie wyjazdu.

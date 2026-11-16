@@ -13,6 +13,7 @@ import { installCard } from '../install';
 import { guideLink } from './guide';
 import { plural } from '../text';
 import { h, render, toast, present } from '../ui';
+import { requestPersistentStorage } from '../offline';
 
 const PUSH_LABEL: Record<PushState, string> = {
   granted: 'włączone',
@@ -189,6 +190,11 @@ export async function showSettings(user: User): Promise<void> {
 
   const snap = await readDoc(doc(db, 'users', user.uid)).catch(() => null);
   const role = snap?.data()?.role === 'organizer' ? 'organizer' : 'member';
+  // trwała pamięć: system nie skasuje logowania i pobranych wyjazdów przy braku miejsca
+  const storageInfo = h('b', {}, '…');
+  void requestPersistentStorage().then((state) => {
+    storageInfo.textContent = state === 'persistent' ? 'trwała ✓' : state === 'best-effort' ? 'zwykła (system może ją wyczyścić)' : 'nieznana';
+  });
   let push = await pushState();
 
   const pushStatus = h('b', {}, PUSH_LABEL[push]);
@@ -287,6 +293,7 @@ export async function showSettings(user: User): Promise<void> {
         h('li', {}, 'Zalogowano', h('b', {}, user.email ?? '—')),
         h('li', {}, 'Rola', h('b', {}, role === 'organizer' ? 'organizator' : 'uczestnik')),
         h('li', {}, 'Tryb', h('b', {}, isStandalone() ? 'zainstalowana' : 'przeglądarka')),
+        h('li', {}, 'Pamięć na telefonie', storageInfo),
         h('li', {}, 'Powiadomienia', pushStatus),
         h('li', {}, 'Wersja', h('b', {}, `${appVersion} (${buildId})`)),
       ),

@@ -6,7 +6,7 @@ import { auth, db } from './firebase';
 import './install';
 import { isIOS, isStandalone } from './platform';
 import { listenForegroundMessages } from './push';
-import { watchConnection } from './offline';
+import { requestPersistentStorage, watchConnection } from './offline';
 import { initTheme } from './theme';
 import { h, hideSplash, setNavIcons, toast } from './ui';
 import { showHelp } from './views/help';
@@ -116,6 +116,8 @@ onAuthStateChanged(auth, async (user) => {
     if (user && !listening) {
       listening = true;
       void listenForegroundMessages();
+      // po zalogowaniu: poproś o trwałą pamięć, żeby system nie skasował logowania i pobranych wyjazdów
+      void requestPersistentStorage();
     }
   } finally {
     void hideSplash();

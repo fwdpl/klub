@@ -53,3 +53,29 @@ export function watchConnection(): void {
   window.addEventListener('offline', update);
   update();
 }
+
+// ---------- trwała pamięć (prośba Jacka z 16.11.2026) ----------
+// Bez niej Chrome przy braku miejsca (np. przy aktualizacji systemu) może skasować dane aplikacji – razem
+// z logowaniem i pobranymi wyjazdami. Prośba jest cicha (bez okienka); Chrome zwykle zgadza się dla
+// zainstalowanej aplikacji, nowsze iPhone'y też ją obsługują. Wynik nie jest gwarancją, tylko zmniejsza ryzyko.
+
+export type StorageState = 'persistent' | 'best-effort' | 'unsupported';
+
+export async function storageState(): Promise<StorageState> {
+  try {
+    if (!navigator.storage?.persisted) return 'unsupported';
+    return (await navigator.storage.persisted()) ? 'persistent' : 'best-effort';
+  } catch {
+    return 'unsupported';
+  }
+}
+
+export async function requestPersistentStorage(): Promise<StorageState> {
+  try {
+    if (!navigator.storage?.persist) return 'unsupported';
+    if (await navigator.storage.persisted()) return 'persistent';
+    return (await navigator.storage.persist()) ? 'persistent' : 'best-effort';
+  } catch {
+    return 'unsupported';
+  }
+}
