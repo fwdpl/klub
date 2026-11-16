@@ -51,7 +51,8 @@ export interface NotifyResult {
   changeId?: string;
 }
 export const notifyTrip = httpsCallable<{ tripId: string; audience: NotifyAudience; title: string; body: string; requireAck?: boolean }, NotifyResult>(functions, 'notifyTrip');
-export const totpSetup = httpsCallable<Record<string, never>, { secret: string; url: string }>(functions, 'totpSetup');
+export const totpSetup = httpsCallable<{ fresh?: boolean }, { secret: string; url: string; reused: boolean }>(functions, 'totpSetup');
+export const totpCheck = httpsCallable<{ code: string }, { ok: boolean }>(functions, 'totpCheck');
 export const totpConfirm = httpsCallable<{ code: string }, { enrolled: boolean }>(functions, 'totpConfirm');
 export const totpDisable = httpsCallable<Record<string, never>, { enrolled: boolean }>(functions, 'totpDisable');
 export const remindChange = httpsCallable<{ tripId: string; changeId: string }, { people: number; reached: number; missing: number }>(functions, 'remindChange');
