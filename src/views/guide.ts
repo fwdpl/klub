@@ -135,6 +135,7 @@ export function showGuide(): void {
       { title: 'Gdy coś nie działa', open: false },
       p(b('Kod nie działa. '), 'Działa raz i 48 godzin; wielkość liter, spacje i myślniki nie mają znaczenia. Po 5 błędnych próbach – 15 minut przerwy. Po nowy kod napisz do Jacka.'),
       p(b('Nowy telefon albo usunięta aplikacja. '), 'Zainstaluj ponownie i poproś Jacka o nowy kod.'),
+      p(b('Wylogowało mnie (np. po aktualizacji telefonu albo czyszczeniu pamięci). '), 'Poproś Jacka o nowy kod. Po aktualizacji systemu otwórz Klub od razu, jeszcze z internetem, i sprawdź logowanie oraz powiadomienia (⚙).'),
       p(b('„Jest nowa wersja aplikacji”. '), 'Stuknij „Odśwież”.'),
       p(b('Nawiguj bez internetu. '), 'Google Maps działa wtedy tylko z mapami pobranymi wcześniej w Google Maps.'),
     ),
