@@ -1,5 +1,9 @@
 # Zmiany
 
+## 1.18.2 — parowanie z Authenticatorem wraca samo
+
+- Po powrocie z Authenticatora albo odświeżeniu Klub sam wraca do pola „wpisz 6 cyfr” (ten sam klucz) – zamiast pokazywać znowu „Połącz”. W instrukcji parowania wyraźnie: bez wpisania kodu i „Potwierdź” połączenie nie działa.
+
 ## 1.18.1 — pewniejsze parowanie z Authenticatorem
 
 - Gdy Klub przeładuje się w trakcie parowania (np. Android po przejściu do Authenticatora), ponowne „Połącz” pokazuje ten sam klucz przez 30 minut – wpis dodany w Authenticatorze dalej działa. Wcześniej powstawał nowy klucz i parowanie się nie udawało.
