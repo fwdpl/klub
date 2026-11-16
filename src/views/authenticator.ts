@@ -7,6 +7,26 @@ import { h, present, toast } from '../ui';
 
 const groups = (s: string) => s.replace(/(.{4})/g, '$1 ').trim();
 
+// Parowanie w toku – zapamiętane na urządzeniu, żeby po powrocie z Authenticatora albo odświeżeniu
+// aplikacja sama wróciła do pola „wpisz 6 cyfr” (serwer przez 30 min oddaje ten sam klucz).
+const PENDING_KEY = 'klub.totpPendingAt';
+const PENDING_MS = 30 * 60 * 1000;
+const pendingRecently = () => {
+  try {
+    return Date.now() - Number(localStorage.getItem(PENDING_KEY) ?? 0) < PENDING_MS;
+  } catch {
+    return false;
+  }
+};
+const setPending = (on: boolean) => {
+  try {
+    if (on) localStorage.setItem(PENDING_KEY, String(Date.now()));
+    else localStorage.removeItem(PENDING_KEY);
+  } catch {
+    // bez pamięci urządzenia – po odświeżeniu trzeba stuknąć „Połącz” (ten sam klucz)
+  }
+};
+
 export function authenticatorCard(enrolledAtStart: boolean): HTMLElement {
   const card = h('div', { class: 'card' });
   let enrolled = enrolledAtStart;
@@ -22,6 +42,8 @@ export function authenticatorCard(enrolledAtStart: boolean): HTMLElement {
     button.disabled = true;
     try {
       const { data } = await totpSetup({ fresh });
+      if (!data.reused) setPending(true);
+      else if (!pendingRecently()) setPending(true);
       const qr = qrcode(0, 'M');
       qr.addData(data.url);
       qr.make();
@@ -36,6 +58,7 @@ export function authenticatorCard(enrolledAtStart: boolean): HTMLElement {
         try {
           await totpConfirm({ code: code.value });
           enrolled = true;
+          setPending(false);
           toast('Google Authenticator połączony.');
           draw();
         } catch (e) {
@@ -63,14 +86,14 @@ export function authenticatorCard(enrolledAtStart: boolean): HTMLElement {
               {},
               'Jeśli Klub przeładuje się po powrocie z Authenticatora – stuknij „Połącz” jeszcze raz: przez 30 minut pokaże ten sam kod (nic nie trzeba dodawać od nowa).',
             ),
-            h('li', {}, 'Wpisz poniżej 6 cyfr, które pokazuje Authenticator, i stuknij „Potwierdź”.'),
+            h('li', {}, h('b', {}, 'Wróć tutaj i wpisz 6 cyfr'), ', które pokazuje Authenticator, potem „Potwierdź”. Bez tego kroku połączenie nie działa.'),
           ),
           qrBox,
           data.reused && h('p', { class: 'muted' }, 'To ten sam klucz co przed chwilą – wpis w Authenticatorze jest aktualny.'),
           h('p', { class: 'muted totp-key' }, 'Klucz do wpisania ręcznie: ', h('b', {}, groups(data.secret))),
           code,
           error,
-          h('div', { class: 'actions actions--row' }, confirm, h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => draw() }, 'Anuluj')),
+          h('div', { class: 'actions actions--row' }, confirm, h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => (setPending(false), draw()) }, 'Anuluj')),
         ),
       );
       code.focus();
@@ -129,5 +152,10 @@ export function authenticatorCard(enrolledAtStart: boolean): HTMLElement {
   };
 
   draw();
+  // wróciliśmy z Authenticatora / odświeżenie w trakcie parowania → od razu pole na kod (ten sam klucz)
+  if (!enrolled && pendingRecently()) {
+    const resume = card.querySelector('button.btn') as HTMLButtonElement | null;
+    if (resume) void setupView(resume, false);
+  }
   return card;
 }
