@@ -1,5 +1,11 @@
 # Zmiany
 
+## 1.18.0 — logowanie awaryjne przez Google Authenticator
+
+- Organizator może połączyć konto z aplikacją Google Authenticator (Ustawienia → Logowanie awaryjne). Gdy Klub wyloguje go na wszystkich urządzeniach – np. na wyjeździe – zaloguje się mailem i 6 cyframi z Authenticatora, bez konsoli Firebase.
+- Parowanie: link „otwórz w Authenticatorze” na tym telefonie albo kod QR do zeskanowania innym urządzeniem (telefon zapasowy, tablet) i potwierdzenie aktualnym kodem.
+- Każdy kod działa raz i tylko przez ok. 30 sekund; obowiązuje ta sama blokada po 5 błędnych próbach. Uczestników nic nie zmienia.
+
 ## 1.17.1 — trwała pamięć
 
 - Po zalogowaniu aplikacja prosi telefon o „trwałą pamięć”: przy braku miejsca (np. podczas aktualizacji systemu) system nie powinien już kasować logowania ani pobranych wyjazdów. Najlepiej działa na Androidzie z zainstalowaną aplikacją.

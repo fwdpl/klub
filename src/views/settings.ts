@@ -14,6 +14,7 @@ import { guideLink } from './guide';
 import { plural } from '../text';
 import { h, render, toast, present } from '../ui';
 import { requestPersistentStorage } from '../offline';
+import { authenticatorCard } from './authenticator';
 
 const PUSH_LABEL: Record<PushState, string> = {
   granted: 'włączone',
@@ -301,6 +302,7 @@ export async function showSettings(user: User): Promise<void> {
     installCard(),
     h('div', { class: 'card' }, h('h2', {}, 'Powiadomienia'), pushError, help, enableBtn, testBtn, muteToggle(user.uid, snap?.get('prefs.muted') === true)),
     h('div', { class: 'card' }, h('h2', {}, 'Motyw'), themeSwitch(), h('h3', { class: 'accent-title' }, 'Kolor aplikacji'), accentPicker()),
+    role === 'organizer' && authenticatorCard(snap?.get('totpEnrolled') === true),
     role === 'organizer' && backupCard(),
     guideLink('Instrukcja dla uczestników →'),
     h('button', { type: 'button', class: 'btn btn--secondary', onclick: () => signOut(auth) }, 'Wyloguj'),

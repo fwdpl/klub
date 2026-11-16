@@ -115,3 +115,19 @@ describe('pozostałe ścieżki', () => {
     await assertFails(setDoc(doc(as('jacek'), 'inne/x1'), { title: 'x' }));
   });
 });
+
+describe('klucz Google Authenticator (secrets)', () => {
+  it('niedostępny dla aplikacji – także dla organizatora i właściciela', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'secrets/jacek'), { totp: 'ABC' });
+    });
+    for (const uid of ['jacek', 'ania']) {
+      await assertFails(getDoc(doc(env.authenticatedContext(uid).firestore(), 'secrets/jacek')));
+      await assertFails(setDoc(doc(env.authenticatedContext(uid).firestore(), 'secrets/jacek'), { totp: 'XYZ' }));
+    }
+  });
+
+  it('znacznika totpEnrolled nie da się ustawić z aplikacji', async () => {
+    await assertFails(updateDoc(doc(env.authenticatedContext('jacek').firestore(), 'users/jacek'), { totpEnrolled: true }));
+  });
+});

@@ -317,6 +317,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Klucz Google Authenticator organizatora: tylko funkcje serwerowe (aplikacja nigdy go nie czyta)
+    match /secrets/{id} {
+      allow read, write: if false;
+    }
+
     // Wszystko inne zamknięte
     match /{document=**} {
       allow read, write: if false;

@@ -1,7 +1,7 @@
 {
   "name": "klub",
   "private": true,
-  "version": "1.17.1",
+  "version": "1.18.0",
   "type": "module",
   "scripts": {
     "dev": "vite --mode test",
@@ -15,6 +15,7 @@
   "dependencies": {
     "firebase": "^13.1.0",
     "leaflet": "1.9.4",
+    "qrcode-generator": "1.4.4",
     "sortablejs": "1.15.7",
     "suncalc": "1.9.0",
     "workbox-core": "^7.4.1",
