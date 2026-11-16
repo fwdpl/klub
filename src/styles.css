@@ -2276,3 +2276,24 @@ body.driver-open {
   gap: 8px;
   margin-top: 4px;
 }
+
+/* Google Authenticator: kod QR zawsze ciemny na jasnym (czytelny dla aparatu w obu motywach) */
+.totp-qr {
+  display: inline-block;
+  margin: 8px 0;
+  padding: 8px;
+  background: #ffffff;
+  border-radius: 8px;
+  line-height: 0;
+}
+
+.totp-qr svg {
+  width: 200px;
+  height: 200px;
+}
+
+.totp-key b {
+  font-family: ui-monospace, monospace;
+  letter-spacing: 1px;
+  overflow-wrap: anywhere;
+}

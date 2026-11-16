@@ -51,6 +51,9 @@ export interface NotifyResult {
   changeId?: string;
 }
 export const notifyTrip = httpsCallable<{ tripId: string; audience: NotifyAudience; title: string; body: string; requireAck?: boolean }, NotifyResult>(functions, 'notifyTrip');
+export const totpSetup = httpsCallable<Record<string, never>, { secret: string; url: string }>(functions, 'totpSetup');
+export const totpConfirm = httpsCallable<{ code: string }, { enrolled: boolean }>(functions, 'totpConfirm');
+export const totpDisable = httpsCallable<Record<string, never>, { enrolled: boolean }>(functions, 'totpDisable');
 export const remindChange = httpsCallable<{ tripId: string; changeId: string }, { people: number; reached: number; missing: number }>(functions, 'remindChange');
 export const sendTestPush = httpsCallable<{ delaySec: number }, { sent: number; failed: number }>(
   functions,

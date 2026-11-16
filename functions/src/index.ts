@@ -23,6 +23,7 @@ import {
 } from './codes.js';
 import { arrivalMessage, arrivalRecipients, type ArrivalAudience } from './arrivals.js';
 import { memberNotifications } from './memberEvents.js';
+import { newSecret, otpauthUrl, verifyTotp } from './totp.js';
 import { sendToUser } from './push.js';
 
 initializeApp();
@@ -112,7 +113,14 @@ export const redeemLoginCode = onCall(async (request) => {
   ]);
   const candidates = [...generated.docs, ...manual.docs.filter((d) => normalizeEmail(d.get('email')) === email)];
   const match = candidates.find((d) => codeMatches(toEntry(d.data()), code, now));
-  if (!match) return reject('code');
+  if (!match) {
+    // 6 cyfr z Google Authenticator – tylko organizator, który połączył aplikację (16.11.2026)
+    const totpUid = /^\d{6}$/.test(code) ? await totpLogin(email, code) : null;
+    if (!totpUid) return reject('code');
+    await attemptsRef.delete();
+    logger.info('Zalogowano Authenticatorem', { uid: totpUid });
+    return { token: await getAuth().createCustomToken(totpUid) };
+  }
 
   const isOrganizerEmail = email === organizerEmail();
   let authUser = await findAuthUser(email);
@@ -388,4 +396,61 @@ export const remindChange = onCall(async (request) => {
   const results = await Promise.all(recipients.map((u) => sendToUser(u.ref, { title, body, link: `/#/wyjazd/${tripId}` })));
   logger.info('Przypomnienie o zmianie', { tripId, people: recipients.length });
   return { people: recipients.length, reached: results.filter((r) => r.sent > 0).length, missing: uids.length };
+});
+
+// ---------- Google Authenticator (TOTP) dla organizatora (decyzja Jacka z 16.11.2026) ----------
+// Tajny klucz w secrets/{uid} – kolekcja zamknięta dla aplikacji (reguły), czyta ją tylko funkcja.
+// W users/{uid} tylko znacznik totpEnrolled do pokazania stanu w Ustawieniach.
+
+const totpIssuer = () => ((process.env.GCLOUD_PROJECT ?? '').includes('test') ? 'Klub TEST' : 'Klub');
+
+async function totpLogin(email: string, code: string): Promise<string | null> {
+  const authUser = await findAuthUser(email);
+  if (!authUser || authUser.disabled) return null;
+  const user = await db.doc(`users/${authUser.uid}`).get();
+  if (user.get('role') !== 'organizer' || user.get('active') !== true) return null;
+  const ref = db.doc(`secrets/${authUser.uid}`);
+  const ok = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const secret = snap.get('totp') as string | undefined;
+    if (!secret) return false;
+    const step = verifyTotp(secret, code, Date.now(), (snap.get('totpLastStep') as number | undefined) ?? -1);
+    if (step === null) return false;
+    tx.update(ref, { totpLastStep: step });
+    return true;
+  });
+  return ok ? authUser.uid : null;
+}
+
+/** Krok 1: nowy klucz (jeszcze nieaktywny) – do zeskanowania / dodania w aplikacji. */
+export const totpSetup = onCall(async (request) => {
+  const uid = await requireOrganizer(request);
+  const user = await db.doc(`users/${uid}`).get();
+  const secret = newSecret();
+  await db.doc(`secrets/${uid}`).set({ totpPending: secret, pendingAt: FieldValue.serverTimestamp() }, { merge: true });
+  return { secret, url: otpauthUrl(secret, String(user.get('email') ?? 'organizator'), totpIssuer()) };
+});
+
+/** Krok 2: potwierdzenie kodem z aplikacji – dopiero wtedy klucz zaczyna działać przy logowaniu. */
+export const totpConfirm = onCall(async (request) => {
+  const uid = await requireOrganizer(request);
+  const code = typeof request.data?.code === 'string' ? request.data.code.replace(/\D/g, '') : '';
+  const ref = db.doc(`secrets/${uid}`);
+  const snap = await ref.get();
+  const pending = snap.get('totpPending') as string | undefined;
+  if (!pending) throw new HttpsError('failed-precondition', 'Najpierw wygeneruj kod QR.');
+  const step = verifyTotp(pending, code, Date.now());
+  if (step === null) throw new HttpsError('invalid-argument', 'Kod się nie zgadza – sprawdź godzinę w telefonie i wpisz aktualny kod.');
+  await ref.set({ totp: pending, totpLastStep: step, enrolledAt: FieldValue.serverTimestamp(), totpPending: FieldValue.delete() }, { merge: true });
+  await db.doc(`users/${uid}`).update({ totpEnrolled: true });
+  logger.info('Połączono Authenticator', { uid });
+  return { enrolled: true };
+});
+
+export const totpDisable = onCall(async (request) => {
+  const uid = await requireOrganizer(request);
+  await db.doc(`secrets/${uid}`).delete();
+  await db.doc(`users/${uid}`).update({ totpEnrolled: FieldValue.delete() });
+  logger.info('Odłączono Authenticator', { uid });
+  return { enrolled: false };
 });
