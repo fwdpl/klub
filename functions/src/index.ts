@@ -422,13 +422,41 @@ async function totpLogin(email: string, code: string): Promise<string | null> {
   return ok ? authUser.uid : null;
 }
 
-/** Krok 1: nowy klucz (jeszcze nieaktywny) – do zeskanowania / dodania w aplikacji. */
+const PENDING_REUSE_MS = 30 * 60 * 1000;
+
+/**
+ * Krok 1: klucz (jeszcze nieaktywny) – do zeskanowania / dodania w aplikacji.
+ * Ten sam niepotwierdzony klucz wraca przez 30 min: Android potrafi przeładować Klub po przejściu do
+ * Authenticatora, a nowy klucz unieważniłby ten już dodany (tak było przy pierwszym parowaniu, 16.11.2026).
+ * fresh: true – zawsze nowy klucz (świadome „Połącz ponownie”).
+ */
 export const totpSetup = onCall(async (request) => {
   const uid = await requireOrganizer(request);
   const user = await db.doc(`users/${uid}`).get();
-  const secret = newSecret();
-  await db.doc(`secrets/${uid}`).set({ totpPending: secret, pendingAt: FieldValue.serverTimestamp() }, { merge: true });
-  return { secret, url: otpauthUrl(secret, String(user.get('email') ?? 'organizator'), totpIssuer()) };
+  const ref = db.doc(`secrets/${uid}`);
+  const snap = await ref.get();
+  const pendingAt = snap.get('pendingAt') as Timestamp | undefined;
+  const reuse = request.data?.fresh !== true && snap.get('totpPending') && pendingAt && Date.now() - pendingAt.toMillis() < PENDING_REUSE_MS;
+  const secret = reuse ? (snap.get('totpPending') as string) : newSecret();
+  if (!reuse) await ref.set({ totpPending: secret, pendingAt: FieldValue.serverTimestamp() }, { merge: true });
+  return { secret, url: otpauthUrl(secret, String(user.get('email') ?? 'organizator'), totpIssuer()), reused: !!reuse };
+});
+
+/** Sprawdzenie kodu bez wylogowania (zalogowany organizator) – czy Authenticator ma właściwy klucz. */
+export const totpCheck = onCall(async (request) => {
+  const uid = await requireOrganizer(request);
+  const code = typeof request.data?.code === 'string' ? request.data.code.replace(/\D/g, '') : '';
+  const ref = db.doc(`secrets/${uid}`);
+  const ok = await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const secret = snap.get('totp') as string | undefined;
+    if (!secret) return false;
+    const step = verifyTotp(secret, code, Date.now(), (snap.get('totpLastStep') as number | undefined) ?? -1);
+    if (step === null) return false;
+    tx.update(ref, { totpLastStep: step });
+    return true;
+  });
+  return { ok };
 });
 
 /** Krok 2: potwierdzenie kodem z aplikacji – dopiero wtedy klucz zaczyna działać przy logowaniu. */

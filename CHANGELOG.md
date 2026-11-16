@@ -1,5 +1,10 @@
 # Zmiany
 
+## 1.18.1 — pewniejsze parowanie z Authenticatorem
+
+- Gdy Klub przeładuje się w trakcie parowania (np. Android po przejściu do Authenticatora), ponowne „Połącz” pokazuje ten sam klucz przez 30 minut – wpis dodany w Authenticatorze dalej działa. Wcześniej powstawał nowy klucz i parowanie się nie udawało.
+- Po połączeniu „Sprawdź kod”: test kodu z każdego urządzenia bez wylogowania.
+
 ## 1.18.0 — logowanie awaryjne przez Google Authenticator
 
 - Organizator może połączyć konto z aplikacją Google Authenticator (Ustawienia → Logowanie awaryjne). Gdy Klub wyloguje go na wszystkich urządzeniach – np. na wyjeździe – zaloguje się mailem i 6 cyframi z Authenticatora, bez konsoli Firebase.
