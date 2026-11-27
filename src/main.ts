@@ -18,6 +18,7 @@ import { isGuidePath, showGuide } from './views/guide';
 import { showInstallIOS } from './views/install';
 import { showLogin } from './views/login';
 import { showPeople } from './views/people';
+import { showChecklistAdmin } from './views/checklistAdmin';
 import { showPlanImport } from './views/planImport';
 import { showPlanItemEdit } from './views/planItemEdit';
 import { showSettings } from './views/settings';
@@ -94,6 +95,7 @@ async function route(): Promise<void> {
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/szczegoly$/))) return showTripDetailsEdit(m[1]);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/kraje$/))) return showCountriesEdit(m[1]);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/import$/))) return showPlanImport(m[1]);
+    if ((m = path.match(/^\/wyjazd\/([\w-]+)\/checklista$/))) return showChecklistAdmin(m[1]);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/punkt\/nowy$/))) return showPlanItemEdit(m[1], null, null);
     if ((m = path.match(/^\/wyjazd\/([\w-]+)\/punkt\/(\d{4}-\d{2}-\d{2})\/([\w-]+)$/))) return showPlanItemEdit(m[1], m[2], m[3]);
   }

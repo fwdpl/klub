@@ -34,7 +34,7 @@ const TRIP: Row[] = [
   ['plan', 'Plan', 'Dni i punkty, „Mój plan / Wszyscy”, pogoda, dodaj do kalendarza, pobierz na mapę.'],
   ['flights', 'Loty', 'Loty z godzinami w czasie miejsca.'],
   ['hotels', 'Noclegi', 'Adresy; Nawiguj, Zadzwoń, 🚕 Pokaż kierowcy.'],
-  ['checklist', 'Lista', 'Twoja checklista: odhaczaj, dopisuj, przesuwaj.'],
+  ['checklist', 'Lista', 'Do zrobienia przed wyjazdem: zadania od organizatora (z linkami) i Twoje punkty; odhaczasz też bez internetu.'],
   ['wishes', 'Życzenia', 'Miejsca do zobaczenia: dodaj albo dopisz się (❤️ Muszę / 👍 Fajnie).'],
   ['expenses', 'Wydatki', 'Kto płacił i za kogo; rozliczenie, całość w PLN, „Kopiuj”.'],
   ['country', 'Kraj', 'Waluta, gniazdka, numer alarmowy, napiwki, wiza.'],

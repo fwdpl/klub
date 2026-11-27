@@ -39,3 +39,6 @@ export const functionsRegion = 'europe-central2';
 export const appVersion: string = __APP_VERSION__;
 export const buildId: string = __BUILD_ID__;
 export const isTestEnv = !isProd;
+
+/** Etykieta przy linkach partnerskich na checkliście (zadanie checklist §6) – zmieniana w tym jednym miejscu. */
+export const PARTNER_LINK_LABEL = 'link partnerski';

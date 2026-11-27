@@ -1,7 +1,8 @@
 import { listWishes } from './data/wishes';
 import { getMyPayments, listExpenses, listPayments } from './data/expenses';
 import { listArrivals } from './data/arrivals';
-import { getChecklist, getCountries, getInfo, getOverview, getTrip, listDays, listMembers, listTrips, myMemberships } from './data/trips';
+import { getChecklist, listMyTasks } from './data/checklist';
+import { getCountries, getInfo, getOverview, getTrip, listDays, listMembers, listTrips, myMemberships } from './data/trips';
 
 // Tryb offline (SPEC §5): Firestore trzyma odczytane dane w trwałej pamięci telefonu.
 // Pobranie wyjazdu odczytuje z serwera wszystko, co osoba może przy nim zobaczyć (i listę wyjazdów),
@@ -35,7 +36,7 @@ export async function downloadTrip(uid: string, tripId: string, isOrganizer: boo
   if (seesDetails) reads.push(getInfo(tripId), listDays(tripId), listWishes(tripId), listExpenses(tripId), listArrivals(tripId, uid, isOrganizer));
   if (isOrganizer) reads.push(listPayments(tripId));
   else if (status === 'approved') reads.push(getMyPayments(tripId, uid));
-  if (status === 'approved') reads.push(getChecklist(tripId, uid));
+  if (status === 'approved') reads.push(listMyTasks(tripId, uid), getChecklist(tripId, uid));
   await Promise.all(reads);
   try {
     localStorage.setItem(syncKey(uid, tripId), new Date().toISOString());

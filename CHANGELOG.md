@@ -1,5 +1,12 @@
 # Zmiany
 
+## 1.19.0 — checklista z pliku od Claude
+
+- Lista „Do zrobienia przed wyjazdem”: zadania od organizatora pogrupowane (np. Dokumenty, Przed wylotem), z terminem i odznaką „po terminie”, opisem i przyciskami linków (link partnerski jest oznaczony). Każdy widzi tylko zadania dla siebie. Odhaczanie działa też bez internetu. Własne punkty zostają pod zadaniami.
+- Organizator (Lista → „Checklista: zadania, import, postęp”): wgrywa plik z czatu checklisty z podglądem zmian przed zapisem. Kolejne pliki tylko dopisują i poprawiają, a odhaczeń nie kasują, chyba że plik wprost o to prosi. Pierwszy plik może zastąpić wszystko po wpisaniu nazwy wyjazdu.
+- Jest też „Eksport checklisty” do wklejenia w czacie, prosty edytor zadań (dodaj, zmień, archiwizuj, usuń), tabela postępu „kto co zrobił” z filtrem „tylko niezrobione” oraz podgląd listy wybranej osoby. Po imporcie aplikacja proponuje wysłanie powiadomienia.
+- Stara wspólna checklista z „Edytuj szczegóły” znika z aplikacji; jej dane usuwa pierwszy import w trybie „replace”.
+
 ## 1.18.2 — parowanie z Authenticatorem wraca samo
 
 - Po powrocie z Authenticatora albo odświeżeniu Klub sam wraca do pola „wpisz 6 cyfr” (ten sam klucz) – zamiast pokazywać znowu „Połącz”. W instrukcji parowania wyraźnie: bez wpisania kodu i „Potwierdź” połączenie nie działa.

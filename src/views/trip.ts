@@ -279,7 +279,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
     const overview = seesOverview ? await getOverview(tripId).catch(() => null) : null;
     const countries = seesOverview ? await getCountries(tripId).catch(() => []) : [];
     const seesDetails = viewer.isOrganizer || mine === 'approved';
-    const details = seesDetails ? await detailsSection(trip, viewer, members ?? [], !preview && mine === 'approved').catch(() => null) : null;
+    const details = seesDetails ? await detailsSection(trip, viewer, members ?? [], mine === 'approved' ? (preview ? 'preview' : 'own') : null).catch(() => null) : null;
     const planData = seesDetails ? await Promise.all([listDays(tripId), getInfo(tripId)]).catch(() => null) : null;
     const loadError = (what: string) => h('p', { class: 'error' }, `Nie udało się wczytać: ${what}. Sprawdź połączenie.`);
     // „Dziś” – tylko w dniach z planu; uczestnik widzi swój plan, organizator spoza listy – cały
@@ -296,7 +296,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
         { class: 'card card--preview', role: 'status' },
         h('h2', {}, `Podgląd: ${preview.displayName}`),
         h('p', {}, `Tak ${preview.displayName} (${MEMBER_STATUS_LABEL[preview.status]}) widzi ten wyjazd. To tylko podgląd – przyciski nic nie zmieniają.`),
-        preview.status === 'approved' && h('p', { class: 'muted' }, 'Checklista tej osoby jest prywatna – w podglądzie jej nie pokazujemy.'),
+        preview.status === 'approved' && h('p', { class: 'muted' }, 'Na liście „Do zrobienia” widać zadania tej osoby i jej odhaczenia; jej własne punkty są prywatne.'),
         h('button', { type: 'button', class: 'btn', onclick: stopPreview }, 'Zakończ podgląd'),
       );
     if (preview && !participantSeesTrip(trip, mine)) {
@@ -313,7 +313,7 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
     const organizer = !preview && me.isOrganizer;
     const notice = organizer ? noticeCard(trip.id, takeNotice(trip.id)) : null;
     const editDetails = () =>
-      organizer ? h('a', { class: 'btn btn--link btn--secondary btn--spaced', href: `#/wyjazd/${trip.id}/szczegoly` }, 'Edytuj szczegóły i checklistę') : null;
+      organizer ? h('a', { class: 'btn btn--link btn--secondary btn--spaced', href: `#/wyjazd/${trip.id}/szczegoly` }, 'Edytuj szczegóły') : null;
     const withEdit = (el: HTMLElement) => h('div', {}, el, editDetails());
     const iconLink = (icon: 'edit' | 'bell', label: string, attrs: Record<string, string | EventListener>) => {
       const el = h(attrs.href ? 'a' : 'button', { class: 'icon-btn', 'aria-label': label, title: label, ...(attrs.href ? {} : { type: 'button' }), ...attrs });
@@ -336,7 +336,16 @@ export async function showTrip(tripId: string, me: Me): Promise<void> {
       tabs.push({ key: 'plan', icon: 'plan', label: 'Plan', title: 'Plan', content: () => (plan ? foldBody(plan) : loadError('plan')) });
       tabs.push({ key: 'flights', icon: 'flights', label: 'Loty', title: 'Loty', content: () => (details ? withEdit(foldBody(details.flights)) : loadError('loty')) });
       tabs.push({ key: 'hotels', icon: 'hotels', label: 'Noclegi', title: 'Noclegi', content: () => (details ? withEdit(foldBody(details.hotels)) : loadError('noclegi')) });
-      if (details?.checklist) tabs.push({ key: 'checklist', icon: 'checklist', label: 'Lista', title: 'Moja checklista', content: () => foldBody(details.checklist!) });
+      // Lista: zadania przed wyjazdem; organizator ma tu też wejście do importu, eksportu i postępu
+      const manage = () => (organizer ? h('a', { class: 'btn btn--link btn--secondary btn--spaced', href: `#/wyjazd/${trip.id}/checklista` }, 'Checklista: zadania, import, postęp') : null);
+      if (details?.checklist || organizer)
+        tabs.push({
+          key: 'checklist',
+          icon: 'checklist',
+          label: 'Lista',
+          title: 'Do zrobienia przed wyjazdem',
+          content: () => h('div', {}, details?.checklist ? foldBody(details.checklist) : h('p', { class: 'muted' }, 'Nie jedziesz na ten wyjazd, więc nie masz własnej listy.'), manage()),
+        });
       tabs.push({ key: 'wishes', icon: 'wishes', label: 'Życzenia', title: 'Lista życzeń', content: () => wishlistSection(trip, viewer.isOrganizer ? viewer : { ...viewer, isOrganizer: false }) });
       tabs.push({ key: 'expenses', icon: 'expenses', label: 'Wydatki', title: 'Wspólne wydatki', content: () => expensesSection(trip, viewer, approvedPeople, tripCurrencies, !!preview) });
     }
