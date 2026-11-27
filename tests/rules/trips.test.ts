@@ -45,7 +45,7 @@ const trip = (status: string) => ({
 
 const day = (date: string) => ({ date, baseLocation: 'Vík', items: [], revision: 1 });
 
-const info = () => ({ flights: [], hotels: [], emergencyContacts: [], insurance: '', checklistTemplate: [] });
+const info = () => ({ flights: [], hotels: [], emergencyContacts: [], insurance: '' });
 
 const member = (uid: string, displayName: string, status: string) => ({ uid, displayName, status, updatedAt: new Date() });
 
@@ -80,7 +80,6 @@ beforeEach(async () => {
       await setDoc(doc(db, `trips/${t}/overview/countries`), { countries: [{ code: 'JP' }] });
       await setDoc(doc(db, `trips/${t}/info/main`), info());
       await setDoc(doc(db, `trips/${t}/days/2027-03-10`), day('2027-03-10'));
-      await setDoc(doc(db, `trips/${t}/checklists/ania`), { items: [{ id: '1', text: 'paszport', done: false }] });
     }
     await setDoc(doc(db, 'trips/t-open/members/darek'), member('darek', 'Darek', 'withdrawn'));
     await setDoc(doc(db, 'trips/t-open/members/ola'), member('ola', 'Ola', 'approved'));
@@ -300,8 +299,10 @@ describe('warstwa 3 – szczegóły', () => {
 
   it('szczegóły zapisuje organizator, w ustalonym kształcie', async () => {
     const flight = { id: 'f1', number: 'FI 531', airline: 'Icelandair', from: 'Warszawa WAW', to: 'Keflavík KEF', departure: '2027-03-10T06:10', departureTz: 'Europe/Warsaw', arrival: '2027-03-10T09:30', arrivalTz: 'Atlantic/Reykjavik', notes: '', audience: 'all' };
-    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/info/main'), { ...info(), flights: [flight], checklistTemplate: [{ id: 'c1', text: 'Paszport' }] }));
+    await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/info/main'), { ...info(), flights: [flight] }));
     await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/info/main'), { ...info(), haslo: 'x' }));
+    // stary model checklisty (wspólna lista w szczegółach) usunięty 27.11.2026
+    await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/info/main'), { ...info(), checklistTemplate: [] }));
     await assertFails(setDoc(doc(as('jacek'), 'trips/t-open/info/main'), { ...info(), flights: 'nie lista' }));
   });
 
@@ -318,34 +319,5 @@ describe('warstwa 3 – szczegóły', () => {
     await assertSucceeds(setDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-12'), { ...day('2027-03-12'), timezone: 'Atlantic/Reykjavik' }));
     await assertFails(deleteDoc(doc(as('ania'), 'trips/t-open/days/2027-03-12')));
     await assertSucceeds(deleteDoc(doc(as('jacek'), 'trips/t-open/days/2027-03-12')));
-  });
-});
-
-describe('checklisty osobiste', () => {
-  it('zatwierdzona osoba czyta i odhacza swoją listę', async () => {
-    await assertSucceeds(getDoc(doc(as('ania'), 'trips/t-open/checklists/ania')));
-    await assertSucceeds(updateDoc(doc(as('ania'), 'trips/t-open/checklists/ania'), { items: [{ id: '1', text: 'paszport', done: true }] }));
-  });
-
-  it('zatwierdzona osoba odhacza punkty wspólne i dopisuje własne (decyzja F)', async () => {
-    await assertSucceeds(
-      setDoc(doc(as('ania'), 'trips/t-open/checklists/ania'), {
-        templateDone: { c1: true },
-        items: [{ id: 'w1', text: 'Aparat i statyw', done: false }],
-        updatedAt: serverTimestamp(),
-      }),
-    );
-    await assertFails(setDoc(doc(as('ania'), 'trips/t-open/checklists/ania'), { templateDone: 'tak', items: [] }));
-  });
-
-  it('nie widać cudzej listy; dodatkowe pola odrzucone', async () => {
-    await assertFails(getDoc(doc(as('bartek'), 'trips/t-open/checklists/ania')));
-    await assertFails(updateDoc(doc(as('ania'), 'trips/t-open/checklists/ania'), { owner: 'ktoś' }));
-  });
-
-  it('niezatwierdzony nie zakłada listy; organizator widzi wszystkie', async () => {
-    await assertFails(setDoc(doc(as('bartek'), 'trips/t-open/checklists/bartek'), { items: [] }));
-    await assertSucceeds(getDoc(doc(as('jacek'), 'trips/t-open/checklists/ania')));
-    await assertFails(deleteDoc(doc(as('ania'), 'trips/t-open/checklists/ania')));
   });
 });

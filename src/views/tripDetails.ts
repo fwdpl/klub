@@ -1,5 +1,8 @@
-import { getChecklist, getInfo, isFor, newId, saveChecklist, type Member, type Trip } from '../data/trips';
-import type { Audience, ChecklistDoc, EmergencyContact, Flight, Hotel, InfoDoc } from '../model/types';
+import { groupTasks } from '../checklist/importChecklist';
+import { PARTNER_LINK_LABEL } from '../config';
+import { getChecklist, listMyTasks, saveOwnItems, setDone } from '../data/checklist';
+import { getInfo, isFor, newId, type Member, type Trip } from '../data/trips';
+import type { Audience, ChecklistDoc, ChecklistItem, EmergencyContact, Flight, Hotel, TaskDoc } from '../model/types';
 import { richText } from '../plan/richText';
 import { zoneLabel } from '../timezones';
 import { h, present, toast } from '../ui';
@@ -79,71 +82,131 @@ function contactRow(c: EmergencyContact): HTMLElement {
   );
 }
 
-/** Moja checklista: punkty wspólne od organizatora + własne (decyzja F). */
-function checklistCard(tripId: string, uid: string, template: InfoDoc['checklistTemplate'], initial: ChecklistDoc): HTMLElement {
+/** Dzisiejsza data telefonu – terminy zadań są datami lokalnymi bez strefy (przed wyjazdem: w domu). */
+function localToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Linki partnerskie: otwierane poza aplikacją, bez zmiany adresu (zadanie checklist §6). */
+function taskLinks(task: TaskDoc): HTMLElement | null {
+  if (!task.links?.length) return null;
+  return h(
+    'div',
+    { class: 'task__links' },
+    ...task.links.map((l) =>
+      h(
+        'span',
+        { class: 'task__link' },
+        h('a', { class: 'chip-btn', href: l.url, target: '_blank', rel: l.sponsored ? 'noopener noreferrer sponsored' : 'noopener noreferrer' }, l.label),
+        l.sponsored && h('small', { class: 'task__partner' }, PARTNER_LINK_LABEL),
+      ),
+    ),
+  );
+}
+
+export interface ChecklistOptions {
+  /** Podgląd organizatora: tylko do oglądania, bez własnych punktów osoby (są prywatne). */
+  readOnly?: boolean;
+}
+
+/**
+ * „Do zrobienia przed wyjazdem”: zadania od organizatora (import/edytor) pogrupowane po kategorii
+ * + własne punkty osoby. Tekst zadań wyłącznie jako tekst (bez HTML). Odhaczenie działa bez sieci.
+ */
+export function checklistCard(tripId: string, uid: string, tasks: TaskDoc[], initial: ChecklistDoc, opts: ChecklistOptions = {}): HTMLElement {
   let state: ChecklistDoc = initial;
   const body = h('div');
-  const card = fold({ id: `${tripId}:checklist`, title: 'Moja checklista', open: false }, body);
+  const card = fold({ id: `${tripId}:checklist`, title: 'Do zrobienia przed wyjazdem', open: true }, body);
   const meta = card.querySelector('.fold__meta') as HTMLElement;
+  const today = localToday();
 
-  const persist = async (next: ChecklistDoc) => {
+  const failed = () => toast(navigator.onLine ? 'Nie udało się zapisać zmiany.' : 'Brak internetu – zmiana nie została zapisana.');
+
+  const toggle = (taskId: string, value: boolean) => {
     const previous = state;
-    state = next;
+    const done = { ...state.done };
+    if (value) done[taskId] = new Date();
+    else delete done[taskId];
+    state = { ...state, done };
     draw();
-    try {
-      await saveChecklist(tripId, uid, state);
-    } catch {
+    // bez sieci zapis czeka w kolejce Firestore i wyśle się po połączeniu
+    setDone(tripId, uid, taskId, value).catch(() => {
       state = previous;
       draw();
-      toast(navigator.onLine ? 'Nie udało się zapisać zmiany.' : 'Brak internetu – zmiana nie została zapisana.');
-    }
+      failed();
+    });
   };
 
-  const checkbox = (checked: boolean, label: string, onChange: (v: boolean) => void, onDelete?: () => void, movable = false) => {
-    const box = h('input', { type: 'checkbox' });
-    box.checked = checked;
-    box.addEventListener('change', () => onChange(box.checked));
+  const persistItems = (items: ChecklistItem[]) => {
+    const previous = state;
+    state = { ...state, items };
+    draw();
+    saveOwnItems(tripId, uid, items).catch(() => {
+      state = previous;
+      draw();
+      failed();
+    });
+  };
+
+  const taskRow = (t: TaskDoc) => {
+    const isDone = t.id in state.done;
+    const box = h('input', { type: 'checkbox', disabled: opts.readOnly });
+    box.checked = isDone;
+    box.addEventListener('change', () => toggle(t.id, box.checked));
+    const late = !isDone && !!t.due && t.due < today;
+    const when = state.done[t.id];
     return h(
       'div',
-      { class: `check${checked ? ' check--done' : ''}` },
-      h('label', {}, box, h('span', {}, label)),
-      onDelete && h('button', { type: 'button', class: 'check__delete', 'aria-label': `Usuń: ${label}`, onclick: onDelete }, '×'),
-      movable && dragHandle(label),
+      { class: `task${isDone ? ' task--done' : ''}` },
+      h('label', { class: 'check task__check' }, box, h('span', {}, t.text)),
+      (t.due || (isDone && when)) &&
+        h(
+          'div',
+          { class: 'task__meta' },
+          t.due && h('span', {}, `termin: ${formatLocal(t.due)}`),
+          late && h('span', { class: 'badge badge--late' }, 'po terminie'),
+          isDone && when && h('span', {}, `✓ ${when.toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' })}`),
+        ),
+      t.details && h('p', { class: 'multiline muted task__details' }, t.details),
+      taskLinks(t),
     );
   };
 
-  // Własne punkty można przestawiać za uchwyt ⠿; kolejność wspólnej części ustala organizator
+  const ownRow = (item: ChecklistItem, movable: boolean) => {
+    const box = h('input', { type: 'checkbox' });
+    box.checked = item.done;
+    box.addEventListener('change', () => persistItems(state.items.map((i) => (i.id === item.id ? { ...i, done: box.checked } : i))));
+    return h(
+      'div',
+      { class: `check${item.done ? ' check--done' : ''}` },
+      h('label', {}, box, h('span', {}, item.text)),
+      h('button', { type: 'button', class: 'check__delete', 'aria-label': `Usuń: ${item.text}`, onclick: () => persistItems(state.items.filter((i) => i.id !== item.id)) }, '×'),
+      movable && dragHandle(item.text),
+    );
+  };
+
+  // Własne punkty można przestawiać za uchwyt ⠿; kolejność zadań ustala organizator
   let sorter: Sortable | null = null;
 
   const draw = () => {
-    const doneCount = template.filter((t) => state.templateDone[t.id]).length + state.items.filter((i) => i.done).length;
-    const total = template.length + state.items.length;
-    const input = h('input', { type: 'text', maxlength: '80', placeholder: 'Dopisz swój punkt', 'aria-label': 'Nowy punkt' });
-    const add = h('button', { type: 'submit', class: 'btn btn--secondary' }, 'Dodaj');
-
+    const own = opts.readOnly ? [] : state.items;
+    const doneCount = tasks.filter((t) => t.id in state.done).length + own.filter((i) => i.done).length;
+    const total = tasks.length + own.length;
     meta.textContent = total ? `${doneCount}/${total}` : '';
-    const movable = state.items.length > 1;
-    const ownList = h(
-      'div',
-      { class: 'check-own' },
-      ...state.items.map((item) =>
-        checkbox(
-          item.done,
-          item.text,
-          (v) => persist({ ...state, items: state.items.map((i) => (i.id === item.id ? { ...i, done: v } : i)) }),
-          () => persist({ ...state, items: state.items.filter((i) => i.id !== item.id) }),
-          movable,
-        ),
-      ),
-    );
+
+    const groups = groupTasks(tasks).map((g) => h('div', { class: 'task-group' }, g.category && h('h3', { class: 'task-group__title' }, g.category), ...g.tasks.map(taskRow)));
+
     sorter?.destroy();
-    sorter = movable ? makeSortable(ownList, (from, to) => void persist({ ...state, items: moveItem(state.items, from, to) })) : null;
-    body.replaceChildren(
-      ...present(
-        ...template.map((t) =>
-          checkbox(!!state.templateDone[t.id], t.text, (v) => persist({ ...state, templateDone: { ...state.templateDone, [t.id]: v } })),
-        ),
-        template.length > 0 && state.items.length > 0 && h('div', { class: 'check-divider' }, 'Moje punkty'),
+    sorter = null;
+    let ownPart: (HTMLElement | false)[] = [];
+    if (!opts.readOnly) {
+      const movable = own.length > 1;
+      const ownList = h('div', { class: 'check-own' }, ...own.map((i) => ownRow(i, movable)));
+      sorter = movable ? makeSortable(ownList, (from, to) => persistItems(moveItem(state.items, from, to))) : null;
+      const input = h('input', { type: 'text', maxlength: '80', placeholder: 'Dopisz swój punkt', 'aria-label': 'Nowy punkt' });
+      ownPart = [
+        h('div', { class: 'check-divider' }, 'Moje punkty'),
         ownList,
         h(
           'form',
@@ -152,13 +215,20 @@ function checklistCard(tripId: string, uid: string, template: InfoDoc['checklist
             onsubmit: (e: Event) => {
               e.preventDefault();
               const text = input.value.trim();
-              if (!text) return;
-              void persist({ ...state, items: [...state.items, { id: newId(), text, done: false }] });
+              if (text) persistItems([...state.items, { id: newId(), text, done: false }]);
             },
           },
           input,
-          add,
+          h('button', { type: 'submit', class: 'btn btn--secondary' }, 'Dodaj'),
         ),
+      ];
+    }
+    body.replaceChildren(
+      ...present(
+        !tasks.length && h('p', { class: 'muted' }, opts.readOnly ? 'Ta osoba nie ma zadań na checkliście.' : 'Organizator nie dodał jeszcze zadań.'),
+        ...groups,
+        ...ownPart,
+        opts.readOnly && h('p', { class: 'muted' }, 'Własne punkty tej osoby są prywatne – w podglądzie ich nie pokazujemy.'),
       ),
     );
   };
@@ -180,12 +250,14 @@ export interface DetailsSections {
 }
 
 /** Sekcje szczegółów osobno – ekran wyjazdu pokazuje każdą pod własną ikoną. */
-export async function detailsSection(trip: Trip, me: Me, members: Member[], showChecklist: boolean): Promise<DetailsSections> {
+export async function detailsSection(trip: Trip, me: Me, members: Member[], checklist: 'own' | 'preview' | null): Promise<DetailsSections> {
   const info = await getInfo(trip.id);
   const mine = <T extends { audience: Audience }>(list: T[]) => (me.isOrganizer ? list : list.filter((x) => isFor(x.audience, me.uid)));
   const flights = mine(info.flights).sort((a, b) => a.departure.localeCompare(b.departure));
   const hotels = mine(info.hotels).sort((a, b) => a.checkIn.localeCompare(b.checkIn));
-  const checklist = showChecklist ? await getChecklist(trip.id, me.uid).catch(() => ({ templateDone: {}, items: [] })) : null;
+  const list = checklist
+    ? await Promise.all([listMyTasks(trip.id, me.uid).catch(() => [] as TaskDoc[]), getChecklist(trip.id, me.uid).catch((): ChecklistDoc => ({ done: {}, items: [] }))])
+    : null;
 
   const section = (key: string, title: string, rows: HTMLElement[], empty: string) =>
     fold({ id: `${trip.id}:${key}`, title, meta: rows.length ? String(rows.length) : 'brak', open: false }, ...(rows.length ? rows : [h('p', { class: 'muted' }, empty)]));
@@ -195,6 +267,6 @@ export async function detailsSection(trip: Trip, me: Me, members: Member[], show
     hotels: section('hotels', 'Noclegi', hotels.map((x) => hotelRow(x, members)), 'Brak noclegów.'),
     contacts: section('contacts', 'Kontakty awaryjne', info.emergencyContacts.map(contactRow), 'Brak kontaktów.'),
     insurance: info.insurance ? fold({ id: `${trip.id}:insurance`, title: 'Ubezpieczenie', open: false }, h('p', { class: 'multiline' }, richText(info.insurance))) : null,
-    checklist: checklist ? checklistCard(trip.id, me.uid, info.checklistTemplate, checklist) : null,
+    checklist: list ? checklistCard(trip.id, me.uid, list[0], list[1], { readOnly: checklist === 'preview' }) : null,
   };
 }

@@ -132,11 +132,10 @@ service cloud.firestore {
       match /info/{docId} {
         allow read: if canSeeDetails(tripId);
         allow write: if isOrganizer()
-          && request.resource.data.keys().hasOnly(['flights', 'hotels', 'emergencyContacts', 'insurance', 'checklistTemplate', 'planNotes', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(['flights', 'hotels', 'emergencyContacts', 'insurance', 'planNotes', 'updatedAt'])
           && request.resource.data.flights is list
           && request.resource.data.hotels is list
-          && request.resource.data.emergencyContacts is list
-          && request.resource.data.checklistTemplate is list;
+          && request.resource.data.emergencyContacts is list;
       }
 
       // Plan dni: jeden dokument na dzień (id = data); zapisuje organizator (import albo edycja punktu)
@@ -264,17 +263,41 @@ service cloud.firestore {
         }
       }
 
-      // Checklista osobista: właściciel (zatwierdzony) odhacza punkty wspólne (templateDone)
-      // i dopisuje własne (items); organizator widzi i zmienia wszystko (decyzja F)
+      // Zadania przed wyjazdem (checklista z importu JSON albo edytora, 27.11.2026): definicje zapisuje tylko organizator.
+      // Uczestnik (zatwierdzony) czyta tylko zadania dla siebie – zapytanie musi mieć
+      // where('audience', 'array-contains-any', ['all', uid]); bez filtra jest odrzucane (reguły nie są filtrami).
+      function validTask(d, taskId) {
+        return taskId.matches('^[a-z0-9-]{1,60}$')
+          && d.keys().hasOnly(['id', 'text', 'details', 'links', 'audience', 'due', 'category', 'order', 'archived', 'updatedAt', 'schemaVersion'])
+          && d.id == taskId
+          && d.text is string && d.text.size() > 0 && d.text.size() <= 200
+          && (!('details' in d) || (d.details is string && d.details.size() <= 1000))
+          && (!('links' in d) || (d.links is list && d.links.size() <= 5))
+          && d.audience is list && d.audience.size() > 0 && d.audience.size() <= 100
+          && (!('due' in d) || (d.due is string && d.due.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
+          && (!('category' in d) || (d.category is string && d.category.size() <= 60))
+          && d.order is number
+          && d.archived is bool
+          && d.schemaVersion == 1;
+      }
+
+      match /tasks/{taskId} {
+        allow read: if isOrganizer()
+          || (canSeeDetails(tripId) && resource.data.audience.hasAny(['all', request.auth.uid]));
+        allow create, update: if isOrganizer() && validTask(request.resource.data, taskId);
+        allow delete: if isOrganizer();
+      }
+
+      // Postęp osoby: odhaczenia zadań (done: taskId → chwila) i własne punkty (items, decyzja Jacka z 27.11.2026).
+      // Właściciel (zatwierdzony) zmienia tylko te pola; organizator wszystko (delete, resetDone, replace z importu).
       match /checklists/{uid} {
         allow read: if isOrganizer() || (request.auth.uid == uid && canSeeDetails(tripId));
         allow create, update: if isOrganizer()
           || (request.auth.uid == uid
             && canSeeDetails(tripId)
-            && request.resource.data.keys().hasOnly(['items', 'templateDone', 'updatedAt'])
-            && request.resource.data.items is list
-            && request.resource.data.items.size() <= 200
-            && (!('templateDone' in request.resource.data) || request.resource.data.templateDone is map));
+            && request.resource.data.keys().hasOnly(['done', 'items', 'updatedAt'])
+            && (!('done' in request.resource.data) || (request.resource.data.done is map && request.resource.data.done.size() <= 500))
+            && (!('items' in request.resource.data) || (request.resource.data.items is list && request.resource.data.items.size() <= 200)));
         allow delete: if isOrganizer();
       }
     }

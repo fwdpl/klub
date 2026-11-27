@@ -133,16 +133,23 @@ trips/{tripId}/info/main          # WARSTWA 3 — approved + organizer
   hotels[]: { id, name, address, localName?, localAddress?, checkIn, checkOut, phone, notes, audience }   # czas lokalny miejsca; local* – karta „pokaż kierowcy” (1.3.0)
   emergencyContacts[]: { id, name, role, phone }
   insurance: string
-  checklistTemplate[]: { id, text }   # wspólna część checklisty od organizatora (decyzja F)
   # audience: 'all' | uid[] – „dla kogo” (decyzja G); uczestnik widzi pozycje wspólne i swoje, organizator wszystkie
   # countryCard – karta kraju przeniesiona do „Szybko po v1”
 trips/{tripId}/days/{date}        # WARSTWA 3 — approved + organizer (wszyscy zatwierdzeni widzą wszystkie plany: „gdzie jest reszta”)
   date, title?, note?, timezone? (strefa dnia, gdy inna niż wyjazdu), baseLocation,
   weatherDependent?: 'beach'|'viewpoint'|'night-sky', items: PlanItem[], revision (z importu)
   # import zastępuje tylko dni z pliku (decyzja I); organizator poprawia pojedyncze punkty (decyzja H)
-trips/{tripId}/checklists/{uid}   # właściciel (zatwierdzony) + organizator
-  templateDone: { [checklistTemplate.id]: bool }   # odhaczenia punktów wspólnych
-  items: { id, text, done }[]                      # własne punkty osoby, pod wspólnymi (decyzja F)
+trips/{tripId}/tasks/{taskId}     # WARSTWA 3 — zadania przed wyjazdem (1.19.0, zastępuje checklistTemplate)
+  id: string                      # stały slug z pliku importu, np. "esim-usa" = id dokumentu
+  text (≤200), details? (≤1000, zwykły tekst), links?: { label (≤40), url (tylko https://, dosłownie), sponsored }[] (≤5)
+  audience: string[]              # ['all'] albo lista uid; nigdy pusta (reguły + zapytanie array-contains-any)
+  due?: 'YYYY-MM-DD' (data lokalna, bez strefy), category?, order: number, archived: bool, updatedAt, schemaVersion: 1
+  # zapis: tylko organizator (import JSON albo edytor); odczyt: organizator albo zatwierdzony, gdy audience ∩ ['all', uid]
+  # zapytanie uczestnika: where('audience','array-contains-any',['all',uid]) + where('archived','==',false) (indeks złożony)
+trips/{tripId}/checklists/{uid}   # postęp osoby: właściciel (zatwierdzony) + organizator
+  done: { [taskId]: Timestamp }   # brak klucza = nieodhaczone; import zmienia tylko na wyraźne polecenie (resetDone, delete, replace)
+  items: { id, text, done }[]     # własne punkty osoby pod zadaniami (decyzja Jacka z 27.11.2026: zostają)
+  # właściciel zapisuje tylko done i items; organizator wszystko. Po usunięciu osoby z wyjazdu odhaczenia zostają.
 
 loginCodes/{codeId}               # tylko Cloud Functions (klient: brak dostępu)
   # wygenerowany w panelu:
@@ -210,7 +217,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Powiadomienie organizatora** o „też tam chcę” i wycofaniu zgłoszenia (dopisane 1.11.2026).
 - **Lista wyjazdów** z „też tam chcę” (i wycofaniem) oraz zatwierdzaniem przez Jacka. Kolejność chronologiczna według `approxDates` (uwaga Jacka z 1.11.2026): pole zostaje tekstem, aplikacja odczytuje z niego miesiąc i rok (polskie nazwy miesięcy, pory roku, zapis liczbowy; przy zakresie – początek); nieodczytane na końcu, archiwum na samym końcu; formularz pokazuje, jak daty zostały odczytane.
 - **Informacje o wyjeździe**: loty (godziny w czasie lotnisk), noclegi (nawigacja, telefon), kontakty awaryjne (dzwonienie), ubezpieczenie; loty i noclegi z „dla kogo” (decyzja G). Offline.
-- **Checklisty** przed wyjazdem: osobne dla każdej osoby, z odhaczaniem; wspólna część od organizatora na górze + własne punkty osoby pod nią (decyzja F). Kolejność zmienia się przesunięciem za uchwyt ⠿ z prawej strony punktu (prośba Jacka z 4.11.2026): organizator – wspólnej części na ekranie edycji szczegółów (zapis przyciskiem), uczestnik – własnych punktów (zapis od razu, także offline). Biblioteka SortableJS (MIT) w paczce aplikacji.
+- **Checklisty** przed wyjazdem (od 1.19.0, zadanie `docs/tasks/zadanie-checklisty.md`): zadania (`tasks`) ustala Jacek w osobnym czacie z Claude i wgrywa plik JSON (format `trip-checklist` 1 – `docs/checklist-import-format.md`) na ekranie wyjazd → Lista → „Checklista: zadania, import, postęp”. Obowiązkowy podgląd (nowe, zmienione „było → będzie”, archiwizacja/usunięcie z liczbą odhaczeń, reset, „N zadań bez zmian”, błędy blokują zapis); zapis writeBatch, powyżej 500 operacji w partiach z postępem. Merge tylko dopisuje i poprawia – odhaczeń nie rusza bez `resetDone`/`delete`; replace (pierwszy import) czyści zadania, odhaczenia i starą wspólną checklistę po wpisaniu nazwy wyjazdu (własne punkty uczestników zostają). Obok: prosty edytor zadań (dodaj, zmień, archiwizuj/przywróć, usuń, opcjonalnie wyczyść odhaczenia – decyzja Jacka z 27.11.2026), „Eksport checklisty” (tripId, zatwierdzeni po imieniu, wszystkie zadania z archiwalnymi, liczba odhaczeń – do wklejenia w czacie), tabela postępu (zadania × osoby, ✓ z datą, „Tylko niezrobione”) i podgląd listy wybranej osoby. Po zapisie importu propozycja powiadomienia jak po zmianie planu (wysyłka ręczna). Uczestnik: „Do zrobienia przed wyjazdem” – tylko zadania dla siebie, bez archiwalnych, pogrupowane po kategorii, wg `order`; termin i odznaka „po terminie”; linki jako przyciski (`target=_blank`, `rel="noopener noreferrer"` + `sponsored`, etykieta „link partnerski” – `PARTNER_LINK_LABEL` w `src/config.ts`); treść wyłącznie jako tekst; odhaczanie offline (zapis pojedynczego klucza z merge). Pod zadaniami własne punkty osoby (dopisywanie, przesuwanie za uchwyt ⠿ – SortableJS, MIT; zapis od razu, także offline).
 - **Plan dni z planami indywidualnymi**: każdy punkt ma „dla kogo” (wszyscy / wybrane osoby / jedna osoba). Uczestnik widzi swoją oś czasu: punkty wspólne + swoje. Punkty wspólne wyróżnione, z adresem i nawigacją (link do Google Maps). Podgląd „gdzie jest reszta” (plany wszystkich obok siebie). Ostrzeżenie o kolizji punktu prywatnego ze wspólnym.
 - **Import planu z JSON** (format „klub-plan”, §4) z walidacją (wszystkie błędy naraz, po polsku, z miejscem) i podglądem przed zapisem; zastępuje tylko dni z pliku (decyzja I).
 - **Ręczna edycja punktu** planu przez organizatora: dodanie, zmiana, usunięcie (decyzja H).
@@ -232,8 +239,8 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
 - **Komunikat o nowej wersji** („Jest nowa wersja, odśwież”).
 - **Motyw jasny/ciemny**: Auto (za systemem) + ręczny wybór; zapis w `users/{uid}.prefs`; ustawiany przed renderem (bez błysku). Na iOS pasek statusu `black-translucent`.
 - **Układ telefonu** + **panel organizatora** (działający też na telefonie): wyjazdy, uczestnicy i statusy, konta, import planu, eksport kopii.
-- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza). Na ekranie wyjazdu lista „Podgląd jako uczestnik…” (osoby przy wyjeździe); widok liczony jak w regułach (status osoby, stan wyjazdu, „dla kogo”), przyciski wyłączone, checklista osoby ukryta (prywatna), „Zakończ podgląd” u góry i na dole.
-- **Eksport kopii** (Ustawienia → „Kopia danych”, tylko organizator): plik `klub-kopia-RRRR-MM-DD-GGMM.json` (format `klub-backup` 1.0) z osobami (bez tokenów powiadomień), wyjazdami i ich warstwami (overview, members, info, days, checklists); daty jako tekst ISO. Odtwarzanie z pliku – poza v1 (w razie potrzeby ręcznie, z pomocą Claude Code).
+- **Podgląd jako uczestnik X** w panelu organizatora (tylko widok; reguły i tak egzekwuje baza). Na ekranie wyjazdu lista „Podgląd jako uczestnik…” (osoby przy wyjeździe); widok liczony jak w regułach (status osoby, stan wyjazdu, „dla kogo”), przyciski wyłączone, na liście „Do zrobienia” zadania i odhaczenia osoby bez jej własnych punktów (prywatne), „Zakończ podgląd” u góry i na dole.
+- **Eksport kopii** (Ustawienia → „Kopia danych”, tylko organizator): plik `klub-kopia-RRRR-MM-DD-GGMM.json` (format `klub-backup` 1.0) z osobami (bez tokenów powiadomień), wyjazdami i ich warstwami (overview, members, info, days, tasks, checklists i pozostałe kolekcje wyjazdu); daty jako tekst ISO. Odtwarzanie z pliku – poza v1 (w razie potrzeby ręcznie, z pomocą Claude Code).
 - **Organizator na wyjeździe**: zamiast „Też tam chcę” przycisk „Jadę – dopisz mnie” (od razu zatwierdzony) – wtedy ma „Mój plan” i własną checklistę.
 
 ### v2
@@ -252,7 +259,7 @@ zgodny z aplikacją (testy pilnują zgodności kopii i wyniku walidacji).
   - Zrobione w 1.14.0 (zgoda Jacka z 5.11.2026): od 768 px ekran wyjazdu i lista osób na całą szerokość (do 1180 px), ikony sekcji w jednym rzędzie; w „Wszyscy” rozwinięty dzień w kolumnach: „Wszyscy” + osoby z własnymi punktami; od 1000 px obok planu mapa (Leaflet + OpenStreetMap, ładowana tylko na szerokim ekranie) z ponumerowanymi punktami rozwiniętych dni (albo całego planu), w ciemnym motywie przyciemniona; lista osób w dwóch kolumnach. Telefon bez zmian.
 - **Zestawy kolorów**: akcent per osoba lub kolor per wyjazd.
   - Zmiana zakresu i zrobione w 1.13.0 (decyzja Jacka z 5.11.2026): chodzi o **kolor aplikacji**, nie planu. Ustawienia → Motyw → „Kolor aplikacji”: 10 gotowych kolorów (każdy z wersją dla motywu jasnego i ciemnego, kontrast ≥ 4,5:1 do tła i kart) albo własny – aplikacja zachowuje odcień i zmienia jasność, aż kolor będzie czytelny w danym motywie (kolorów zlewających się z tłem nie da się ustawić). Napis na przyciskach biały albo ciemny – ten z większym kontrastem. Zapamiętany na urządzeniu (jak motyw), reguły CSS wstrzykiwane przed renderem – bez błysku. Logika: `src/accent.ts` z testami.
-- ~~Wspólna lista „kto co bierze”~~ – nie robimy (decyzja Jacka z 5.11.2026). Szablony checklist kopiowane z poprzedniego wyjazdu – bez decyzji.
+- ~~Wspólna lista „kto co bierze”~~ – nie robimy (decyzja Jacka z 5.11.2026). Szablony checklist kopiowane z poprzedniego wyjazdu – bez decyzji (docs/IDEAS.md).
 - ~~Przydział aut i pokoi~~ – odpuszczone (decyzja Jacka z 5.11.2026).
 - Głosowanie nad terminem – zastąpione **kierunkami** (decyzja Jacka z 5.11.2026, **zrobione w 1.17.0**): globus u góry, lista miejsc, które organizator chce odwiedzić (nazwa, „kiedy” opisowo, miesiąc do sortowania, notatka); uczestnik zaznacza „⭐ Interesuje mnie”; sortowanie A–Z albo wg terminu; każdy widzi tylko swoje zaznaczenia, organizator – kto co zaznaczył.
 - Eksport listy życzeń i planu do KML/GPX – robimy (5.11.2026). **Zrobione w 1.11.0**: w planie „🗺️ Pobierz na mapę” – wybór: plan (uczestnik: „Mój plan”), noclegi, lista życzeń; KML (foldery = dni, „Noclegi”, „Lista życzeń”; kolorowe pinezki) dla Google Moje Mapy / Earth, GPX (punkty z typem = dzień) dla Organic Maps / OsmAnd. Brakujące współrzędne – wyszukiwarka OpenStreetMap (Photon) po nazwie i adresie, z dopiskiem „położenie przybliżone”; bez internetu tylko miejsca ze współrzędnymi.
@@ -398,7 +405,7 @@ Uprawnienia (ograniczone celowo): token GitHub tylko do jednego repozytorium; kl
 - [x] Powiadomienie organizatora o zgłoszeniach i wycofaniach — dopisane do v1 (§3, §5).
 - [x] D: powiadomienie uczestnika o zatwierdzeniu, rezygnacji i przywróceniu (§3).
 - [x] E: strefa wyjazdu obowiązkowa, bez domyślnej; plan zawsze w czasie miejsca (§4). Wybór przez wyszukiwarkę po polskiej nazwie kraju lub miasta.
-- [x] F: checklista = wspólna część od organizatora + własne punkty każdej osoby (§4, §5).
+- [x] F: checklista = wspólna część od organizatora + własne punkty każdej osoby (§4, §5). Od 1.19.0 wspólna część to zadania z importu JSON/edytora (`tasks`), własne punkty zostają (27.11.2026).
 - [x] G: loty i noclegi z „dla kogo” – wszyscy albo wybrane osoby (§4, §5).
 - [x] H: organizator poprawia, dodaje i usuwa pojedyncze punkty planu w aplikacji (§5).
 - [x] I: import zastępuje tylko dni zawarte w pliku (§4).

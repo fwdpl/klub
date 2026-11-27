@@ -2297,3 +2297,198 @@ body.driver-open {
   letter-spacing: 1px;
   overflow-wrap: anywhere;
 }
+
+/* Checklista przed wyjazdem (zadania z importu, 27.11.2026) */
+.task-group + .task-group {
+  margin-top: 16px;
+}
+
+.task-group__title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+.task {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.task .task__check {
+  border-bottom: 0;
+}
+
+.task--done .task__check span {
+  color: var(--text-2);
+  text-decoration: line-through;
+}
+
+.task__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: -6px 0 4px 34px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.task__details {
+  margin: 0 0 6px 34px;
+  font-size: 14px;
+}
+
+.task__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 4px 0 4px 34px;
+}
+
+.task__link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.task__partner {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.badge--late {
+  background: var(--danger);
+  color: var(--bg);
+}
+
+.task-admin {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.task-admin--archived .task-admin__text {
+  color: var(--text-2);
+}
+
+.task-admin__text {
+  font-weight: 600;
+}
+
+.task-admin__meta,
+.task-admin__id {
+  font-size: 13px;
+}
+
+.task-edit {
+  margin: 12px 0;
+}
+
+.task-link-edit {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.task-link-edit input[type='text'],
+.task-link-edit input[type='url'] {
+  grid-column: 1 / -1;
+}
+
+.task-edit > .btn--secondary {
+  margin: 8px 0;
+}
+
+.card--danger {
+  border: 2px solid var(--danger);
+}
+
+.import-section h3,
+.import-errors h3,
+.import-warnings h3 {
+  margin: 16px 0 4px;
+  font-size: 15px;
+}
+
+.import-section ul,
+.import-errors ul,
+.import-warnings ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.import-section li,
+.import-errors li,
+.import-warnings li {
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+
+.import-section--danger h3,
+.import-errors h3,
+.import-errors li {
+  color: var(--danger);
+}
+
+.import-warnings li {
+  color: var(--text-2);
+}
+
+/* Tabela postępu: przewijana w poziomie wewnątrz karty, pierwsza kolumna przyklejona */
+.table-scroll {
+  overflow-x: auto;
+  margin: 8px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.progress-table {
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 100%;
+}
+
+.progress-table th,
+.progress-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.progress-table thead th {
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.progress-table tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 140px;
+  max-width: 200px;
+  white-space: normal;
+  text-align: left;
+  font-weight: 400;
+  background: var(--surface);
+}
+
+.progress-table__done {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.progress-table__done small {
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+.progress-table__na {
+  color: var(--text-2);
+  opacity: 0.6;
+}

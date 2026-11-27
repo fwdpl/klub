@@ -1,5 +1,5 @@
 import { getInfo, getTrip, listMembers, newId, saveInfo, type Member } from '../data/trips';
-import type { Audience, ChecklistTemplateItem, EmergencyContact, Flight, Hotel, InfoDoc } from '../model/types';
+import type { Audience, EmergencyContact, Flight, Hotel, InfoDoc } from '../model/types';
 import { fold } from './fold';
 import { dragHandle, makeSortable, moveItem } from './sortable';
 import { formatLocal } from './tripDetails';
@@ -130,11 +130,6 @@ function contactEditor(c: Partial<EmergencyContact>): RowEditor<EmergencyContact
   return { el: h('div', {}, nameEl, roleEl, phoneEl), read: () => ({ id: c.id ?? newId(), name: name(), role: role(), phone: phone() }) };
 }
 
-function templateEditor(t: Partial<ChecklistTemplateItem>): RowEditor<ChecklistTemplateItem> {
-  const input = h('input', { type: 'text', value: t.text ?? '', maxlength: '80', 'aria-label': 'Punkt checklisty' });
-  return { el: input, read: () => ({ id: t.id ?? newId(), text: input.value.trim() }) };
-}
-
 /** Lista pozycji z przyciskami „Usuń” i „+ Dodaj …”. */
 interface ListOptions<T> {
   /** Klucz zapamiętania zwinięcia sekcji. */
@@ -231,7 +226,7 @@ function contactTitle(c: EmergencyContact): string {
   return [c.name, c.role, c.phone].filter(Boolean).join(' · ');
 }
 
-/** Organizator: loty, noclegi, kontakty, ubezpieczenie i wspólna część checklisty (warstwa 3). */
+/** Organizator: loty, noclegi, kontakty i ubezpieczenie (warstwa 3). Checklista: views/checklistAdmin.ts. */
 export async function showTripDetailsEdit(tripId: string): Promise<void> {
   const [trip, info, members] = await Promise.all([getTrip(tripId), getInfo(tripId).catch(() => null), listMembers(tripId).catch(() => [])]);
   const back = h('a', { class: 'back', href: `#/wyjazd/${tripId}` }, '← Wyjazd');
@@ -245,7 +240,6 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
   const hotels = listEditor('Noclegi', '+ Dodaj nocleg', info.hotels, (x) => hotelEditor(x, approved), { id: `${tripId}:edit:hotels`, rowTitle: hotelTitle });
   const contacts = listEditor('Kontakty awaryjne', '+ Dodaj kontakt', info.emergencyContacts, contactEditor, { id: `${tripId}:edit:contacts`, rowTitle: contactTitle });
   const [insuranceEl, insurance] = area('Ubezpieczyciel, numer polisy, numer alarmowy', info.insurance);
-  const template = listEditor('Wspólna checklista', '+ Dodaj punkt', info.checklistTemplate, templateEditor, { id: `${tripId}:edit:checklist`, compact: true, sortable: true });
 
   const error = h('p', { class: 'error', role: 'alert' });
   const save = h('button', { type: 'submit', class: 'btn' }, 'Zapisz szczegóły');
@@ -265,7 +259,6 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
             hotels: hotels.read().filter((x) => x.name),
             emergencyContacts: contacts.read().filter((c) => c.name || c.phone),
             insurance: insurance(),
-            checklistTemplate: template.read().filter((t) => t.text),
             // uwagi do planu przychodzą z importu planu – zapis szczegółów nie może ich skasować
             ...(info.planNotes ? { planNotes: info.planNotes } : {}),
           };
@@ -299,8 +292,7 @@ export async function showTripDetailsEdit(tripId: string): Promise<void> {
       hotels.card,
       contacts.card,
       fold({ id: `${tripId}:edit:insurance`, title: 'Ubezpieczenie', meta: info.insurance ? '' : 'brak', open: false }, insuranceEl),
-      template.card,
-      h('p', { class: 'muted' }, 'Wspólna checklista pojawi się u każdego uczestnika na górze jego listy; każdy może dopisać własne punkty.'),
+      h('p', { class: 'muted' }, 'Checklista przed wyjazdem ma osobny ekran: ', h('a', { href: `#/wyjazd/${tripId}/checklista` }, 'zadania, import i postęp'), '.'),
       error,
       save,
     ),

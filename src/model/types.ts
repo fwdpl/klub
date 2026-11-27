@@ -114,19 +114,12 @@ export interface EmergencyContact {
   phone: string;
 }
 
-export interface ChecklistTemplateItem {
-  id: string;
-  text: string;
-}
-
 /** trips/{tripId}/info/main – WARSTWA 3: tylko zatwierdzeni. */
 export interface InfoDoc {
   flights: Flight[];
   hotels: Hotel[];
   emergencyContacts: EmergencyContact[];
   insurance: string;
-  /** Wspólna część checklisty ustalana przez organizatora (decyzja F). */
-  checklistTemplate: ChecklistTemplateItem[];
   /** Uwagi do całego planu (z importu), np. co odpuścić w pierwszej kolejności. */
   planNotes?: string[];
 }
@@ -138,12 +131,37 @@ export interface ChecklistItem {
 }
 
 /**
- * trips/{tripId}/checklists/{uid} – właściciel (zatwierdzony) + organizator.
- * Odhaczenia punktów wspólnych (templateDone) + własne punkty dopisane przez osobę (items).
+ * trips/{tripId}/checklists/{uid} – postęp osoby: właściciel (zatwierdzony) + organizator.
+ * done: odhaczone zadania wspólne (taskId → chwila odhaczenia; brak klucza = nieodhaczone; null = zapis czeka na sieć).
+ * items: własne punkty dopisane przez osobę (decyzja Jacka z 27.11.2026 – zostają obok zadań z importu).
  */
 export interface ChecklistDoc {
-  templateDone: Record<string, boolean>;
+  done: Record<string, Date | null>;
   items: ChecklistItem[];
+}
+
+export const TASK_SCHEMA_VERSION = 1;
+
+export interface TaskLink {
+  label: string;
+  /** Adres zapisany dosłownie (linki partnerskie Jacka) – bez normalizacji i doklejania parametrów. */
+  url: string;
+  sponsored: boolean;
+}
+
+/** trips/{tripId}/tasks/{taskId} – WARSTWA 3: zadanie przed wyjazdem; zapis tylko organizator (import albo edytor). */
+export interface TaskDoc {
+  id: string; // stały slug z pliku, np. "esim-usa" = id dokumentu
+  text: string;
+  details?: string;
+  links?: TaskLink[];
+  /** ['all'] albo lista uid – nigdy pusta (reguły i zapytanie array-contains-any). */
+  audience: string[];
+  due?: string; // 'YYYY-MM-DD', data lokalna bez strefy
+  category?: string;
+  order: number;
+  archived: boolean;
+  schemaVersion: number;
 }
 
 // ---------- plan dni (WARSTWA 3) ----------
